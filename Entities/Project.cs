@@ -1,72 +1,88 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PresalesStatistic.Entities.Enums;
+using PresalesStatistic.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using static PresalesStatistic.Parser;
 
 namespace PresalesStatistic.Entities
 {
     public class Project
     {
         public int ProjectId { get; set; }
-
         [JsonProperty("Код")]
-        public string Number;
-
+        public string Number { get; private set; }
         [JsonProperty("Наименование")]
-        public string? Name;
-
+        public string? Name { get; set; }
         [JsonProperty("Потенциал")]
-        public int PotentialAmount;
-
+        public int? PotentialAmount { get; set; }
         [JsonProperty("Статус")]
-        public ProjectStatus Status;
-
+        public ProjectStatus? Status { get; set; }
         [JsonProperty("ПричинаПроигрыша")]
-        public string? LossReason;
-
+        public string? LossReason { get; set; }
         [JsonProperty("ДатаСогласованияРТС")]
-        public DateTime ApprovalByTechDirector;
-
+        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        public DateTime? ApprovalByTechDirector { get; set; }
         [JsonProperty("ДатаСогласованияРОП")]
-        public DateTime ApprovalBySalesDirector;
-
-        [JsonProperty("Пресейл")]
-        public Presale? Presale;
-
+        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        public DateTime? ApprovalBySalesDirector { get; set; }
         [JsonProperty("ДатаНачалаРаботыПресейла")]
-        public DateTime PresaleStart;
-
-        [JsonProperty("ОсновнойПроект")]
-        [JsonConverter(typeof(MainProjectJsonConverter))]
-        public Project? MainProject;
-
+        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        public DateTime? PresaleStart { get; set; }
         [JsonProperty("ДействияПресейла")]
-        public PresaleAction[]? Actions;
+        public virtual List<PresaleAction>? Actions { get; set; }
+        public int? PresaleId { get; set; }
+        [JsonProperty("Пресейл")]
+        [JsonConverter(typeof(CreateByStringConverter))]
+        public virtual Presale? Presale { get; set; }
+        [JsonProperty("ОсновнойПроект")]
+        [JsonConverter(typeof(CreateByStringConverter))]
+        public virtual Project? MainProject { get; set; }
+        [JsonIgnoreSerialization]
+        public virtual List<Invoice>? Invoices { get; set; }
 
-        public Project(string projectNumber) => Number = projectNumber;
-    }
-    public class MainProjectJsonConverter : JsonConverter
-    {
-        public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Presale);
-        public override bool CanWrite => false;
-        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        public Project(string number) => Number = number;
+
+        public void Update(Project project)
         {
-            var token = JToken.ReadFrom(reader);
-            if (token.Type == JTokenType.String)
-            {
-                var value = token.Value<string>();
-                if (value == null || value.Length == 0) return null;
-                var project = new Project(value);
-                return project;
-            }
-            return null;
+            // Console.WriteLine($"Calling update to project {Number}");
+            Name = project.Name;
+            PotentialAmount = project.PotentialAmount;
+            Status = project.Status;
+            LossReason = project.LossReason;
+            ApprovalByTechDirector = project.ApprovalByTechDirector;
+            ApprovalBySalesDirector = project.ApprovalBySalesDirector;
+            PresaleStart = project.PresaleStart;
+            Actions = project.Actions;
+            Presale = project.Presale;
+            MainProject = project.MainProject;
         }
-        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) { }
+
+        public static Project? FindOrCreate(Project? project, Context db)
+        {
+            if (project == null) return null;
+            var mainProjectsByNumber = db.Projects.Where(p => p.Number == project.Number);
+            switch (mainProjectsByNumber.Count())
+            {
+                case 1:
+                    project = mainProjectsByNumber.First();
+                    break;
+                case 0:
+                    db.Projects.Add(project);
+                    db.SaveChanges();
+                    break;
+                default:
+                    throw new MultipleObjectsInDbException();
+            }
+            return project;
+        }
     }
 }
