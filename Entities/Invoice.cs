@@ -1,11 +1,5 @@
 ﻿using Newtonsoft.Json;
 using PresalesStatistic.Helpers;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PresalesStatistic.Entities
 {
@@ -34,13 +28,23 @@ namespace PresalesStatistic.Entities
 
         public Invoice(string number) => Number = number;
 
-        public void Update(Invoice invoice)
+        public static void AddOrUpdate(Invoice invoice, Context db)
         {
-            // Console.WriteLine($"Calling update to invoice {Number}");
-            Amount = invoice.Amount;
-            Profit = invoice.Profit;
-            Presale = invoice.Presale;
-            Project = invoice.Project;
+            var inv = db.Invoices
+                .Where(i => i.Number == invoice.Number && i.Data == invoice.Data && i.Counterpart == invoice.Counterpart)
+                .FirstOrDefault();
+            if (inv != null)
+            {
+                inv.Amount = invoice.Amount;
+                inv.Profit = invoice.Profit;
+                inv.Presale = invoice.Presale;
+                inv.Project = invoice.Project;
+            }
+            else
+            {
+                db.Invoices.Add(invoice);
+            }
+            db.SaveChanges();
         }
     }
 }

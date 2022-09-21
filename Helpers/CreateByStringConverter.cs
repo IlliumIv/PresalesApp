@@ -17,7 +17,7 @@ namespace PresalesStatistic.Helpers
             {
                 var value = token.Value<string>();
                 if (value == null || value.Length == 0) return null;
-                if (objectType == typeof(Presale)) return new Presale(value);
+                if (objectType == typeof(Presale)) return new Presale(value.Split(";").First());
                 if (objectType == typeof(Project)) return new Project(value);
             }
             return null;

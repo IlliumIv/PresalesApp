@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-using PresalesStatistic.Entities.Enums;
 
 namespace PresalesStatistic.Helpers
 {
@@ -17,8 +15,8 @@ namespace PresalesStatistic.Helpers
             var token = JToken.ReadFrom(reader);
             var value = token.Value<string>();
             if (int.TryParse(value, out _)) return DefaultValue;
-            if (Enum.TryParse(typeof(ActionType), value, out object? result)) return result;
-            return DefaultValue;
+            try { return base.ReadJson(reader, objectType, existingValue, serializer); }
+            catch { return DefaultValue; }
         }
     }
 }

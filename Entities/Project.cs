@@ -1,17 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 using PresalesStatistic.Entities.Enums;
 using PresalesStatistic.Helpers;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using static PresalesStatistic.Parser;
 
 namespace PresalesStatistic.Entities
 {
@@ -66,23 +55,41 @@ namespace PresalesStatistic.Entities
             MainProject = project.MainProject;
         }
 
-        public static Project? FindOrCreate(Project? project, Context db)
+        public static Project? GetOrAdd(Project? project, Context db)
         {
-            if (project == null) return null;
-            var mainProjectsByNumber = db.Projects.Where(p => p.Number == project.Number);
-            switch (mainProjectsByNumber.Count())
+            if (project != null)
             {
-                case 1:
-                    project = mainProjectsByNumber.First();
-                    break;
-                case 0:
+                var pr = db.Projects.Where(p => p.Number == project.Number).FirstOrDefault();
+                if (pr != null) return pr;
+                else
+                {
                     db.Projects.Add(project);
                     db.SaveChanges();
-                    break;
-                default:
-                    throw new MultipleObjectsInDbException();
+                }
             }
             return project;
+        }
+
+        public static void UpdateActions(Project project, Context db)
+        {
+            if (project.Actions == null) return;
+            var proj = db.Projects.Where(p => p.Number == project.Number).FirstOrDefault();
+            if (proj != null) 
+            {
+                var actions = db.Actions.Where(a => a.Project == proj).ToList();
+                foreach (var action in actions)
+                {
+                    var newAction = project.Actions.FirstOrDefault(a => a.Equals(action));
+                    if (newAction == null) db.Actions.Remove(action);
+                    else
+                    {
+                        project.Actions.Remove(newAction);
+                        project.Actions.Add(action);
+                    };
+                };
+                proj.Actions = project.Actions;
+                db.SaveChanges();
+            };
         }
     }
 }

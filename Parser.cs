@@ -1,89 +1,114 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PresalesStatistic.Entities;
-using PresalesStatistic.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Configuration;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PresalesStatistic
 {
     public class Parser
     {
-        private DateTime _lastUpdated = DateTime.MinValue;
-        public void GetUpdate(Context db)
+        private static DateTime _lastProjectsUpdate;
+        private static DateTime _lastInvoicesUpdate;
+        private static string? _auth;
+        private static readonly JsonSerializerSettings deserializeSettings = new()
         {
-            _lastUpdated = DateTime.Now;
+            DateTimeZoneHandling = DateTimeZoneHandling.Utc
+        };
+        public static async Task RunAsync(int delay = 600000)
+        {
+            Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
+            if (r == null) return;
+            var appSettings = (Settings.Application)r;
 
-            var deserializeSettings = new JsonSerializerSettings() { DateTimeZoneHandling = DateTimeZoneHandling.Utc };
-            var objects = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(@"C:\Projects_TestData.txt"), deserializeSettings);
-            if (objects != null)
-                foreach (var obj in objects)
-                {
-                    Project proj = obj.ToObject<Project>();
-                    proj.MainProject = Project.FindOrCreate(proj.MainProject, db);
-                    proj.Presale = Presale.FindOrCreate(proj.Presale, db);
-                    var projectsByNumber = db.Projects.Where(p => p.Number == proj.Number);
-                    switch (projectsByNumber.Count())
-                    {
-                        case 1:
-                            var p = projectsByNumber.First();
-                            var newActions = proj.Actions;
-                            if (newActions != null) {
-                                var actions = db.Actions.Where(a => a.Project == p).ToListAsync().Result;
-                                foreach (var action in actions)
-                                {
-                                    var newAction = newActions.FirstOrDefault(a => a.Equals(action));
-                                    if (newAction == null) db.Actions.Remove(action);
-                                    else
-                                    {
-                                        newActions.Remove(newAction);
-                                        newActions.Add(action);
-                                    };
-                                }
-                            }
-                            proj.Actions = newActions;
-                            p.Update(proj);
-                            break;
-                        case 0:
-                            db.Projects.Add(proj);
-                            break;
-                        default:
-                            throw new MultipleObjectsInDbException();
-                    }
-                    db.SaveChanges();
-                }
+            _lastProjectsUpdate = appSettings.PreviosUpdate;
+            _lastInvoicesUpdate = appSettings.PreviosUpdate;
 
-            objects = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(@"C:\Invoices_TestData.txt"), deserializeSettings);
-            if (objects != null)
-                foreach (var obj in objects)
-                {
-                    Invoice inv = obj.ToObject<Invoice>();
-                    inv.Project = Project.FindOrCreate(inv.Project, db);
-                    inv.Presale = Presale.FindOrCreate(inv.Presale, db);
-                    var invoices = db.Invoices.Where(i => i.Number == inv.Number && i.Data == inv.Data && i.Counterpart == inv.Counterpart);
-                    switch (invoices.Count())
-                    {
-                        case 1:
-                            var i = invoices.First();
-                            i.Update(inv);
-                            break;
-                        case 0:
-                            db.Invoices.Add(inv);
-                            break;
-                        default:
-                            throw new MultipleObjectsInDbException();
-                    }
-                }
-            // if (invoices != null) foreach (var invoice in invoices) Console.WriteLine(JsonConvert.SerializeObject(invoice, serializeSettings));
+            while (true)
+            {
+                var update = new Task(() => GetUpdate());
+                update.Start();
+                update.Wait();
+                appSettings.PreviosUpdate = new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt);
+                appSettings.CurrentConfiguration.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection(appSettings.SectionInformation.Name);
+                await Task.Delay(delay);
+            };
         }
 
-        public class MultipleObjectsInDbException : Exception
+        private static void GetUpdate()
         {
-            public override string Message => "Found duplicated data in database";
+            var currentUpdate = DateTime.Now;
+
+            if (TryGetData(_lastProjectsUpdate, currentUpdate, out List<Project> projects))
+            {
+                foreach (var project in projects)
+                {
+                    using var db = new Context();
+                    project.MainProject = Project.GetOrAdd(project.MainProject, db);
+                    project.Presale = Presale.GetOrAdd(project.Presale, db);
+                    Project.UpdateActions(project, db);
+                    Project.GetOrAdd(project, db);
+                }
+                _lastProjectsUpdate = currentUpdate;
+            }
+
+            if (TryGetData(_lastInvoicesUpdate, currentUpdate, out List<Invoice> invoices))
+            {
+                foreach (var invoice in invoices)
+                {
+                    using var db = new Context();
+                    invoice.Project = Project.GetOrAdd(invoice.Project, db);
+                    invoice.Presale = Presale.GetOrAdd(invoice.Presale, db);
+                    Invoice.AddOrUpdate(invoice, db);
+                }
+                _lastInvoicesUpdate = currentUpdate;
+            }
+        }
+
+        private static bool TryGetData<T>(DateTime startTime, DateTime endTime, out List<T> result)
+        {
+            if (Settings.TryGetSection<Settings.Connection>(
+                    out ConfigurationSection? r) && r != null)
+            {
+                var connSettings = (Settings.Connection)r;
+                _auth = Convert.ToBase64String(Encoding.UTF8.GetBytes(
+                    $"{connSettings.Username}:{connSettings.Password}"));
+
+                var httpClient = new HttpClient();
+                httpClient.BaseAddress = new Uri($"http://{connSettings.Url}");
+
+                result = new List<T>();
+                var request = $"trade/hs/API/Get{typeof(T).Name}s?" +
+                    $"begin={startTime:yyyy-MM-ddTHH:mm:ss}" +
+                    $"&end={endTime:yyyy-MM-ddTHH:mm:ss}";
+                var message = new HttpRequestMessage(HttpMethod.Get, request);
+                message.Headers.Add("Authorization", $"Basic {_auth}");
+
+                Console.WriteLine($"[{DateTime.Now}] Request: {message.RequestUri}");
+                Console.WriteLine($"[{DateTime.Now}] Waiting response...");
+                var response = httpClient.SendAsync(message).Result;
+                Console.WriteLine($"[{DateTime.Now}] Bytes received: {response.Content.Headers.ContentLength}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var objects = JsonConvert.DeserializeObject<dynamic>(
+                        response.Content.ReadAsStringAsync().Result, deserializeSettings);
+                    if (objects != null)
+                    {
+                        foreach (var obj in objects)
+                        {
+                            result.Add(obj.ToObject<T>());
+                        }
+                        Console.WriteLine($"[{DateTime.Now}] {typeof(T).Name}s updated: {result.Count}");
+                    }
+                    return true;
+                }
+            }
+
+            else throw new ConfigurationErrorsException() { };
+            return false;
         }
     }
 }

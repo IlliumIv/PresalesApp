@@ -1,13 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using PresalesStatistic.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static PresalesStatistic.Parser;
+﻿using PresalesStatistic.Helpers;
 
 namespace PresalesStatistic.Entities
 {
@@ -22,21 +13,17 @@ namespace PresalesStatistic.Entities
 
         public Presale(string name) => Name = name;
 
-        public static Presale? FindOrCreate(Presale? presale, Context db)
+        public static Presale? GetOrAdd(Presale? presale, Context db)
         {
-            if (presale == null) return null;
-            var presalesByName = db.Presales.Where(p => p.Name == presale.Name);
-            switch (presalesByName.Count())
+            if (presale != null)
             {
-                case 1:
-                    presale = presalesByName.First();
-                    break;
-                case 0:
+                var pr = db.Presales.Where(p => p.Name == presale.Name).FirstOrDefault();
+                if (pr != null) return pr;
+                else
+                {
                     db.Presales.Add(presale);
                     db.SaveChanges();
-                    break;
-                default:
-                    throw new MultipleObjectsInDbException();
+                }
             }
             return presale;
         }

@@ -1,12 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using PresalesStatistic.Entities;
 using PresalesStatistic.Helpers;
-using System.Diagnostics;
+using System.Configuration;
 
 namespace PresalesStatistic
 {
-
     internal class Program
     {
         static void Main(string[] args)
@@ -21,22 +23,20 @@ namespace PresalesStatistic
                 };
             };
 
-            Parser parser = new Parser();
-            using (var db = new Context())
-            {
-                parser.GetUpdate(db);
-                // var presale = new Presale("Ivan", db);
-                // var project = new Project("ЦБ-00000000");
-                // _ = db.Presales.AddAsync(presale).Result;
-                // _ = db.Projects.AddAsync(project).Result;
-                // project.AssignPresale(presale);
-                // db.SaveChanges();
-                var projects = db.Projects.ToListAsync().Result;
-                Console.WriteLine($"Projects in the database ({projects.Count}):");
+            if (!Settings.ConfigurationFileIsExists()) Settings.CreateConfigurationFile();
 
+            var parser = Parser.RunAsync();
+            parser.Wait();
 
-                // foreach (var item in projects) Console.WriteLine($"{JsonConvert.SerializeObject(item, new JsonSerializerSettings() { DateTimeZoneHandling = DateTimeZoneHandling.Local })}");
-            }
+            // var presale = new Presale("Ivan", db);
+            // var project = new Project("ЦБ-00000000");
+            // _ = db.Presales.AddAsync(presale).Result;
+            // _ = db.Projects.AddAsync(project).Result;
+            // project.AssignPresale(presale);
+            // db.SaveChanges();
+            // var projects = db.Projects.ToListAsync().Result;
+            // Console.WriteLine($"Projects in the database ({projects.Count}):");
+            // foreach (var item in projects) Console.WriteLine($"{JsonConvert.SerializeObject(item, new JsonSerializerSettings() { DateTimeZoneHandling = DateTimeZoneHandling.Local })}");
             // Console.ReadLine();
         }
     }
@@ -44,24 +44,35 @@ namespace PresalesStatistic
     public class Context : DbContext
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public Context()
+        public Context() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        {
-            // Database.EnsureDeleted();
-            // Database.EnsureCreated();
-        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder
-                .UseNpgsql(@"host=localhost;port=5432;database=presalesDb;username=presales;password=12345")
-                // .EnableSensitiveDataLogging().LogTo(message => Debug.WriteLine(message))
-                ;
+            if (Settings.TryGetSection<Settings.Database>(
+                out ConfigurationSection? r) && r != null)
+            {
+                var dbSettings = (Settings.Database)r;
+
+                optionsBuilder
+                    .UseNpgsql($"host={dbSettings.Url};" +
+                    $"port={dbSettings.Port};" +
+                    $"database={dbSettings.DatabaseName};" +
+                    $"username={dbSettings.Username};" +
+                    $"password={dbSettings.Password}")
+                    // .EnableSensitiveDataLogging().LogTo(message => Debug.WriteLine(message))
+                    ;
+            }
+            else throw new ConfigurationErrorsException() { };
         }
 
         public DbSet<Presale> Presales { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
-        public DbSet <PresaleAction> Actions { get; set; }
+        public DbSet<PresaleAction> Actions { get; set; }
+        public void Create() => Database.EnsureCreated();
+        public void Delete() => Database.EnsureDeleted();
+        public bool CanConnect() => Database.CanConnect();
+        public bool Exists() => Database.GetService<IRelationalDatabaseCreator>().Exists();
     }
 }
