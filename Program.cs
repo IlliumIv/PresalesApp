@@ -53,6 +53,8 @@ namespace PresalesStatistic
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            if (!Settings.ConfigurationFileIsExists()) Settings.CreateConfigurationFile();
+
             if (Settings.TryGetSection<Settings.Database>(
                 out ConfigurationSection? r) && r != null)
             {

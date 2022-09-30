@@ -17,6 +17,12 @@ namespace PresalesStatistic.Entities
         public double Amount { get; set; }
         [JsonProperty("Прибыль")]
         public double Profit { get; set; }
+        [JsonProperty("ДатаПоследнейОплаты")]
+        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        public DateTime? LastPay { get; set; }
+        [JsonProperty("ДатаПоследнейОтгрузки")]
+        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        public DateTime? LastShipment { get; set; }
         [JsonProperty("Пресейл")]
         [JsonConverter(typeof(CreateByStringConverter))]
         public virtual Presale? Presale { get; set; }
@@ -39,6 +45,8 @@ namespace PresalesStatistic.Entities
                 inv.Profit = invoice.Profit;
                 inv.Presale = invoice.Presale;
                 inv.Project = invoice.Project;
+                inv.LastPay = invoice.LastPay;
+                inv.LastShipment = invoice.LastShipment;
             }
             else
             {
