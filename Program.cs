@@ -25,6 +25,10 @@ namespace PresalesStatistic
 
             if (!Settings.ConfigurationFileIsExists()) Settings.CreateConfigurationFile();
 
+            // using var db = new Context();
+            // db.Delete();
+            // db.Create();
+
             var parser = Parser.RunAsync();
             parser.Wait();
 
