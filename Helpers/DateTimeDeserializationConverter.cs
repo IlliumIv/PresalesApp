@@ -16,7 +16,7 @@ namespace PresalesStatistic.Helpers
                 var value = token.Value<DateTime>();
                 if (value == DateTime.MinValue) return null;
                 if (value.TimeOfDay == DateTime.MinValue.TimeOfDay) return value;
-                return value.Add(TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow));
+                return value.Add(-TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow));
             }
             return existingValue;
         }
