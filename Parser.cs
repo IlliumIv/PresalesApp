@@ -40,7 +40,7 @@ namespace PresalesStatistic
         private static void GetUpdate()
         {
             var currentUpdate = DateTime.Now;
-
+            
             if (TryGetData(_lastProjectsUpdate, currentUpdate, out List<Project> projects))
             {
                 foreach (var project in projects)
