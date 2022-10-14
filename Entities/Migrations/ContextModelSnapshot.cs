@@ -2,20 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using PresalesStatistic;
+using static Entities.DbController;
 
 #nullable disable
 
-namespace PresalesStatistic.Migrations
+namespace Entities.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20221003102758_UpdateProject")]
-    partial class UpdateProject
+    partial class ContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,7 +64,7 @@ namespace PresalesStatistic.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("PresalesStatistic.Entities.Presale", b =>
@@ -89,7 +87,7 @@ namespace PresalesStatistic.Migrations
 
                     b.HasKey("PresaleId");
 
-                    b.ToTable("Presales");
+                    b.ToTable("Presales", (string)null);
                 });
 
             modelBuilder.Entity("PresalesStatistic.Entities.PresaleAction", b =>
@@ -122,7 +120,7 @@ namespace PresalesStatistic.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Actions");
+                    b.ToTable("Actions", (string)null);
                 });
 
             modelBuilder.Entity("PresalesStatistic.Entities.Project", b =>
@@ -137,6 +135,9 @@ namespace PresalesStatistic.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("ApprovalByTechDirector")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastStatusChanged")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LossReason")
@@ -171,7 +172,7 @@ namespace PresalesStatistic.Migrations
 
                     b.HasIndex("PresaleId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
             modelBuilder.Entity("PresalesStatistic.Entities.Invoice", b =>

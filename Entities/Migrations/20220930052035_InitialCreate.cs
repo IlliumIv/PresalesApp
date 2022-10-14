@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace PresalesStatistic.Migrations
+namespace Entities.Migrations
 {
     public partial class InitialCreate : Migration
     {

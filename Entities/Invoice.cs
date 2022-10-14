@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
-using PresalesStatistic.Helpers;
+using Entities.Helpers;
 
-namespace PresalesStatistic.Entities
+namespace Entities
 {
     public class Invoice
     {
@@ -33,29 +33,5 @@ namespace PresalesStatistic.Entities
         public int? ProjectId { get; set; }
 
         public Invoice(string number) => Number = number;
-
-        public static void AddOrUpdate(Invoice invoice, Context db, out bool isNew)
-        {
-            isNew = true;
-            var inv = db.Invoices
-                .Where(i => i.Number == invoice.Number && i.Data == invoice.Data)
-                .FirstOrDefault();
-            if (inv != null)
-            {
-                isNew = false;
-                inv.Counterpart = invoice.Counterpart;
-                inv.Amount = invoice.Amount;
-                inv.Profit = invoice.Profit;
-                inv.Presale = invoice.Presale;
-                inv.Project = invoice.Project;
-                inv.LastPay = invoice.LastPay;
-                inv.LastShipment = invoice.LastShipment;
-            }
-            else
-            {
-                db.Invoices.Add(invoice);
-            }
-            db.SaveChanges();
-        }
     }
 }

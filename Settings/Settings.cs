@@ -123,12 +123,6 @@ namespace PresalesStatistic
             }
         }
 
-        public static void UpdateSection(ConfigurationSection section)
-        {
-
-
-        }
-
         public static bool TryGetSection<T>(out ConfigurationSection? result)
         {
             var configuration = ConfigurationManager

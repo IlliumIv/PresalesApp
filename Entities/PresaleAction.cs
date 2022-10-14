@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using PresalesStatistic.Entities.Enums;
-using PresalesStatistic.Helpers;
+using Entities.Enums;
+using Entities.Helpers;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PresalesStatistic.Entities
+namespace Entities
 {
     public class PresaleAction
     {

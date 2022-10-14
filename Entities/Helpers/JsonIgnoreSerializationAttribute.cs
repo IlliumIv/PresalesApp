@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Newtonsoft.Json.Serialization;
 
-namespace PresalesStatistic.Helpers
+namespace Entities.Helpers
 {
     [AttributeUsage(AttributeTargets.All)]
     public class JsonIgnoreSerializationAttribute : Attribute { }

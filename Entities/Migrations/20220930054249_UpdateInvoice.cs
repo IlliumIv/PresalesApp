@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PresalesStatistic.Migrations
+namespace Entities.Migrations
 {
     public partial class UpdateInvoice : Migration
     {
