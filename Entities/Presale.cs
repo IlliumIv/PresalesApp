@@ -1,7 +1,7 @@
-﻿using PresalesStatistic.Entities.Enums;
-using PresalesStatistic.Helpers;
+﻿using Entities.Enums;
+using Entities.Helpers;
 
-namespace PresalesStatistic.Entities
+namespace Entities
 {
     public class Presale
     {
@@ -15,20 +15,5 @@ namespace PresalesStatistic.Entities
         public virtual List<Invoice>? Invoices { get; set; }
 
         public Presale(string name) => Name = name;
-
-        public static Presale? GetOrAdd(Presale? presale, Context db)
-        {
-            if (presale != null)
-            {
-                var pr = db.Presales.Where(p => p.Name == presale.Name).FirstOrDefault();
-                if (pr != null) return pr;
-                else
-                {
-                    db.Presales.Add(presale);
-                    db.SaveChanges();
-                }
-            }
-            return presale;
-        }
     }
 }

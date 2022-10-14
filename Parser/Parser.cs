@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using PresalesStatistic.Entities;
+﻿using Newtonsoft.Json;
+using Entities;
 using System.Configuration;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace PresalesStatistic
 {
@@ -18,7 +17,7 @@ namespace PresalesStatistic
         {
             DateTimeZoneHandling = DateTimeZoneHandling.Utc
         };
-        public static async Task RunAsync(int delay = 600000)
+        public static void Run(DbContextOptions<DbController.Context> dbOptions)
         {
             Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
             if (r == null) return;
@@ -27,20 +26,13 @@ namespace PresalesStatistic
             _lastProjectsUpdate = appSettings.PreviosUpdate;
             _lastInvoicesUpdate = appSettings.PreviosUpdate;
 
-            while (true)
-            {
-                var update = new Task(() => GetUpdate(appSettings.PreviosUpdate));
-                update.Start();
-                update.Wait();
-                appSettings.PreviosUpdate = new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt);
-                appSettings.CurrentConfiguration.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection(appSettings.SectionInformation.Name);
-                Program.ShowData(appSettings.PreviosUpdate);
-                await Task.Delay(delay);
-            };
+            GetUpdate(dbOptions, appSettings.PreviosUpdate);
+            appSettings.PreviosUpdate = new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt);
+            appSettings.CurrentConfiguration.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection(appSettings.SectionInformation.Name);
         }
 
-        private static void GetUpdate(DateTime prevUpdate)
+        private static void GetUpdate(DbContextOptions<DbController.Context> dbOptions, DateTime prevUpdate)
         {
             try
             {
@@ -49,10 +41,10 @@ namespace PresalesStatistic
                 {
                     foreach (var project in projects)
                     {
-                        using var db = new Context();
-                        project.MainProject = Project.GetOrAdd(project.MainProject, db);
-                        project.Presale = Presale.GetOrAdd(project.Presale, db);
-                        Project.AddOrUpdate(project, db);
+                        using var db = new DbController.Context(dbOptions);
+                        project.MainProject = project.MainProject.GetOrAdd(db);
+                        project.Presale = project.Presale.GetOrAdd(db);
+                        project.AddOrUpdate(db);
                     }
                     _lastProjectsUpdate = currentUpdate;
                 }
@@ -61,12 +53,12 @@ namespace PresalesStatistic
                 {
                     foreach (var invoice in invoices)
                     {
-                        using var db = new Context();
-                        invoice.Presale = Presale.GetOrAdd(invoice.Presale, db);
-                        invoice.Project = Project.GetOrAdd(invoice.Project, db);
+                        using var db = new DbController.Context(dbOptions);
+                        invoice.Presale = invoice.Presale.GetOrAdd(db);
+                        invoice.Project = invoice.Project.GetOrAdd(db);
                         if (invoice.Presale != null && invoice.Project != null)
                             invoice.Project.Presale = invoice.Presale;
-                        Invoice.AddOrUpdate(invoice, db, out var isNew);
+                        invoice.AddOrUpdate(db, out bool isNew);
                         if (isNew == false)
                         {
                             using var sw = File.AppendText(_workLog.FullName);

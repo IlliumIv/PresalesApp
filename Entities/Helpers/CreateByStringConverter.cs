@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PresalesStatistic.Entities;
+using Entities;
 
-namespace PresalesStatistic.Helpers
+namespace Entities.Helpers
 {
     public class CreateByStringConverter : JsonConverter
     {

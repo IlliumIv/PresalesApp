@@ -1,15 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Entities;
+using Entities.Helpers;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using PresalesStatistic.Entities;
 using PresalesStatistic.Helpers;
 using System.Configuration;
 
 namespace PresalesStatistic
 {
-    internal class Program
+    public class Program
     {
 #pragma warning disable IDE0060 // Remove unused parameter
         static void Main(string[] args)
@@ -27,24 +25,41 @@ namespace PresalesStatistic
 
             if (!Settings.ConfigurationFileIsExists()) Settings.CreateConfigurationFile();
 
+            Settings.TryGetSection<Settings.Database>(out ConfigurationSection? r);
+            if (r == null) return;
+            var dbSettings = (Settings.Database)r;
+            var optionsBuilder = new DbContextOptionsBuilder<DbController.Context>();
+            var dbOptions = optionsBuilder.UseNpgsql($"host={dbSettings.Url};" +
+                $"port={dbSettings.Port};" +
+                $"database={dbSettings.DatabaseName};" +
+                $"username={dbSettings.Username};" +
+                $"password={dbSettings.Password}")
+                // .EnableSensitiveDataLogging().LogTo(message => Debug.WriteLine(message))
+                .Options;
+
             // using var db = new Context();
             // db.Delete();
             // db.Create();
 
-            // parser = Parser.RunAsync();
-            // parser.Wait();
-
-            ShowData(DateTime.Now);
+            while (true)
+            {
+                // Parser.Run(dbOptions);
+                Settings.TryGetSection<Settings.Application>(out r);
+                if (r == null) return;
+                var appSettings = (Settings.Application)r;
+                ShowData(dbOptions, appSettings.PreviosUpdate);
+                Task.Delay(600000).Wait();
+            };
         }
 
-        public static void ShowData(DateTime prevUpdate)
+        public static void ShowData(DbContextOptions<DbController.Context> dbOptions, DateTime prevUpdate)
         {
             Console.Clear();
 
             var thisMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var prevMonth = thisMonth.AddMonths(-1);
 
-            using var db = new Context();
+            using var db = new DbController.Context(dbOptions);
             var presales = db.Presales.Include(p => p.Projects).ToList();
             var actions = db.Actions.ToList();
             var projects = db.Projects.ToList();
@@ -139,7 +154,9 @@ namespace PresalesStatistic
                     .DefaultIfEmpty()
                     .Average(p => p == null ? 0 :
                         CalculateWorkingMinutes(
+#pragma warning disable CS8629 // Nullable value type may be null.
                             (DateTime)p.ApprovalByTechDirector.ToLocal(),
+#pragma warning restore CS8629 // Nullable value type may be null.
                             new List<DateTime>()
                             {
                                 (actions
@@ -148,7 +165,9 @@ namespace PresalesStatistic
                                 .AddMinutes(-actions
                                     .Where(a => a.Project == p)
                                     .FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
+#pragma warning disable CS8629 // Nullable value type may be null.
                                 (DateTime)p.PresaleStart.ToLocal()
+#pragma warning restore CS8629 // Nullable value type may be null.
                             }.Min(dt => dt)));
                 #endregion
                 #region Суммарное потраченное время на проекты в этом месяце
@@ -280,7 +299,9 @@ namespace PresalesStatistic
                 .DefaultIfEmpty()
                 .Average(p => p == null ? 0 :
                     CalculateWorkingMinutes(
+#pragma warning disable CS8629 // Nullable value type may be null.
                         (DateTime)p.ApprovalByTechDirector.ToLocal(),
+#pragma warning restore CS8629 // Nullable value type may be null.
                             new List<DateTime>()
                             {
                                 (actions
@@ -288,7 +309,9 @@ namespace PresalesStatistic
                                     .FirstOrDefault(a => a.Number == 1)?.Date.ToLocal() ?? DateTime.Now)
                                 .AddMinutes(-actions.Where(a => a.Project == p)
                                     .FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
+#pragma warning disable CS8629 // Nullable value type may be null.
                                 (DateTime)p.PresaleStart.ToLocal()
+#pragma warning restore CS8629 // Nullable value type may be null.
                             }.Min(dt => dt))));
             #endregion
             #region Суммарное потраченное время на проекты в этом месяце
@@ -327,20 +350,27 @@ namespace PresalesStatistic
                 .Where(p => p.ApprovalByTechDirector.ToLocal() > thisMonth)
                 .Where(p => p.PresaleStart != null)
                 .Where(p => CalculateWorkingMinutes(
+#pragma warning disable CS8629 // Nullable value type may be null.
                     (DateTime)p.ApprovalByTechDirector.ToLocal(),
+#pragma warning restore CS8629 // Nullable value type may be null.
                     new List<DateTime>() { (actions
                         .Where(a => a.Project == p)
                         .FirstOrDefault(a => a.Number == 1)?.Date.ToLocal() ?? DateTime.Now)
                         .AddMinutes(- actions
                         .Where(a => a.Project == p)
-                        .FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0), (DateTime)p.PresaleStart.ToLocal() }
-                    .Min(dt => dt)) > (p.PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR));
+                        .FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
+#pragma warning disable CS8629 // Nullable value type may be null.
+                        (DateTime)p.PresaleStart.ToLocal()
+#pragma warning restore CS8629 // Nullable value type may be null.
+                    }.Min(dt => dt)) > (p.PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR));
             #endregion
             #region Забытые проекты
             var forgotten = projects
                 .Where(p => p.ApprovalByTechDirector.ToLocal() > thisMonth)
                 .Where(p => p.PresaleStart == null)
+#pragma warning disable CS8629 // Nullable value type may be null.
                 .Where(p => CalculateWorkingMinutes((DateTime)p.ApprovalByTechDirector.ToLocal(), DateTime.Now)
+#pragma warning restore CS8629 // Nullable value type may be null.
                     > (p.PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR));
             #endregion
             #region Новые проекты
@@ -352,7 +382,9 @@ namespace PresalesStatistic
             var avgTTDR = projects
                 .Where(p => p.ApprovalBySalesDirector.ToLocal() > thisMonth)
                 .Where(p => p.ApprovalByTechDirector != null)
+#pragma warning disable CS8629 // Nullable value type may be null.
                 .Average(p => CalculateWorkingMinutes((DateTime)p.ApprovalBySalesDirector, (DateTime)p.ApprovalByTechDirector));
+#pragma warning restore CS8629 // Nullable value type may be null.
             #endregion
             #endregion
             #region Отображение данных по службе
@@ -407,7 +439,7 @@ namespace PresalesStatistic
                 foreach (var p in newProjects) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalBySalesDirector.ToLocal()}");
             }
             Console.WriteLine($"\n\tДоступны данные за период: 20.09.2022 00:00:00 - {prevUpdate:dd.MM.yyyy HH:mm:ss}");
-            Console.WriteLine($"\tПоследнее обновление: {DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}");
+            Console.WriteLine($"\tПоследнее обновление: {prevUpdate:dd.MM.yyyy HH:mm:ss.fff}");
             #endregion
         }
 
@@ -486,42 +518,5 @@ namespace PresalesStatistic
 
             return overAllSec / 60d;
         }
-    }
-
-    public class Context : DbContext
-    {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public Context() { }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!Settings.ConfigurationFileIsExists()) Settings.CreateConfigurationFile();
-
-            if (Settings.TryGetSection<Settings.Database>(
-                out ConfigurationSection? r) && r != null)
-            {
-                var dbSettings = (Settings.Database)r;
-
-                optionsBuilder
-                    .UseNpgsql($"host={dbSettings.Url};" +
-                    $"port={dbSettings.Port};" +
-                    $"database={dbSettings.DatabaseName};" +
-                    $"username={dbSettings.Username};" +
-                    $"password={dbSettings.Password}")
-                    // .EnableSensitiveDataLogging().LogTo(message => Debug.WriteLine(message))
-                    ;
-            }
-            else throw new ConfigurationErrorsException() { };
-        }
-
-        public DbSet<Presale> Presales { get; set; }
-        public DbSet<Project> Projects { get; set; }
-        public DbSet<Invoice> Invoices { get; set; }
-        public DbSet<PresaleAction> Actions { get; set; }
-        public void Create() => Database.EnsureCreated();
-        public void Delete() => Database.EnsureDeleted();
-        public bool CanConnect() => Database.CanConnect();
-        public bool Exists() => Database.GetService<IRelationalDatabaseCreator>().Exists();
     }
 }
