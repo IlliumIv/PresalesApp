@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using PresalesStatistic.Entities.Enums;
 using PresalesStatistic.Helpers;
+using System.Net.NetworkInformation;
+using System.Xml.Linq;
 
 namespace PresalesStatistic.Entities
 {
@@ -12,11 +14,12 @@ namespace PresalesStatistic.Entities
         [JsonProperty("Наименование")]
         public string? Name { get; set; }
         [JsonProperty("Потенциал")]
-        public int? PotentialAmount { get; set; }
+        public decimal PotentialAmount { get; set; }
         [JsonProperty("Статус")]
-        public ProjectStatus? Status { get; set; }
+        public ProjectStatus Status { get; set; } = ProjectStatus.Unknown;
+        public DateTime? LastStatusChanged { get; set; }
         [JsonProperty("ПричинаПроигрыша")]
-        public string? LossReason { get; set; }
+        public string LossReason { get; set; } = string.Empty;
         [JsonProperty("ДатаСогласованияРТС")]
         [JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime? ApprovalByTechDirector { get; set; }
@@ -40,19 +43,32 @@ namespace PresalesStatistic.Entities
 
         public Project(string number) => Number = number;
 
-        public void Update(Project project)
+        public static void AddOrUpdate(Project project, Context db)
         {
-            // Console.WriteLine($"Calling update to project {Number}");
-            Name = project.Name;
-            PotentialAmount = project.PotentialAmount;
-            Status = project.Status;
-            LossReason = project.LossReason;
-            ApprovalByTechDirector = project.ApprovalByTechDirector;
-            ApprovalBySalesDirector = project.ApprovalBySalesDirector;
-            PresaleStart = project.PresaleStart;
-            Actions = project.Actions;
-            Presale = project.Presale;
-            MainProject = project.MainProject;
+            var pr = db.Projects.Where(p => p.Number == project.Number).FirstOrDefault();
+            if (pr != null)
+            {
+                pr.Name = project.Name;
+                pr.PotentialAmount = project.PotentialAmount;
+                pr.LossReason = project.LossReason;
+                pr.ApprovalByTechDirector = project.ApprovalByTechDirector;
+                pr.ApprovalBySalesDirector = project.ApprovalBySalesDirector;
+                pr.PresaleStart = project.PresaleStart;
+                pr.DeleteActions(db);
+                pr.Actions = project.Actions;
+                pr.Presale = project.Presale;
+                pr.MainProject = project.MainProject;
+                if (pr.Status != project.Status)
+                {
+                    pr.Status = project.Status;
+                    pr.LastStatusChanged = DateTime.UtcNow;
+                }
+            }
+            else
+            {
+                db.Projects.Add(project);
+            }
+            db.SaveChanges();
         }
 
         public static Project? GetOrAdd(Project? project, Context db)
@@ -70,25 +86,13 @@ namespace PresalesStatistic.Entities
             return project;
         }
 
-        public static void UpdateActions(Project project, Context db)
+        public void DeleteActions(Context db)
         {
-            if (project.Actions == null) return;
-            var proj = db.Projects.Where(p => p.Number == project.Number).FirstOrDefault();
+            var proj = db.Projects.Where(p => p.Number == Number).FirstOrDefault();
             if (proj != null) 
             {
                 var actions = db.Actions.Where(a => a.Project == proj).ToList();
-                foreach (var action in actions)
-                {
-                    var newAction = project.Actions.FirstOrDefault(a => a.Equals(action));
-                    if (newAction == null) db.Actions.Remove(action);
-                    else
-                    {
-                        project.Actions.Remove(newAction);
-                        project.Actions.Add(action);
-                    };
-                };
-                proj.Actions = project.Actions;
-                db.SaveChanges();
+                foreach (var action in actions) db.Actions.Remove(action);
             };
         }
     }

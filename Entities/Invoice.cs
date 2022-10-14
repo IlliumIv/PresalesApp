@@ -14,9 +14,9 @@ namespace PresalesStatistic.Entities
         [JsonProperty("Контрагент")]
         public string? Counterpart { get; set; }
         [JsonProperty("СуммаРуб")]
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
         [JsonProperty("Прибыль")]
-        public double Profit { get; set; }
+        public decimal Profit { get; set; }
         [JsonProperty("ДатаПоследнейОплаты")]
         [JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime? LastPay { get; set; }
@@ -34,13 +34,16 @@ namespace PresalesStatistic.Entities
 
         public Invoice(string number) => Number = number;
 
-        public static void AddOrUpdate(Invoice invoice, Context db)
+        public static void AddOrUpdate(Invoice invoice, Context db, out bool isNew)
         {
+            isNew = true;
             var inv = db.Invoices
-                .Where(i => i.Number == invoice.Number && i.Data == invoice.Data && i.Counterpart == invoice.Counterpart)
+                .Where(i => i.Number == invoice.Number && i.Data == invoice.Data)
                 .FirstOrDefault();
             if (inv != null)
             {
+                isNew = false;
+                inv.Counterpart = invoice.Counterpart;
                 inv.Amount = invoice.Amount;
                 inv.Profit = invoice.Profit;
                 inv.Presale = invoice.Presale;
