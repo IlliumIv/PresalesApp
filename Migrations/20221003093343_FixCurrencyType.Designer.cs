@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PresalesStatistic;
@@ -11,9 +12,10 @@ using PresalesStatistic;
 namespace PresalesStatistic.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20221003093343_FixCurrencyType")]
+    partial class FixCurrencyType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,7 +66,7 @@ namespace PresalesStatistic.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("PresalesStatistic.Entities.Presale", b =>
@@ -75,19 +77,13 @@ namespace PresalesStatistic.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PresaleId"));
 
-                    b.Property<int>("Department")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Position")
-                        .HasColumnType("integer");
-
                     b.HasKey("PresaleId");
 
-                    b.ToTable("Presales", (string)null);
+                    b.ToTable("Presales");
                 });
 
             modelBuilder.Entity("PresalesStatistic.Entities.PresaleAction", b =>
@@ -120,7 +116,7 @@ namespace PresalesStatistic.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Actions", (string)null);
+                    b.ToTable("Actions");
                 });
 
             modelBuilder.Entity("PresalesStatistic.Entities.Project", b =>
@@ -137,11 +133,7 @@ namespace PresalesStatistic.Migrations
                     b.Property<DateTime?>("ApprovalByTechDirector")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("LastStatusChanged")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("LossReason")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int?>("MainProjectProjectId")
@@ -163,7 +155,7 @@ namespace PresalesStatistic.Migrations
                     b.Property<DateTime?>("PresaleStart")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
+                    b.Property<int?>("Status")
                         .HasColumnType("integer");
 
                     b.HasKey("ProjectId");
@@ -172,7 +164,7 @@ namespace PresalesStatistic.Migrations
 
                     b.HasIndex("PresaleId");
 
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("PresalesStatistic.Entities.Invoice", b =>

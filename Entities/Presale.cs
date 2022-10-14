@@ -1,4 +1,5 @@
-﻿using PresalesStatistic.Helpers;
+﻿using PresalesStatistic.Entities.Enums;
+using PresalesStatistic.Helpers;
 
 namespace PresalesStatistic.Entities
 {
@@ -6,6 +7,8 @@ namespace PresalesStatistic.Entities
     {
         public int PresaleId { get; set; }
         public string Name { get; set; }
+        public Department Department { get; set; } = Department.None;
+        public Position Position { get; set; } = Position.None;
         [JsonIgnoreSerialization]
         public virtual List<Project>? Projects { get; set; }
         [JsonIgnoreSerialization]
