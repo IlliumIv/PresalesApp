@@ -22,7 +22,7 @@ namespace Entities
         public DateTime? LastPay { get; set; }
         [JsonProperty("ДатаПоследнейОтгрузки")]
         [JsonConverter(typeof(DateTimeDeserializationConverter))]
-        public DateTime? LastShipment { get; set; }
+        public DateTime? LastShipment { get; set; } // Local Time
         [JsonProperty("Пресейл")]
         [JsonConverter(typeof(CreateByStringConverter))]
         public virtual Presale? Presale { get; set; }
@@ -31,7 +31,6 @@ namespace Entities
         public virtual Project? Project { get; set; }
         public int? PresaleId { get; set; }
         public int? ProjectId { get; set; }
-
         public Invoice(string number) => Number = number;
     }
 }

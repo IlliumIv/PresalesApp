@@ -14,6 +14,15 @@ namespace PresalesStatistic
                 get => (DateTime)this["lastUpdate"];
                 set => this["lastUpdate"] = value;
             }
+
+            [ConfigurationProperty("debug",
+                DefaultValue = "false",
+                IsRequired = true)]
+            public bool Debug
+            {
+                get => (bool)this["debug"];
+                set => this["debug"] = value;
+            }
         }
 
         public sealed class Database : ConfigurationSection

@@ -22,7 +22,6 @@ namespace Entities
         [JsonProperty("Описание")]
         public string? Description { get; set; }
         public int ProjectId { get; set; }
-        [JsonIgnoreSerialization]
         public virtual Project? Project { get; set; }
 
         public bool Equals(PresaleAction? action)
@@ -45,13 +44,10 @@ namespace Entities
                     ActionType.FullSetup => 4,
                     ActionType.SettingsCheckup => 1,
                     ActionType.ProblemDiagnosis => 1,
-                    ActionType.Сalculation => TimeSpend % 60 > 5 ? (int)Math.Ceiling(TimeSpend / 60d) : (int)Math.Round(TimeSpend / 60d),
                     ActionType.SpecificationCheckup => 1,
                     ActionType.SpecificationCreateFromTemplate => 3,
                     ActionType.SpecificationCreate => 5,
                     ActionType.RequirementsCreate => 2,
-                    ActionType.Consultation => TimeSpend % 60 > 5 ? (int)Math.Ceiling(TimeSpend / 60d) : (int)Math.Round(TimeSpend / 60d),
-                    ActionType.Negotiations => TimeSpend % 60 > 10 ? (int)Math.Ceiling(TimeSpend / 60d) : (int)Math.Round(TimeSpend / 60d),
                     ActionType.Presentation => 3,
                     ActionType.DepartureFullSetup => 5,
                     ActionType.DepartureSettingsCheckup => 2,

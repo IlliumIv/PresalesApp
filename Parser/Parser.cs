@@ -10,6 +10,7 @@ namespace PresalesStatistic
     {
         private static readonly FileInfo _errorLog = new("Error.log");
         private static readonly FileInfo _workLog = new("Parser.log");
+        private static bool _debug = false;
         private static DateTime _lastProjectsUpdate;
         private static DateTime _lastInvoicesUpdate;
         private static string? _auth;
@@ -25,6 +26,7 @@ namespace PresalesStatistic
 
             _lastProjectsUpdate = appSettings.PreviosUpdate;
             _lastInvoicesUpdate = appSettings.PreviosUpdate;
+            _debug = appSettings.Debug;
 
             GetUpdate(dbOptions, appSettings.PreviosUpdate);
             appSettings.PreviosUpdate = new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt);
@@ -48,8 +50,11 @@ namespace PresalesStatistic
                     }
                     _lastProjectsUpdate = currentUpdate;
                 }
+                //*/
 
-                if (TryGetData(_lastInvoicesUpdate, currentUpdate, out List<Invoice> invoices))
+                // В 1С есть кеш, значения прибыли в счетах пересчитываются каждые :00 для трейда и каждые :10 для сателлита.
+                // Если запрашивать актуальные изменения, то Прибыль придет 0, поэтому запрашиваем изменения за период часовой давности.
+                if (TryGetData(_lastInvoicesUpdate.AddHours(-1.167), currentUpdate.AddHours(-1.167), out List<Invoice> invoices))
                 {
                     foreach (var invoice in invoices)
                     {
@@ -58,11 +63,13 @@ namespace PresalesStatistic
                         invoice.Project = invoice.Project.GetOrAdd(db);
                         if (invoice.Presale != null && invoice.Project != null)
                             invoice.Project.Presale = invoice.Presale;
-                        invoice.AddOrUpdate(db, out bool isNew);
-                        if (isNew == false)
+                        var inv = invoice.AddOrUpdate(db, out bool isNew);
+                        if (_debug)
                         {
                             using var sw = File.AppendText(_workLog.FullName);
-                            sw.WriteLine($"\t{invoice.Number} updated!");
+                            if (isNew) sw.Write($"\tAdd: ");
+                            else sw.Write($"\tUpdate: ");
+                            sw.WriteLine(JsonConvert.SerializeObject(inv, Formatting.None));
                         }
                     }
                     _lastInvoicesUpdate = currentUpdate;
