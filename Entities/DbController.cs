@@ -23,7 +23,9 @@ namespace Entities
 
         public static void AddOrUpdate(this Project project, Context db)
         {
-            var pr = db.Projects.Where(p => p.Number == project.Number).FirstOrDefault();
+            var pr = db.Projects
+                .Where(p => p.Number == project.Number)
+                .FirstOrDefault();
             if (pr != null)
             {
                 pr.Name = project.Name;
@@ -49,35 +51,41 @@ namespace Entities
             db.SaveChanges();
         }
 
-        public static void AddOrUpdate(this Invoice invoice, Context db, out bool isNew)
+        public static Invoice AddOrUpdate(this Invoice invoice, Context db, out bool isNew)
         {
             isNew = true;
             var inv = db.Invoices
-                .Where(i => i.Number == invoice.Number && i.Data == invoice.Data)
+                .Where(i => i.Number == invoice.Number && i.Data.Date == invoice.Data.Date
+                || i.Number == invoice.Number && i.Counterpart == invoice.Counterpart)
                 .FirstOrDefault();
             if (inv != null)
             {
                 isNew = false;
                 inv.Counterpart = invoice.Counterpart;
+                inv.Data = invoice.Data;
                 inv.Amount = invoice.Amount;
                 inv.Profit = invoice.Profit;
                 inv.Presale = invoice.Presale;
                 inv.Project = invoice.Project;
                 inv.LastPay = invoice.LastPay;
                 inv.LastShipment = invoice.LastShipment;
+                invoice = inv;
             }
             else
             {
                 db.Invoices.Add(invoice);
             }
             db.SaveChanges();
+            return invoice;
         }
 
         public static Project? GetOrAdd(this Project? project, Context db)
         {
             if (project != null)
             {
-                var pr = db.Projects.Where(p => p.Number == project.Number).FirstOrDefault();
+                var pr = db.Projects
+                    .Where(p => p.Number == project.Number)
+                    .FirstOrDefault();
                 if (pr != null) return pr;
                 else
                 {
@@ -92,7 +100,9 @@ namespace Entities
         {
             if (presale != null)
             {
-                var pr = db.Presales.Where(p => p.Name == presale.Name).FirstOrDefault();
+                var pr = db.Presales
+                    .Where(p => p.Name == presale.Name)
+                    .FirstOrDefault();
                 if (pr != null) return pr;
                 else
                 {
@@ -105,7 +115,9 @@ namespace Entities
 
         public static void DeleteActions(this Project project, Context db)
         {
-            var proj = db.Projects.Where(p => p.Number == project.Number).FirstOrDefault();
+            var proj = db.Projects
+                .Where(p => p.Number == project.Number)
+                .FirstOrDefault();
             if (proj != null)
             {
                 var actions = db.Actions.Where(a => a.Project == proj).ToList();
