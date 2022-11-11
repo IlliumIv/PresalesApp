@@ -126,7 +126,7 @@ namespace PresalesStatistic
                     List<PresaleAction> ignoredActions = new();
                     List<PresaleAction> countedActions = new();
                     if (proj.Name == null) continue;
-                    Console.WriteLine($"{proj.Number} -- {proj.Rang(ref ignoredActions, ref countedActions)}");
+                    Console.WriteLine($"{proj.Number} -- {proj.Rank(ref ignoredActions, ref countedActions)}");
                     if (ignoredActions.Any())
                     {
                         Console.WriteLine("Ignored:");
@@ -155,7 +155,7 @@ namespace PresalesStatistic
                         List<PresaleAction> ignoredActions = new();
                         List<PresaleAction> countedActions = new();
                         List<Project> countedUpProjects = new();
-                        double p = i.Project?.Rang(ref ignoredActions, ref countedActions, ref countedUpProjects) switch
+                        double p = i.Project?.Rank(ref ignoredActions, ref countedActions, ref countedUpProjects) switch
                         {
                             int n when n >= 1 && n <= 3 => .004,
                             int n when n >= 4 && n <= 6 => .007,

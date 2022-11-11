@@ -74,12 +74,12 @@ namespace Entities
         public double AverageRang() => Projects?
             .Where(p => p.Name != string.Empty)?
             .DefaultIfEmpty()
-            .Average(p => p is null ? 0 : p.Rang()) ?? 0;
+            .Average(p => p is null ? 0 : p.Rank()) ?? 0;
         public double AverageRangByStatus(ProjectStatus status) => Projects?
             .Where(p => p.Name != string.Empty)?
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
-            .Average(p => p is null ? 0 : p.Rang()) ?? 0;
+            .Average(p => p is null ? 0 : p.Rank()) ?? 0;
         public decimal AveragePotentialByStatus(ProjectStatus status) => Projects?
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
