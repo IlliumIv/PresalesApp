@@ -18,7 +18,7 @@ namespace PresalesStatistic
         {
             DateTimeZoneHandling = DateTimeZoneHandling.Utc
         };
-        public static void Run(DbContextOptions<DbController.Context> dbOptions)
+        public static void Run()
         {
             Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
             if (r == null) return;
@@ -28,13 +28,13 @@ namespace PresalesStatistic
             _lastInvoicesUpdate = appSettings.PreviosUpdate;
             _debug = appSettings.Debug;
 
-            GetUpdate(dbOptions, appSettings.PreviosUpdate);
+            GetUpdate(appSettings.PreviosUpdate);
             appSettings.PreviosUpdate = new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt);
             appSettings.CurrentConfiguration.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection(appSettings.SectionInformation.Name);
         }
 
-        private static void GetUpdate(DbContextOptions<DbController.Context> dbOptions, DateTime prevUpdate)
+        private static void GetUpdate(DateTime prevUpdate)
         {
             try
             {
@@ -43,22 +43,41 @@ namespace PresalesStatistic
                 {
                     foreach (var project in projects)
                     {
-                        using var db = new DbController.Context(dbOptions);
+                        using var db = new DbController.Context();
                         project.MainProject = project.MainProject.GetOrAdd(db);
                         project.Presale = project.Presale.GetOrAdd(db);
-                        project.AddOrUpdate(db);
+                        var pr = project.AddOrUpdate(db, out bool isNew);
+                        if (_debug)
+                        {
+                            using var sw = File.AppendText(_workLog.FullName);
+                            if (isNew) sw.Write($"\tAdd: ");
+                            else sw.Write($"\tUpdate: ");
+                            sw.WriteLine($"Код:{pr.Number}," +
+                                $"Наименование:{pr.Name}," +
+                                $"Потенциал:{pr.PotentialAmount}," +
+                                $"Статус:{pr.Status}," +
+                                $"ПричинаПроигрыша:{pr.LossReason}," +
+                                $"ПлановаяДатаОкончанияТек:{pr.PotentialWinAt}," +
+                                $"ДатаОкончания:{pr.ClosedAt}," +
+                                $"ДатаСогласованияРТС:{pr.ApprovalByTechDirectorAt}," +
+                                $"ДатаСогласованияРОП:{pr.ApprovalBySalesDirectorAt}," +
+                                $"ДатаНачалаРаботыПресейла:{pr.PresaleStartAt}," +
+                                $"ДействияПресейла:{pr.Actions?.Count}," +
+                                $"Пресейл:{pr.Presale?.Name}," +
+                                $"ОсновнойПроект:{pr.MainProject?.Name}");
+                        }
                     }
                     _lastProjectsUpdate = currentUpdate;
                 }
                 //*/
 
                 // В 1С есть кеш, значения прибыли в счетах пересчитываются каждые :00 для трейда и каждые :10 для сателлита.
-                // Если запрашивать актуальные изменения, то Прибыль придет 0, поэтому запрашиваем изменения за период часовой давности.
-                if (TryGetData(_lastInvoicesUpdate.AddHours(-1.167), currentUpdate.AddHours(-1.167), out List<Invoice> invoices))
+                // Если запрашивать актуальные изменения, то Прибыль придет 0, поэтому запрашиваем изменения за период полуторачасовой давности.
+                if (TryGetData(_lastInvoicesUpdate.AddHours(-1.5), currentUpdate.AddHours(-1.5), out List<Invoice> invoices))
                 {
                     foreach (var invoice in invoices)
                     {
-                        using var db = new DbController.Context(dbOptions);
+                        using var db = new DbController.Context();
                         invoice.Presale = invoice.Presale.GetOrAdd(db);
                         invoice.Project = invoice.Project.GetOrAdd(db);
                         if (invoice.Presale != null && invoice.Project != null)
@@ -69,7 +88,16 @@ namespace PresalesStatistic
                             using var sw = File.AppendText(_workLog.FullName);
                             if (isNew) sw.Write($"\tAdd: ");
                             else sw.Write($"\tUpdate: ");
-                            sw.WriteLine(JsonConvert.SerializeObject(inv, Formatting.None));
+                            sw.WriteLine($"Номер:{inv.Number}," +
+                                $"Дата:{inv.Date}," +
+                                $"Контрагент:{inv.Counterpart}," +
+                                $"СуммаРуб:{inv.Amount}," +
+                                $"Прибыль:{inv.Profit}," +
+                                $"ПрибыльИзменение:{inv.ProfitDelta}," +
+                                $"ДатаПоследнейОплаты:{inv.LastPayAt}," +
+                                $"ДатаПоследнейОтгрузки:{inv.LastShipmentAt}," +
+                                $"Пресейл:{inv.Presale?.Name}," +
+                                $"Проект:{inv.Project?.Number}");
                         }
                     }
                     _lastInvoicesUpdate = currentUpdate;

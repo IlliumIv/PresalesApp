@@ -1,6 +1,5 @@
 ﻿using Entities;
 using Entities.Enums;
-using Entities.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Configuration;
@@ -22,43 +21,28 @@ namespace PresalesStatistic
                 };
             };
 
-            if (!Settings.ConfigurationFileIsExists()) Settings.CreateConfigurationFile();
-
-            Settings.TryGetSection<Settings.Database>(out ConfigurationSection? r);
-            if (r == null) return;
-            var dbSettings = (Settings.Database)r;
-            var optionsBuilder = new DbContextOptionsBuilder<DbController.Context>();
-            var dbOptions = optionsBuilder.UseNpgsql($"host={dbSettings.Url};" +
-                $"port={dbSettings.Port};" +
-                $"database={dbSettings.DatabaseName};" +
-                $"username={dbSettings.Username};" +
-                $"password={dbSettings.Password}")
-                // .EnableSensitiveDataLogging().LogTo(message => Debug.WriteLine(message))
-                .Options;
-
             // using var db = new Context();
             // db.Delete();
             // db.Create();
 
             while (true)
             {
-                // Parser.Run(dbOptions);
-                Settings.TryGetSection<Settings.Application>(out r);
+                // Parser.Run();
+                Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
                 if (r == null) return;
                 var appSettings = (Settings.Application)r;
-                ShowData(dbOptions, appSettings.PreviosUpdate);
+                ShowData(appSettings.PreviosUpdate);
                 Task.Delay(600000).Wait();
             };
         }
-
-        public static void ShowData(DbContextOptions<DbController.Context> dbOptions, DateTime prevUpdate)
+        public static void ShowData(DateTime prevUpdate)
         {
             Console.Clear();
 
             var thisMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var prevMonth = thisMonth.AddMonths(-1);
 
-            using var db = new DbController.Context(dbOptions);
+            using var db = new DbController.Context();
             var presales = db.Presales.Include(p => p.Projects).ToList();
             var actions = db.Actions.ToList();
             var projects = db.Projects.ToList();
@@ -67,12 +51,12 @@ namespace PresalesStatistic
             var maxPotential = presales.Max(p => p.Projects?
                 .Where(p => p.Presale?.Department == Department.Russian)
                 .Where(p => p.Presale?.Position == Position.Engineer)
-                .Where(p => p.ApprovalByTechDirector.ToLocal() > thisMonth)
+                .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() > thisMonth)
                 .Sum(p => p.PotentialAmount));
             var maxCount = presales.Max(p => p.Projects?
                 .Where(p => p.Presale?.Department == Department.Russian)
                 .Where(p => p.Presale?.Position == Position.Engineer)
-                .Where(p => p.ApprovalByTechDirector.ToLocal() > thisMonth)
+                .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() > thisMonth)
                 .Count());
 
             #region Отображение заголовков таблицы
@@ -105,10 +89,10 @@ namespace PresalesStatistic
                 assing = presale.CountProjectsAssigned(thisMonth);
                 #endregion
                 #region Выиграно в этом месяце
-                won = presale.CountProjectsByStatus(ProjectStatus.Won, thisMonth);
+                won = presale.ClosedByStatus(ProjectStatus.Won, thisMonth);
                 #endregion
                 #region Проиграно в этом месяце
-                loss = presale.CountProjectsByStatus(ProjectStatus.Loss, thisMonth);
+                loss = presale.ClosedByStatus(ProjectStatus.Loss, thisMonth);
                 #endregion
                 #region Суммарный потенциал открытых проектов
                 // sumP = presale.SumPotentialByStatus(ProjectStatus.WorkInProgress);
@@ -246,12 +230,12 @@ namespace PresalesStatistic
             #region Выиграно в этом месяце
             won = presales.Where(p => p.Position == Position.Engineer
                                    || p.Position == Position.Account)
-                .Sum(p => p.CountProjectsByStatus(ProjectStatus.Won, thisMonth));
+                .Sum(p => p.ClosedByStatus(ProjectStatus.Won, thisMonth));
             #endregion
             #region Проиграно в этом месяце
             loss = presales.Where(p => p.Position == Position.Engineer
                                     || p.Position == Position.Account)
-                .Sum(p => p.CountProjectsByStatus(ProjectStatus.Loss, thisMonth));
+                .Sum(p => p.ClosedByStatus(ProjectStatus.Loss, thisMonth));
             #endregion
             #region Суммарный потенциал открытых проектов
             /*
@@ -311,23 +295,23 @@ namespace PresalesStatistic
             #endregion
             #region Просроченные проекты
             var overdue = projects?
-                .Where(p => p.ApprovalByTechDirector.ToLocal() > thisMonth)?
+                .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() > thisMonth)?
                 .Where(p => p.IsOverdue());
             #endregion
             #region Забытые проекты
             var forgotten = projects?
-                .Where(p => p.ApprovalByTechDirector.ToLocal() > thisMonth)?
+                .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() > thisMonth)?
                 .Where(p => p.IsForgotten());
             #endregion
             #region Новые проекты
             var newProjects = projects?.
-                Where(p => p.ApprovalBySalesDirector != null)
-               .Where(p => p.ApprovalByTechDirector == null);
+                Where(p => p.ApprovalBySalesDirectorAt != DateTime.MinValue)
+               .Where(p => p.ApprovalByTechDirectorAt == DateTime.MinValue);
             #endregion
             #region Среднее время реакции руководителя
             var avgTTDR = projects?
-                .Where(p => p.ApprovalBySalesDirector.ToLocal() > thisMonth)?
-                .Where(p => p.ApprovalByTechDirector != null)?
+                .Where(p => p.ApprovalBySalesDirectorAt.ToLocalTime() > thisMonth)?
+                .Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue)?
                 .DefaultIfEmpty()
                 .Average(p => p is null ? 0 : p.TimeToDirectorReaction().TotalMinutes);
             #endregion
@@ -372,11 +356,11 @@ namespace PresalesStatistic
             Console.WriteLine($"\tSpend - потраченное на проекты время в часах, {thisMonth:MMMM}.\n");
             Console.WriteLine($"\tСреднее время реакции руководителя (среднее время до назначения) в минутах: {avgTTDR:f0}");
             Console.WriteLine($"\tПроекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): {overdue?.Count()}");
-            foreach (var p in overdue) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalByTechDirector.ToLocal()} - {p.PresaleStart.ToLocal()}, {p.Presale?.Name}");
+            foreach (var p in overdue) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalByTechDirectorAt.ToLocalTime()} - {p.PresaleStartAt.ToLocalTime()}, {p.Presale?.Name}");
             Console.WriteLine($"\tПроекты без отметки начала работы пресейлом (забытые): {forgotten?.Count()}");
-            foreach (var p in forgotten) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalByTechDirector.ToLocal()}, {p.Presale?.Name}");
+            foreach (var p in forgotten) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalByTechDirectorAt.ToLocalTime()}, {p.Presale?.Name}");
             Console.WriteLine($"\tНовые проекты (ожидают распределения): {newProjects?.Count()}");
-            foreach (var p in newProjects) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalBySalesDirector.ToLocal()}");
+            foreach (var p in newProjects) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalBySalesDirectorAt.ToLocalTime()}");
             Console.WriteLine($"\n\tДоступны данные за период: 20.09.2022 00:00:00 - {prevUpdate:dd.MM.yyyy HH:mm:ss}");
             Console.WriteLine($"\tПоследнее обновление: {prevUpdate:dd.MM.yyyy HH:mm:ss.fff}");
             #endregion
