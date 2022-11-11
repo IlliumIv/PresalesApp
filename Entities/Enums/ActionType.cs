@@ -14,7 +14,7 @@ namespace Entities.Enums
         [EnumMember(Value = "Корректировка настроек")]
         SettingsCheckup,
         [EnumMember(Value = "Диагностика проблемы")]
-        ProblemDiagnosis,
+        ProblemDiagnostics,
         [EnumMember(Value = "Разработка технического решения")]
         Calculation,
         [EnumMember(Value = "Корректировка ТЗ или проработка ТЗ на возможность использования ПО Макроскоп")]

@@ -16,7 +16,7 @@ namespace Entities
         [JsonProperty("ТипЗадачи")]
         public ActionType Type { get; set; }
         [NotMapped]
-        public int Rang { get => _getRang; }
+        public int Rank { get => _getRank; }
         [JsonProperty("ВремяВыполнения")]
         public int TimeSpend { get; set; }
         [JsonProperty("Описание")]
@@ -35,7 +35,7 @@ namespace Entities
             return true;
         }
 
-        private int _getRang
+        private int _getRank
         {
             get
             {
@@ -43,7 +43,6 @@ namespace Entities
                 {
                     ActionType.FullSetup => 4,
                     ActionType.SettingsCheckup => 1,
-                    ActionType.ProblemDiagnosis => 1,
                     ActionType.SpecificationCheckup => 1,
                     ActionType.SpecificationCreateFromTemplate => 3,
                     ActionType.SpecificationCreate => 5,

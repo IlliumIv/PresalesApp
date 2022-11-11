@@ -58,14 +58,14 @@ namespace Entities
                     > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
         }
         public TimeSpan TimeToDirectorReaction() => TimeSpan.FromMinutes(Presale.CalculateWorkingMinutes(ApprovalBySalesDirectorAt, ApprovalByTechDirectorAt) ?? 0);
-        public int Rang()
+        public int Rank()
         {
             List<PresaleAction> ignoredActions = new();
             List<PresaleAction> countedActions = new();
             List<Project> countedUpProjects = new();
-            return Rang(ref ignoredActions, ref countedActions, ref countedUpProjects);
+            return Rank(ref ignoredActions, ref countedActions, ref countedUpProjects);
         }
-        public int Rang(ref List<PresaleAction> ignoredActions, ref List<PresaleAction> countedActions, ref List<Project> countedUpProjects)
+        public int Rank(ref List<PresaleAction> ignoredActions, ref List<PresaleAction> countedActions, ref List<Project> countedUpProjects)
         {
             if (countedUpProjects.Contains(this)) return 0;
             else countedUpProjects.Add(this);
@@ -76,19 +76,21 @@ namespace Entities
             var counted = Actions?.Where(a => a.Type != ActionType.Unknown)?.ToList();
             if (counted != null) countedActions.AddRange(counted);
 
-            int rang = CalcRangByTimeSpend(ActionType.Calculation, 5);
-            rang += CalcRangByTimeSpend(ActionType.Consultation, 5);
-            rang += CalcRangByTimeSpend(ActionType.Negotiations, 10);
-            rang += Actions?.Where(a => a.Type != ActionType.Calculation
+            int rank = CalcRankByTimeSpend(ActionType.Calculation, 5);
+            rank += CalcRankByTimeSpend(ActionType.Consultation, 5);
+            rank += CalcRankByTimeSpend(ActionType.Negotiations, 10);
+            rank += CalcRankByTimeSpend(ActionType.ProblemDiagnostics, 15);
+            rank += Actions?.Where(a => a.Type != ActionType.Calculation
                                     && a.Type != ActionType.Consultation
                                     && a.Type != ActionType.Negotiations
+                                    && a.Type != ActionType.ProblemDiagnostics
                                     && a.Type != ActionType.Unknown)?
-                            .Sum(a => a.Rang) ?? 0;
-            if (MainProject != null) rang += MainProject.Rang(ref ignoredActions, ref countedActions, ref countedUpProjects);
+                            .Sum(a => a.Rank) ?? 0;
+            if (MainProject != null) rank += MainProject.Rank(ref ignoredActions, ref countedActions, ref countedUpProjects);
 
-            return rang;
+            return rank;
         }
-        private int CalcRangByTimeSpend(ActionType actionType, int minTimeToRang)
+        private int CalcRankByTimeSpend(ActionType actionType, int minTimeToRang)
         {
             var ts = Actions?.Where(a => a.Type == actionType)?.Sum(a => a.TimeSpend) ?? 0;
             return ts % 60 > minTimeToRang ? (int)Math.Ceiling(ts / 60d) : (int)Math.Round(ts / 60d);
