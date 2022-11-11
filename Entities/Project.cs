@@ -10,23 +10,28 @@ namespace Entities
         [JsonProperty("Код")]
         public string Number { get; private set; }
         [JsonProperty("Наименование")]
-        public string? Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         [JsonProperty("Потенциал")]
         public decimal PotentialAmount { get; set; }
         [JsonProperty("Статус")]
         public ProjectStatus Status { get; set; } = ProjectStatus.Unknown;
-        public DateTime? LastStatusChanged { get; set; }
         [JsonProperty("ПричинаПроигрыша")]
         public string LossReason { get; set; } = string.Empty;
+        [JsonProperty("ПлановаяДатаОкончанияТек")]
+        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        public DateTime PotentialWinAt { get; set; }
+        [JsonProperty("ДатаОкончания")]
+        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        public DateTime ClosedAt { get; set; }
         [JsonProperty("ДатаСогласованияРТС")]
         [JsonConverter(typeof(DateTimeDeserializationConverter))]
-        public DateTime? ApprovalByTechDirector { get; set; }
+        public DateTime ApprovalByTechDirectorAt { get; set; }
         [JsonProperty("ДатаСогласованияРОП")]
         [JsonConverter(typeof(DateTimeDeserializationConverter))]
-        public DateTime? ApprovalBySalesDirector { get; set; }
+        public DateTime ApprovalBySalesDirectorAt { get; set; }
         [JsonProperty("ДатаНачалаРаботыПресейла")]
         [JsonConverter(typeof(DateTimeDeserializationConverter))]
-        public DateTime? PresaleStart { get; set; }
+        public DateTime PresaleStartAt { get; set; }
         [JsonProperty("ДействияПресейла")]
         public virtual List<PresaleAction>? Actions { get; set; }
         public int? PresaleId { get; set; }
@@ -40,19 +45,19 @@ namespace Entities
         public Project(string number) => Number = number;
         public bool IsOverdue(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {
-            return Presale.CalculateWorkingMinutes(ApprovalByTechDirector.ToLocal(),
+            return Presale.CalculateWorkingMinutes(ApprovalByTechDirectorAt.ToLocalTime(),
                 new List<DateTime?>() {
-                    (Actions?.FirstOrDefault(a => a.Number == 1)?.Date.ToLocal() ?? DateTime.Now)
+                    (Actions?.FirstOrDefault(a => a.Number == 1)?.Date.ToLocalTime() ?? DateTime.Now)
                         .AddMinutes(-Actions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
-                    PresaleStart.ToLocal()
+                    PresaleStartAt.ToLocalTime()
                 }.Min(dt => dt)) > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
         }
         public bool IsForgotten(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {
-            return PresaleStart == null && Presale.CalculateWorkingMinutes(ApprovalByTechDirector.ToLocal(), DateTime.Now)
+            return PresaleStartAt == DateTime.MinValue && Presale.CalculateWorkingMinutes(ApprovalByTechDirectorAt.ToLocalTime(), DateTime.Now)
                     > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
         }
-        public TimeSpan TimeToDirectorReaction() => TimeSpan.FromMinutes(Presale.CalculateWorkingMinutes(ApprovalBySalesDirector, ApprovalByTechDirector) ?? 0);
+        public TimeSpan TimeToDirectorReaction() => TimeSpan.FromMinutes(Presale.CalculateWorkingMinutes(ApprovalBySalesDirectorAt, ApprovalByTechDirectorAt) ?? 0);
         public int Rang()
         {
             List<PresaleAction> ignoredActions = new();

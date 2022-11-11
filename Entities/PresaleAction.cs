@@ -9,10 +9,10 @@ namespace Entities
     {
         public int PresaleActionId { get; set; }
         [JsonProperty("НомерСтроки")]
-        public int? Number { get; set; }
+        public int Number { get; set; }
         [JsonProperty("Дата")]
         [JsonConverter(typeof(DateTimeDeserializationConverter))]
-        public DateTime? Date { get; set; }
+        public DateTime Date { get; set; }
         [JsonProperty("ТипЗадачи")]
         public ActionType Type { get; set; }
         [NotMapped]
@@ -20,7 +20,7 @@ namespace Entities
         [JsonProperty("ВремяВыполнения")]
         public int TimeSpend { get; set; }
         [JsonProperty("Описание")]
-        public string? Description { get; set; }
+        public string Description { get; set; } = string.Empty;
         public int ProjectId { get; set; }
         public virtual Project? Project { get; set; }
 
