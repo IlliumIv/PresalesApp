@@ -1,6 +1,7 @@
 ﻿@page "/fetchdata"
 @using PresalesMonitor.Shared
 @inject WeatherForecasts.WeatherForecastsClient WeatherForecastsClient
+@inject Presales.PresalesClient PresalesClient
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -35,13 +36,30 @@ else
             }
         </tbody>
     </table>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var presale in presales)
+            {
+                        <tr>
+                            <td>@presale.Name</td>
+                        </tr>
+            }
+            </tbody>
+        </table>
 }
 
 @code {
     private IList<WeatherForecast>? forecasts;
+    private IList<Presale>? presales;
 
     protected override async Task OnInitializedAsync()
     {
         forecasts = (await WeatherForecastsClient.GetWeatherAsync(new WeatherForecast())).Forecasts;
+        presales = (await PresalesClient.GetStatsAsync(new Presale())).Presales;
     }
 }

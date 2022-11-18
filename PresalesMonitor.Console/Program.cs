@@ -61,7 +61,7 @@ namespace PresalesMonitor
                 .Count());
 
             #region Отображение заголовков таблицы
-            Console.WriteLine($"{"",5}{"Пресейл",-12}|InWork|Assign|Won|Loss|Convr|Abnd|AvgTTW|AvgTTR|AvgR|{"",1}{"Spend",-6}| {"Чистые за месяц", -17}" +
+            Console.WriteLine($"{"",5}{"Пресейл",-12}|InWork|Assign|Won|Loss|Convr|Abnd|AvgTTW|AvgTTR|AvgR|{"",1}{"Spend",-6}| {"Чистые за месяц",-17}" +
                 // $"|{"",12}{"Потенциал, руб.",-25}" +
                 $"|Требуется распределить|");
             Console.WriteLine($"{"",17}|{"",6}|{"",7}{thisMonth,-14:MMMM}|{"",4}|{"",6}|{"",6}|{"",4}|Sum|Avg|{"",7}{"руб.",-11}" +
@@ -344,10 +344,10 @@ namespace PresalesMonitor
                 $"|{(avgTimeSpend == TimeSpan.Zero ? "" : avgTimeSpend.TotalMinutes / 60 < 1 ? $"{avgTimeSpend.TotalMinutes / 60:f1}" : $"{avgTimeSpend.TotalMinutes / 60:f0}"),3}" +
                 /// Чистые за месяц
                 $"|{(profit == 0 ? "" : profit),18:C}"// +
-                // Потенциал общий
-                // $"|{(sumP == 0 ? "" : sumP),18:C}" +
-                // Потнециал средний
-                // $"|{(avgP == 0 ? "" : avgP),18:C}"
+                                                      // Потенциал общий
+                                                      // $"|{(sumP == 0 ? "" : sumP),18:C}" +
+                                                      // Потнециал средний
+                                                      // $"|{(avgP == 0 ? "" : avgP),18:C}"
                 );
 
             Console.WriteLine($"\n\tAbnd - количество заброшенных проектов (не было действий больше месяца).");
@@ -365,6 +365,13 @@ namespace PresalesMonitor
             Console.WriteLine($"\n\tДоступны данные за период: 20.09.2022 00:00:00 - {prevUpdate:dd.MM.yyyy HH:mm:ss}");
             Console.WriteLine($"\tПоследнее обновление: {prevUpdate:dd.MM.yyyy HH:mm:ss.fff}");
             #endregion
+        }
+
+        public static List<string> GetPresalesNames()
+        {
+            using var db = new DbController.Context();
+            var presales = db.Presales.Include(p => p.Projects).ToList();
+            return presales.Select(i => i.Name).ToList();
         }
     }
 }
