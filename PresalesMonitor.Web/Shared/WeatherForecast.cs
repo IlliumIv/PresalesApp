@@ -2,8 +2,7 @@ namespace PresalesMonitor.Web.Shared
 {
 	partial class WeatherForecast
 	{
-		public DateTime Date { get; set; }
-
+		public DateTime Date => DateTimeStamp.ToDateTime();
 		public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 	}
 }
