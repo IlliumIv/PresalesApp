@@ -11,11 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Parser", "P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Settings", "PresalesMonitor.Settings\PresalesMonitor.Settings.csproj", "{574BEB75-DB28-42DC-A626-D9F348E7EF03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresalesMonitor.Web.Server", "PresalesMonitor.Web\Server\PresalesMonitor.Web.Server.csproj", "{A2F0B1B0-AC09-49A3-9069-BE9D7C532B91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Server", "PresalesMonitor.Server\PresalesMonitor.Server.csproj", "{A2F0B1B0-AC09-49A3-9069-BE9D7C532B91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresalesMonitor.Web.Client", "PresalesMonitor.Web\Client\PresalesMonitor.Web.Client.csproj", "{8CEFF6EC-FDDC-45B8-B635-F48556751899}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Web.Client", "PresalesMonitor.Web\Client\PresalesMonitor.Web.Client.csproj", "{8CEFF6EC-FDDC-45B8-B635-F48556751899}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresalesMonitor.Shared", "PresalesMonitor.Shared\PresalesMonitor.Shared.csproj", "{6C363EDD-6681-4F8B-A84E-14140AE8C071}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Shared", "PresalesMonitor.Shared\PresalesMonitor.Shared.csproj", "{6C363EDD-6681-4F8B-A84E-14140AE8C071}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
