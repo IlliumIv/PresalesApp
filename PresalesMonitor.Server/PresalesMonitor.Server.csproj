@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PresalesMonitor.Client\Web\PresalesMonitor.Client.Web.csproj" />
     <ProjectReference Include="..\PresalesMonitor.Shared\PresalesMonitor.Shared.csproj" />
-    <ProjectReference Include="..\PresalesMonitor.Web\Client\PresalesMonitor.Web.Client.csproj" />
   </ItemGroup>
 
 

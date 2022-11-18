@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Settings", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Server", "PresalesMonitor.Server\PresalesMonitor.Server.csproj", "{A2F0B1B0-AC09-49A3-9069-BE9D7C532B91}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Web.Client", "PresalesMonitor.Web\Client\PresalesMonitor.Web.Client.csproj", "{8CEFF6EC-FDDC-45B8-B635-F48556751899}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Client.Web", "PresalesMonitor.Client\Web\PresalesMonitor.Client.Web.csproj", "{8CEFF6EC-FDDC-45B8-B635-F48556751899}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresalesMonitor.Shared", "PresalesMonitor.Shared\PresalesMonitor.Shared.csproj", "{6C363EDD-6681-4F8B-A84E-14140AE8C071}"
 EndProject
