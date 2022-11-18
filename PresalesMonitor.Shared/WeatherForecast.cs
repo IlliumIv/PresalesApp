@@ -1,4 +1,4 @@
-namespace PresalesMonitor.Web.Shared
+namespace PresalesMonitor.Shared
 {
 	partial class WeatherForecast
 	{

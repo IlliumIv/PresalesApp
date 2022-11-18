@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\PresalesMonitor.Web.Shared.csproj" />
+    <ProjectReference Include="..\..\PresalesMonitor.Shared\PresalesMonitor.Shared.csproj" />
   </ItemGroup>
 
 </Project>

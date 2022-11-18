@@ -1,5 +1,5 @@
 ﻿syntax = "proto3";
-option csharp_namespace = "PresalesMonitor.Web.Shared";
+option csharp_namespace = "PresalesMonitor.Shared";
 package WeatherForecast;
 import "google/protobuf/timestamp.proto";
 
