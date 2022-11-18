@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresalesMonitor.Web.Server"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresalesMonitor.Web.Client", "PresalesMonitor.Web\Client\PresalesMonitor.Web.Client.csproj", "{8CEFF6EC-FDDC-45B8-B635-F48556751899}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresalesMonitor.Web.Shared", "PresalesMonitor.Web\Shared\PresalesMonitor.Web.Shared.csproj", "{6C363EDD-6681-4F8B-A84E-14140AE8C071}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresalesMonitor.Shared", "PresalesMonitor.Shared\PresalesMonitor.Shared.csproj", "{6C363EDD-6681-4F8B-A84E-14140AE8C071}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
