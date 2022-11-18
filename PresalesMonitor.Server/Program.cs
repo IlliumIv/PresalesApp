@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.ResponseCompression;
 using PresalesMonitor.Shared;
 
-namespace PresalesMonitor.Web
+namespace PresalesMonitor.Server
 {
     public class Program
 	{
