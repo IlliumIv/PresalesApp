@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using PresalesStatistic;
+using PresalesMonitor;
 using System.Configuration;
 
 namespace Entities
