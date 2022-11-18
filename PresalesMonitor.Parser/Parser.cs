@@ -4,7 +4,7 @@ using System.Configuration;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 
-namespace PresalesStatistic
+namespace PresalesMonitor
 {
     public class Parser
     {

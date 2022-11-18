@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Configuration;
 
-namespace PresalesStatistic
+namespace PresalesMonitor
 {
     public class Program
     {
@@ -25,11 +25,12 @@ namespace PresalesStatistic
             // db.Delete();
             // db.Create();
 
+            if(!Settings.ConfigurationFileIsExists()) Settings.CreateConfigurationFile();
+
             while (true)
             {
                 // Parser.Run();
                 Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
-                if (r == null) return;
                 var appSettings = (Settings.Application)r;
                 ShowData(appSettings.PreviosUpdate);
                 Task.Delay(600000).Wait();

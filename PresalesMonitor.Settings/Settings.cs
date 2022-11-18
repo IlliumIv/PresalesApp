@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace PresalesStatistic
+namespace PresalesMonitor
 {
     public static class Settings
     {
