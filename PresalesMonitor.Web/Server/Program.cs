@@ -10,6 +10,7 @@ namespace PresalesMonitor.Web
 
 			// Add services to the container.
 
+			builder.Services.AddGrpc();
 			builder.Services.AddControllersWithViews();
 			builder.Services.AddRazorPages();
 
@@ -33,7 +34,9 @@ namespace PresalesMonitor.Web
 			app.UseStaticFiles();
 
 			app.UseRouting();
-
+			
+			app.UseGrpcWeb();
+			app.MapGrpcService<WeatherService>().EnableGrpcWeb();
 
 			app.MapRazorPages();
 			app.MapControllers();
