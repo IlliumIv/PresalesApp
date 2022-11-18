@@ -18,5 +18,6 @@
   <ItemGroup>
     <SupportedPlatform Include="browser" />
 	<Protobuf Include="weather.proto" />
+	<Protobuf Include="PresalesMonitor.proto" />
   </ItemGroup>
 </Project>

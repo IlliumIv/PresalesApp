@@ -37,7 +37,8 @@ namespace PresalesMonitor.Server
 			app.UseRouting();
 			
 			app.UseGrpcWeb();
-			app.MapGrpcService<WeatherService>().EnableGrpcWeb();
+			app.MapGrpcService<Services.WeatherService>().EnableGrpcWeb();
+			app.MapGrpcService<Services.PresalesMonitorService>().EnableGrpcWeb();
 
 			app.MapRazorPages();
 			app.MapControllers();
@@ -45,5 +46,5 @@ namespace PresalesMonitor.Server
 
 			app.Run();
 		}
-	}
+    }
 }

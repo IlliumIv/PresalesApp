@@ -1,14 +1,13 @@
 ﻿using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
+using PresalesMonitor.Shared;
 
-namespace PresalesMonitor.Shared
+namespace PresalesMonitor.Server.Services
 {
     public class WeatherService : WeatherForecasts.WeatherForecastsBase
     {
         private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+        { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
 
         public override Task<WeatherReply> GetWeather(WeatherForecast request, ServerCallContext context)
         {
