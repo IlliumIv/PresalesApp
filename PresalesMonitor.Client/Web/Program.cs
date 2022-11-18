@@ -5,7 +5,7 @@ using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
 using PresalesMonitor.Shared;
 
-namespace PresalesMonitor.Web.Client
+namespace PresalesMonitor.Client.Web
 {
 	public class Program
 	{
