@@ -84,16 +84,16 @@ namespace Entities
                                     && a.Type != ActionType.Consultation
                                     && a.Type != ActionType.Negotiations
                                     && a.Type != ActionType.ProblemDiagnostics
-                                    && a.Type != ActionType.Unknown)?
+                                    && a.Type != ActionType.Unknown)
                             .Sum(a => a.Rank) ?? 0;
             if (MainProject != null) rank += MainProject.Rank(ref ignoredActions, ref countedActions, ref countedUpProjects);
 
             return rank;
         }
-        private int CalcRankByTimeSpend(ActionType actionType, int minTimeToRang)
+        private int CalcRankByTimeSpend(ActionType actionType, int minTimeToRank)
         {
-            var ts = Actions?.Where(a => a.Type == actionType)?.Sum(a => a.TimeSpend) ?? 0;
-            return ts % 60 > minTimeToRang ? (int)Math.Ceiling(ts / 60d) : (int)Math.Round(ts / 60d);
+            var ts = Actions?.Where(a => a.Type == actionType).Sum(a => a.TimeSpend) ?? 0;
+            return ts % 60 > minTimeToRank ? (int)Math.Ceiling(ts / 60d) : (int)Math.Round(ts / 60d);
         }
     }
 }

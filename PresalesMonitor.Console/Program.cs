@@ -366,12 +366,5 @@ namespace PresalesMonitor
             Console.WriteLine($"\tПоследнее обновление: {prevUpdate:dd.MM.yyyy HH:mm:ss.fff}");
             #endregion
         }
-
-        public static List<string> GetPresalesNames()
-        {
-            using var db = new DbController.Context();
-            var presales = db.Presales.Include(p => p.Projects).ToList();
-            return presales.Select(i => i.Name).ToList();
-        }
     }
 }
