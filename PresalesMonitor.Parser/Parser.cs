@@ -129,30 +129,22 @@ namespace PresalesMonitor
                 var message = new HttpRequestMessage(HttpMethod.Get, request);
                 message.Headers.Add("Authorization", $"Basic {_auth}");
 
-                // Console.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] Request: {message.RequestUri}");
                 using var sw = File.AppendText(_workLog.FullName);
                 sw.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] Request: {message.RequestUri}");
-                // Console.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] Waiting response...");
                 var response = httpClient.SendAsync(message).Result;
-                // Console.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] Bytes received: {response.Content.Headers.ContentLength}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var objects = JsonConvert.DeserializeObject<dynamic>(
                         response.Content.ReadAsStringAsync().Result, deserializeSettings);
                     if (objects != null)
-                    {
                         foreach (var obj in objects)
-                        {
                             result.Add(obj.ToObject<T>());
-                        }
-                        // Console.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] {typeof(T).Name}s updated: {result.Count}");
-                    }
                     return true;
                 }
+                else throw new Exception($"{response.StatusCode}\n{response.Content.ReadAsStringAsync().Result}");
             }
             else throw new ConfigurationErrorsException() { };
-            return false;
         }
     }
 }

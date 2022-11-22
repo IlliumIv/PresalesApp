@@ -22,14 +22,6 @@ namespace PresalesMonitor.Client.Web
                 var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
                 var baseUri = services.GetRequiredService<NavigationManager>().BaseUri;
                 var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
-                return new WeatherForecasts.WeatherForecastsClient(channel);
-            });
-
-            builder.Services.AddSingleton(services =>
-            {
-                var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-                var baseUri = services.GetRequiredService<NavigationManager>().BaseUri;
-                var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
                 return new Presales.PresalesClient(channel);
             });
 

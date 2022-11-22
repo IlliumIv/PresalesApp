@@ -95,22 +95,11 @@ namespace Entities
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
             .Average(p => p is null ? 0 : p.PotentialAmount) ?? 0;
-        public decimal SumProfit(ref List<Invoice>? invoices)
-        {
-            invoices = Invoices?
-                .Where(i => i.LastShipmentAt != DateTime.MinValue)?
-                .Where(i => i.LastPayAt != DateTime.MinValue)?
-                .ToList();
-            return invoices?.Sum(i => i.Profit) ?? 0;
-        }
-        public decimal SumProfit(DateTime from, ref List<Invoice>? invoices)
-        {
-            invoices = Invoices?
-                .Where(i => (i.LastShipmentAt.ToLocalTime() >= from && i.LastPayAt != DateTime.MinValue)
-                        || (i.LastPayAt.ToLocalTime() >= from && i.LastShipmentAt != DateTime.MinValue))?
-                .ToList();
-            return invoices?.Sum(i => SumP(i, from, DateTime.MaxValue)) ?? 0;
-        }
+        public decimal SumProfit() { var i = new List<Invoice>(); return SumProfit(ref i); }
+        public decimal SumProfit(ref List<Invoice>? invoices) => SumProfit(DateTime.MinValue, DateTime.MaxValue, ref invoices);
+        public decimal SumProfit(DateTime from) { var i = new List<Invoice>(); return SumProfit(from, ref i); }
+        public decimal SumProfit(DateTime from, ref List<Invoice>? invoices) => SumProfit(from, DateTime.MaxValue, ref invoices);
+        public decimal SumProfit(DateTime from, DateTime to) { var i = new List<Invoice>(); return SumProfit(from, to, ref i); }
         public decimal SumProfit(DateTime from, DateTime to, ref List<Invoice>? invoices)
         {
             invoices = Invoices?

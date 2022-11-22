@@ -1,10 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="custom_types.proto" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.21.9" />
@@ -17,7 +21,7 @@
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
-	<Protobuf Include="weather.proto" />
-	<Protobuf Include="PresalesMonitor.proto" />
+	<Protobuf Include="presales_monitor.proto" />
+	<Protobuf Include="custom_types.proto" />
   </ItemGroup>
 </Project>
