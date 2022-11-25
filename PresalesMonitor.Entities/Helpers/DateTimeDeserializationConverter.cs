@@ -14,6 +14,8 @@ namespace Entities.Helpers
             if (token.Type == JTokenType.Date)
             {
                 var value = token.Value<DateTime>();
+                if (value.TimeOfDay == TimeSpan.Zero)
+                    value.Add(TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow));
                 return value == DateTime.MinValue ? value : value.Add(-TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow));
             }
             return existingValue;

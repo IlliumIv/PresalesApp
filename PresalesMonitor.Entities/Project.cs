@@ -60,21 +60,22 @@ namespace Entities
         public TimeSpan TimeToDirectorReaction() => TimeSpan.FromMinutes(Presale.CalculateWorkingMinutes(ApprovalBySalesDirectorAt, ApprovalByTechDirectorAt) ?? 0);
         public int Rank()
         {
-            List<PresaleAction> ignoredActions = new();
-            List<PresaleAction> countedActions = new();
-            List<Project> countedUpProjects = new();
-            return Rank(ref ignoredActions, ref countedActions, ref countedUpProjects);
+            HashSet<PresaleAction> actionsIgnored = new(), actionsTallied = new();
+            HashSet<Project> projectsIgnored = new(), projectsFound = new();
+            return Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound);
         }
-        public int Rank(ref List<PresaleAction> ignoredActions, ref List<PresaleAction> countedActions, ref List<Project> countedUpProjects)
+        public int Rank(ref HashSet<PresaleAction> actionsIgnored, ref HashSet<PresaleAction> actionsTallied,
+            ref HashSet<Project> projectsIgnored, ref HashSet<Project> projectsFound)
         {
-            if (countedUpProjects.Contains(this)) return 0;
-            else countedUpProjects.Add(this);
+            if (projectsFound.Contains(this)) return 0;
+            else projectsFound.Add(this);
 
-            var ignored = Actions?.Where(a => a.Type == ActionType.Unknown)?.ToList();
-            if (ignored != null) ignoredActions.AddRange(ignored);
+            var ignored = Actions?.Where(a => a.Type == ActionType.Unknown)?.ToHashSet();
+            if (ignored != null) actionsIgnored.UnionWith(ignored);
 
-            var counted = Actions?.Where(a => a.Type != ActionType.Unknown)?.ToList();
-            if (counted != null) countedActions.AddRange(counted);
+            var counted = Actions?.Where(a => a.Type != ActionType.Unknown)?.ToHashSet();
+            if (counted == null || counted.Count == 0) projectsIgnored.Add(this);
+            else actionsTallied.UnionWith(counted);
 
             int rank = CalcRankByTimeSpend(ActionType.Calculation, 5);
             rank += CalcRankByTimeSpend(ActionType.Consultation, 5);
@@ -86,7 +87,7 @@ namespace Entities
                                     && a.Type != ActionType.ProblemDiagnostics
                                     && a.Type != ActionType.Unknown)
                             .Sum(a => a.Rank) ?? 0;
-            if (MainProject != null) rank += MainProject.Rank(ref ignoredActions, ref countedActions, ref countedUpProjects);
+            if (MainProject != null) rank += MainProject.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound);
 
             return rank;
         }
