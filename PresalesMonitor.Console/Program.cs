@@ -31,8 +31,11 @@ namespace PresalesMonitor
             {
                 // Parser.Run();
                 Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
-                var appSettings = (Settings.Application)r;
-                ShowData(appSettings.PreviosUpdate);
+                if (r is not null)
+                {
+                    var appSettings = (Settings.Application)r;
+                    ShowData(appSettings.PreviosUpdate);
+                }
                 Task.Delay(600000).Wait();
             };
         }
@@ -70,10 +73,10 @@ namespace PresalesMonitor
             #endregion
 
             int inWork, assing, won, loss, abandoned;
-            decimal sumP, avgP, profit;
+            decimal profit;
             TimeSpan avgTTW, avgTTR, timeSpend, avgTimeSpend;
             double avgRang;
-            var invs = new List<Invoice>();
+            HashSet<Invoice>? invs = new();
 
             foreach (var presale in presales)
             {
@@ -147,7 +150,6 @@ namespace PresalesMonitor
                 abandoned = presale.CountProjectsAbandoned(TimeSpan.FromDays(30));
                 #endregion
                 #region Чистые за месяц
-                invs = new List<Invoice>();
                 profit = presale.SumProfit(thisMonth, ref invs);
                 /*
                 if (invs != null)
@@ -356,12 +358,21 @@ namespace PresalesMonitor
             Console.WriteLine($"\tAvgR - средний ранг проектов.");
             Console.WriteLine($"\tSpend - потраченное на проекты время в часах, {thisMonth:MMMM}.\n");
             Console.WriteLine($"\tСреднее время реакции руководителя (среднее время до назначения) в минутах: {avgTTDR:f0}");
-            Console.WriteLine($"\tПроекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): {overdue?.Count()}");
-            foreach (var p in overdue) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalByTechDirectorAt.ToLocalTime()} - {p.PresaleStartAt.ToLocalTime()}, {p.Presale?.Name}");
-            Console.WriteLine($"\tПроекты без отметки начала работы пресейлом (забытые): {forgotten?.Count()}");
-            foreach (var p in forgotten) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalByTechDirectorAt.ToLocalTime()}, {p.Presale?.Name}");
-            Console.WriteLine($"\tНовые проекты (ожидают распределения): {newProjects?.Count()}");
-            foreach (var p in newProjects) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalBySalesDirectorAt.ToLocalTime()}");
+            if (overdue is not null)
+            {
+                Console.WriteLine($"\tПроекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): {overdue.Count()}");
+                foreach (var p in overdue) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalByTechDirectorAt.ToLocalTime()} - {p.PresaleStartAt.ToLocalTime()}, {p.Presale?.Name}");
+            }
+            if (forgotten is not null)
+            {
+                Console.WriteLine($"\tПроекты без отметки начала работы пресейлом (забытые): {forgotten.Count()}");
+                foreach (var p in forgotten) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalByTechDirectorAt.ToLocalTime()}, {p.Presale?.Name}");
+            }
+            if (newProjects is not null)
+            {
+                Console.WriteLine($"\tНовые проекты (ожидают распределения): {newProjects.Count()}");
+                foreach (var p in newProjects) Console.WriteLine($"\t\t{p.Number}, {p.ApprovalBySalesDirectorAt.ToLocalTime()}");
+            }
             Console.WriteLine($"\n\tДоступны данные за период: 20.09.2022 00:00:00 - {prevUpdate:dd.MM.yyyy HH:mm:ss}");
             Console.WriteLine($"\tПоследнее обновление: {prevUpdate:dd.MM.yyyy HH:mm:ss.fff}");
             #endregion

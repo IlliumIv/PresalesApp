@@ -1,0 +1,28 @@
+﻿.pmthead {
+    vertical-align: middle !important;
+    text-align: center;
+}
+
+    .pmthead tr,
+    .pmthead th {
+        border: 1px solid;
+        border-color: inherit !important;
+    }
+
+.pmtbody td:not(:last-child) {
+    border-right: 1px solid;
+    border-color: inherit;
+}
+
+.pmtbody, td:not(:first-child) {
+    text-align: right;
+}
+
+.pmspoiler summary::marker {
+    list-style-position: initial !important;
+}
+
+.pmspoiler p {
+    margin-left: 50px;
+    margin-bottom: 0;
+}

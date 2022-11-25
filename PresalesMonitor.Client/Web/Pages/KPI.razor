@@ -1,0 +1,195 @@
+﻿@page "/kpi"
+@using Google.Protobuf.Collections;
+@using PresalesMonitor.Shared;
+@using Entities.Enums;
+@using PresalesMonitor.Client.Web.Helpers;
+@using Google.Protobuf.WellKnownTypes;
+@using System.Runtime.Serialization;
+@inject Presales.PresalesClient PresalesClient
+
+<PageTitle>KPI</PageTitle>
+
+<h1>KPI</h1>
+
+<p>
+    <label>Начало периода:</label>
+    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" @bind=from />
+    <label>Конец периода:</label>
+    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" @bind=to />
+</p>
+<p>
+    <label>Пресейл:</label>
+    @if (presales == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <select @bind="selectedName">
+            <option selected=""></option>
+            @foreach (var name in presales.Names_)
+            {
+                <option value="@name">@name</option>
+            }
+        </select>
+    <button class="btn btn-primary" @onclick="OnReportRequested">Построить отчёт</button>
+    }
+</p>
+<p role="status">@status</p>
+@if (kpi is not null)
+{
+    <details class="pmspoiler">
+        <summary>Легенда</summary>
+            <p>
+                По игнорируемым действиям:
+                </p>
+            <p style="margin-left: 100px">
+                Если действие игнорируется по ошибке, то скорее всего у него неправильный тип выбран. Зайдите в проект и поправьте действие. После следующей синхронизации (раз в 10 минут) действие зачтётся.
+                </p>
+
+            <p>
+                По игнорируемым проектам:
+        </p>
+        <p style="margin-left: 100px">
+                Проект игнорируется, если он никогда не синхронизировался. Часто это основные проекты у дочерних или старые проекты, по которым прилетел счёт. То есть моему сервису известна только ЦБха и всё, никаких больше подробностей. Чтобы заставить сервис такой проект учитывать, просто добавьте в него любое пустое действие. После следующей синхронизации (раз в 10 минут) весь проект синхронизируется и все действия в нём будут учитываться. После этого пустое действие можно удалить или оставить - как хотите.
+                </p>
+            <p>
+                Красным выделены те счета, по которым есть игнорируемые действия\проекты или премия посчитана 0.
+                </p>
+         </details>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 34%">Контрагент</th>
+                <th style="width: 5%">Номер</th>
+                <th style="width: 15%">Дата</th>
+                <th style="width: 11%; text-align: right">Сумма по счёту</th>
+                <th style="width: 10%; text-align: right">Себестоимость</th>
+                <th style="width: 10%; text-align: right">Прибыль</th>
+                <th style="width: 5%; text-align: right">Процент</th>
+                <th style="width: 10%; text-align: right">Премия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var inv in kpi.Invoices)
+            {
+                <tr style="color: @SetColor(inv)">
+                    <td>@inv.Counterpart</td>
+                    <td>@inv.Nubmer</td>
+                    <td>@inv.Date.ToDateTime().ToLocalTime()</td>
+                    <td style="text-align: right">@Helpers.ToCurrencyString(inv.Amount)</td>
+                    <td style="text-align: right">@Helpers.ToCurrencyString(inv.Cost)</td>
+                    <td style="text-align: right">@Helpers.ToCurrencyString(inv.SalesAmount)</td>
+                    <td style="text-align: right">@Helpers.ToPercentString(inv.Percent, 1)</td>
+                    <td style="text-align: right">@Helpers.ToCurrencyString(inv.Profit)</td>
+                </tr>
+                <tr><td colspan="8">
+                    @if (inv.ProjectsFound.Count > 0)
+                    {
+                        <details class="pmspoiler">
+                                <summary>Найдено проектов при подсчёте рангов: @inv.ProjectsFound.Count</summary>
+                                @foreach (var project in inv.ProjectsFound)
+                                {
+                                    <p>@Format(project)</p>
+                                }
+                        </details>
+                    }
+                    @if (inv.ProjectsIgnored.Count > 0)
+                    {
+                        <details class="pmspoiler">
+                                <summary style="color:red">Проигнорировано проектов при подсчёте рангов: @inv.ProjectsIgnored.Count</summary>
+                                @foreach (var project in inv.ProjectsIgnored)
+                                {
+                                    <p>@Format(project)</p>
+                                }
+                        </details>
+                    }
+                    @if (inv.ActionsTallied.Count > 0)
+                    {
+                        <details class="pmspoiler">
+                                <summary>Действий учтено при подсчёте рангов: @inv.ActionsTallied.Count</summary>
+                                @foreach (var action in inv.ActionsTallied)
+                                {
+                                    <p>@Format(action)</p>
+                                }
+                        </details>
+                    }
+                    @if (inv.ActionsIgnored.Count > 0)
+                    {
+                        <details class="pmspoiler">
+                                <summary style="color:red">Действий проигнорировано при подсчёте рангов: @inv.ActionsIgnored.Count</summary>
+                                @foreach (var action in inv.ActionsIgnored)
+                                {
+                                    <p>@Format(action)</p>
+                                }
+                        </details>
+                    }
+                    </td></tr>
+                <p>&nbsp</p>
+            }
+            <tr style="text-align: right">
+                <td colspan="3">Всего:</td>
+                <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.Amount))</td>
+                <td></td>
+                <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.SalesAmount))</td>
+                <td></td>
+                <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.Profit))</td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private Names? presales;
+    private Kpi? kpi;
+
+    protected override async Task OnInitializedAsync()
+    {
+        presales = await PresalesClient.GetNamesAsync(new Empty());
+    }
+
+    private string selectedName = string.Empty;
+    private static DateOnly firstDay = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private DateOnly? from = firstDay;
+    private DateOnly? to = firstDay.AddMonths(1).AddDays(-1);
+    private string status = string.Empty;
+
+    private string SetColor(Invoice invoice) => invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
+    private string Format(Project project) => $"{project.Number} [{Helpers.ToEnumString((ProjectStatus)project.Status)}], \"{project.Name}\"";
+    private string Format(PresalesMonitor.Shared.Action action) => $"{action.ProjectNumber} [{Helpers.ToEnumString((ActionType)action.Type)}],{(action.Date.ToDateTime() == DateTime.MinValue ? "" : $" {action.Date.ToDateTime().ToLocalTime()}")} ({action.Timespend.ToTimeSpan().TotalMinutes}), \"{action.Description}\"";
+    
+    private async void OnReportRequested()
+    {
+        status = await GenerateReport();
+        StateHasChanged();
+    }
+    private async Task<string> GenerateReport()
+    {
+        kpi = null;
+        if (string.IsNullOrEmpty(selectedName)) return "Выберите пресейла.";
+        if (from == null || to == null) return "Укажите период.";
+        if (from > to) return "Начало периода должно быть меньше окончания периода.";
+
+        var response = await PresalesClient.GetKpiAsync(new KpiRequest
+            {
+                PresaleName = selectedName,
+                Period = new Period
+                {
+                    From = Timestamp.FromDateTime(from.Value.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
+                    To = Timestamp.FromDateTime(to.Value.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
+                }
+            }
+        );
+
+        if (response.ResponseCase == KpiResponse.ResponseOneofCase.Kpi) kpi = response.Kpi;
+
+        return response.ResponseCase switch
+        {
+            KpiResponse.ResponseOneofCase.Error => response.Error.Message,
+            KpiResponse.ResponseOneofCase.Kpi => "Отчёт сгенерирован!",
+            KpiResponse.ResponseOneofCase.None => "Нет счетов за указанный период.",
+            _ => "Неизвестный ответ сервера."
+        };
+    }
+}

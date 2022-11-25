@@ -95,17 +95,17 @@ namespace Entities
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
             .Average(p => p is null ? 0 : p.PotentialAmount) ?? 0;
-        public decimal SumProfit() { var i = new List<Invoice>(); return SumProfit(ref i); }
-        public decimal SumProfit(ref List<Invoice>? invoices) => SumProfit(DateTime.MinValue, DateTime.MaxValue, ref invoices);
-        public decimal SumProfit(DateTime from) { var i = new List<Invoice>(); return SumProfit(from, ref i); }
-        public decimal SumProfit(DateTime from, ref List<Invoice>? invoices) => SumProfit(from, DateTime.MaxValue, ref invoices);
-        public decimal SumProfit(DateTime from, DateTime to) { var i = new List<Invoice>(); return SumProfit(from, to, ref i); }
-        public decimal SumProfit(DateTime from, DateTime to, ref List<Invoice>? invoices)
+        public decimal SumProfit() { var i = new HashSet<Invoice>(); return SumProfit(ref i); }
+        public decimal SumProfit(ref HashSet<Invoice>? invoices) => SumProfit(DateTime.MinValue, DateTime.MaxValue, ref invoices);
+        public decimal SumProfit(DateTime from) { var i = new HashSet<Invoice>(); return SumProfit(from, ref i); }
+        public decimal SumProfit(DateTime from, ref HashSet<Invoice>? invoices) => SumProfit(from, DateTime.MaxValue, ref invoices);
+        public decimal SumProfit(DateTime from, DateTime to) { var i = new HashSet<Invoice>(); return SumProfit(from, to, ref i); }
+        public decimal SumProfit(DateTime from, DateTime to, ref HashSet<Invoice>? invoices)
         {
             invoices = Invoices?
-                .Where(i => (i.LastShipmentAt.ToLocalTime() >= from && i.LastShipmentAt.ToLocalTime() <= to && i.LastPayAt != DateTime.MinValue)
-                         || (i.LastPayAt.ToLocalTime() >= from && i.LastPayAt.ToLocalTime() <= to && i.LastShipmentAt.ToLocalTime() <= to))?
-                .ToList();
+                .Where(i => (i.LastShipmentAt >= from && i.LastShipmentAt <= to && i.LastPayAt != DateTime.MinValue && i.LastPayAt <= to)
+                         || (i.LastPayAt >= from && i.LastPayAt <= to && i.LastShipmentAt != DateTime.MinValue && i.LastShipmentAt <= to))?
+                .ToHashSet();
             return invoices?.Sum(i => SumP(i, from, to)) ?? 0;
         }
         public TimeSpan AverageTimeToWin() => AvgTTW(Projects);

@@ -1,0 +1,136 @@
+﻿@page "/monitor"
+@using PresalesMonitor.Shared;
+@using PresalesMonitor.Client.Web.Helpers;
+@using Google.Protobuf.Collections;
+@using Google.Protobuf.WellKnownTypes;
+@inject Presales.PresalesClient PresalesClient
+
+<PageTitle>Presales Monitor</PageTitle>
+
+<h1>Presales Monitor</h1>
+
+@if (overview == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead class="pmthead">
+            <tr>
+                <th rowspan="2">Пресейл</th>
+                <th rowspan="2" title="В работе">InWork</th>
+                <th title="Назначено">Assign</th>
+                <th title="Выиграно">Won</th>
+                <th title="Проиграно">Loss</th>
+                <th title="Конверсия">Convr</th>
+                <th rowspan="2" title="Заброшено (нет действий за последние 30 дней)">Abnd</th>
+                <th rowspan="2" title="Среднее время жизни проекта до выигрыша в днях">AvgTTW</th>
+                <th rowspan="2" title="Среднее время реакции пресейла в минутах">AvgTTR</th>
+                <th rowspan="2" title="Средний ранг проектов">AvgR</th>
+                <th colspan="2" title="Потрачено времени на проекты, @curMonthName">Spend</th>
+                <th rowspan="2">Чистые за месяц</th>
+                <th colspan="2">Требуется распределить</th>
+            </tr>
+            <tr>
+                <th colspan="4">@Helpers.ToUpperFirstLetterString(curMonthName)</th>
+                <th title="За месяц">Sum</th>
+                <th title="В среднем">Avg</th>
+                <th>шт.</th>
+                <th>руб.</th>
+            </tr>
+        </thead>
+        <tbody class="pmtbody">
+            @foreach (var presale in overview.Presales)
+            {
+                <tr>
+                    <td>@presale.Name</td>
+                    <td>@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
+                    <td>@Helpers.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
+                    <td>@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
+                    <td>@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
+                    <td>@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
+                    <td>@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
+                    <td>@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                    <td>@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                    <td>@Math.Round(presale.Statistics.AvgRank, 1)</td>
+                    <td>@Helpers.ToHoursOrMinutesString(presale.Statistics.SumSpend.ToTimeSpan())</td>
+                    <td>@Helpers.ToHoursOrMinutesString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
+                    <td>@Helpers.ToEmptyIfZeroString(presale.DeficitProjects)</td>
+                    <td>@Helpers.ToCurrencyString(presale.DeficitPotential)</td>
+                </tr>
+            }
+            <tr>
+                <td>Всего</td>
+                <td>@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
+                <td>@Helpers.ToEmptyIfZeroString(overview.Statistics.Assign)</td>
+                <td>@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
+                <td>@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
+                <td>@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
+                <td>@Helpers.ToEmptyIfZeroString(overview.Statistics.Abnd)</td>
+                <td>@Helpers.ToDaysString(overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                <td>@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                <td>@Math.Round(overview.Statistics.AvgRank, 1)</td>
+                <td>@Helpers.ToHoursOrMinutesString(overview.Statistics.SumSpend.ToTimeSpan())</td>
+                <td>@Helpers.ToHoursOrMinutesString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
+                <td colspan="2"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helpers.ToMinutesString(overview.AvgDirectorTimeToReaction.ToTimeSpan())</p>
+    @if (overview.Escalations.Count > 0)
+    {
+        <details class="pmspoiler">
+            <summary>
+                Проекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): @overview.Escalations.Count
+            </summary>
+            @foreach (var project in overview.Escalations)
+            {
+                <p>@Format(project)</p>
+            }
+        </details>
+    }
+    @if (overview.Forgotten.Count > 0)
+    {
+        <details class="pmspoiler">
+            <summary>
+                Проекты без отметки начала работы пресейлом (забытые): @overview.Forgotten.Count
+            </summary>
+            @foreach (var project in overview.Forgotten)
+            {
+                <p>@Format(project)</p>
+            }
+        </details>
+    }
+    @if (overview.New.Count > 0)
+    {
+        <details class="pmspoiler">
+            <summary>
+                Новые проекты (ожидают распределения): @overview.New.Count
+            </summary>
+            @foreach (var project in overview.New)
+            {
+                <p>@Format(project)</p>
+            }
+        </details>
+    }
+}
+
+@code {
+    private Overview? overview;
+
+    protected override async Task OnInitializedAsync()
+    {
+        overview = await PresalesClient.GetOverviewAsync(new Period
+            {
+                From = Timestamp.FromDateTime(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToUniversalTime())
+            });
+    }
+
+    string curMonthName => $"{DateTime.Now:MMMM}";
+
+    private string Format(Project project) => $"{project.Number} {(project.ApprovalByTechDirectorAt.ToDateTime() == DateTime.MinValue ? project.ApprovalBySalesDirectorAt.ToDateTime().ToLocalTime() : project.ApprovalByTechDirectorAt.ToDateTime().ToLocalTime())}{(project.PresaleStartAt.ToDateTime() != DateTime.MinValue ? $" - {project.PresaleStartAt.ToDateTime().ToLocalTime()}" : "")}{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
+}
