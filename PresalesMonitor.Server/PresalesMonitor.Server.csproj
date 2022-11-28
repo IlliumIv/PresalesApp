@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PresalesMonitor.Client\Web\PresalesMonitor.Client.Web.csproj" />
-    <ProjectReference Include="..\PresalesMonitor.Console\PresalesMonitor.Console.csproj" />
     <ProjectReference Include="..\PresalesMonitor.Shared\PresalesMonitor.Shared.csproj" />
   </ItemGroup>
 

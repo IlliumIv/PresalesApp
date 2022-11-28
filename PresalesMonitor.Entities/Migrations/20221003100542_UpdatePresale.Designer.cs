@@ -2,11 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using static Entities.DbController;
+using static PresalesMonitor.Entities.DbController;
 
 #nullable disable
 
-namespace Entities.Migrations
+namespace PresalesMonitor.Entities.Migrations
 {
     [DbContext(typeof(Context))]
     [Migration("20221003100542_UpdatePresale")]

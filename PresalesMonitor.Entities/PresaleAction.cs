@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using Entities.Enums;
-using Entities.Helpers;
+using PresalesMonitor.Entities.Enums;
+using PresalesMonitor.Entities.Helpers;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Entities
+namespace PresalesMonitor.Entities
 {
     public class PresaleAction
     {
@@ -15,27 +15,14 @@ namespace Entities
         public DateTime Date { get; set; }
         [JsonProperty("ТипЗадачи")]
         public ActionType Type { get; set; }
-        [NotMapped]
-        public int Rank { get => _getRank; }
         [JsonProperty("ВремяВыполнения")]
         public int TimeSpend { get; set; }
         [JsonProperty("Описание")]
         public string Description { get; set; } = string.Empty;
         public int ProjectId { get; set; }
         public virtual Project? Project { get; set; }
-
-        public bool Equals(PresaleAction? action)
-        {
-            if (action is null) return false;
-            if (Number != action.Number
-                || Date != action.Date
-                || Type != action.Type
-                || TimeSpend != action.TimeSpend
-                || Description != action.Description) return false;
-            return true;
-        }
-
-        private int _getRank
+        [NotMapped]
+        public int Rank
         {
             get
             {
@@ -56,6 +43,16 @@ namespace Entities
                     _ => 0,
                 };
             }
+        }
+        public bool Equals(PresaleAction? action)
+        {
+            if (action is null) return false;
+            if (Number != action.Number
+                || Date != action.Date
+                || Type != action.Type
+                || TimeSpend != action.TimeSpend
+                || Description != action.Description) return false;
+            return true;
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿@page "/kpi"
 @using Google.Protobuf.Collections;
+@using PresalesMonitor.Entities.Enums;
 @using PresalesMonitor.Shared;
-@using Entities.Enums;
 @using PresalesMonitor.Client.Web.Helpers;
 @using Google.Protobuf.WellKnownTypes;
 @using System.Runtime.Serialization;
@@ -155,10 +155,10 @@
     private DateOnly? to = firstDay.AddMonths(1).AddDays(-1);
     private string status = string.Empty;
 
-    private string SetColor(Invoice invoice) => invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
-    private string Format(Project project) => $"{project.Number} [{Helpers.ToEnumString((ProjectStatus)project.Status)}], \"{project.Name}\"";
+    private string SetColor(PresalesMonitor.Shared.Invoice invoice) => invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
+    private string Format(PresalesMonitor.Shared.Project project) => $"{project.Number} [{Helpers.ToEnumString((ProjectStatus)project.Status)}], \"{project.Name}\"";
     private string Format(PresalesMonitor.Shared.Action action) => $"{action.ProjectNumber} [{Helpers.ToEnumString((ActionType)action.Type)}],{(action.Date.ToDateTime() == DateTime.MinValue ? "" : $" {action.Date.ToDateTime().ToLocalTime()}")} ({action.Timespend.ToTimeSpan().TotalMinutes}), \"{action.Description}\"";
-    
+
     private async void OnReportRequested()
     {
         status = await GenerateReport();

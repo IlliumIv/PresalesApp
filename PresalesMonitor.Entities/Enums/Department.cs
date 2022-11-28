@@ -1,4 +1,4 @@
-﻿namespace Entities.Enums
+﻿namespace PresalesMonitor.Entities.Enums
 {
     public enum Department
     {

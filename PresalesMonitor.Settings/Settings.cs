@@ -132,7 +132,7 @@ namespace PresalesMonitor
             }
         }
 
-        public static bool TryGetSection<T>(out ConfigurationSection? result)
+        public static bool TryGetSection<T>(out ConfigurationSection result)
         {
             var configuration = ConfigurationManager
                 .OpenExeConfiguration(ConfigurationUserLevel.None);

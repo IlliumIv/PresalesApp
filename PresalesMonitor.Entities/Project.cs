@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
-using Entities.Enums;
-using Entities.Helpers;
+using PresalesMonitor.Entities.Enums;
+using PresalesMonitor.Entities.Helpers;
 
-namespace Entities
+namespace PresalesMonitor.Entities
 {
     public class Project
     {

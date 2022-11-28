@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Converters;
 
-namespace Entities.Helpers
+namespace PresalesMonitor.Entities.Helpers
 {
     public class SafeStringEnumConverter : StringEnumConverter
     {

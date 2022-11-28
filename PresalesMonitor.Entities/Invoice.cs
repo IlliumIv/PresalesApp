@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
-using Entities.Helpers;
+using PresalesMonitor.Entities.Helpers;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Entities
+namespace PresalesMonitor.Entities
 {
     public class Invoice
     {
@@ -14,14 +14,11 @@ namespace Entities
         public DateTime Date { get; set; }
         [JsonProperty("Контрагент")]
         public string Counterpart { get; set; } = string.Empty;
+        [JsonProperty("Проект")]
+        [JsonConverter(typeof(CreateByStringConverter))]
+        public virtual Project? Project { get; set; }
         [JsonProperty("СуммаРуб")]
         public decimal Amount { get; set; }
-        [JsonProperty("Прибыль")]
-        public decimal Profit { get; set; }
-        [JsonProperty("ПрибыльИзменение")]
-        [NotMapped]
-        public decimal ProfitDelta { get; set; }
-        public List<ProfitDelta> ProfitDeltas { get; set; } = new();
         [JsonProperty("ДатаПоследнейОплаты")]
         [JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime LastPayAt { get; set; }
@@ -31,15 +28,19 @@ namespace Entities
         [JsonProperty("Пресейл")]
         [JsonConverter(typeof(CreateByStringConverter))]
         public virtual Presale? Presale { get; set; }
-        [JsonProperty("Проект")]
-        [JsonConverter(typeof(CreateByStringConverter))]
-        public virtual Project? Project { get; set; }
+        [JsonProperty("ПрибыльПериоды")]
+        public virtual List<ProfitPeriod>? ProfitPeriods { get; set; }
         public int? PresaleId { get; set; }
         public int? ProjectId { get; set; }
-        public Invoice(string number)
+        public Invoice(string number) => Number = number;
+        public decimal GetProfit(DateTime from, DateTime to)
         {
-            Number = number;
-            if (ProfitDelta != 0) ProfitDeltas.Add(new(ProfitDelta));
+            var firstDay = new DateTime(from.Year, from.Month, 1);
+            var lastDay = to == DateTime.MaxValue ? to : new DateTime(to.Year, to.Month, 1).AddMonths(1).AddDays(-1);
+
+            return ProfitPeriods?
+                .Where(pd => pd.StartTime >= firstDay && pd.StartTime <= lastDay)?
+                .Sum(pd => pd.Amount) ?? 0;
         }
     }
 }

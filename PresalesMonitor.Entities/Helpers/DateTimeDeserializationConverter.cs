@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Entities.Helpers
+namespace PresalesMonitor.Entities.Helpers
 {
     public class DateTimeDeserializationConverter : JsonConverter
     {

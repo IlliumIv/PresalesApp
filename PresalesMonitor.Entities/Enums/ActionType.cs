@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
-using Entities.Helpers;
+using PresalesMonitor.Entities.Helpers;
 using System.Runtime.Serialization;
 
-namespace Entities.Enums
+namespace PresalesMonitor.Entities.Enums
 {
     [JsonConverter(typeof(SafeStringEnumConverter), Unknown)]
     public enum ActionType
