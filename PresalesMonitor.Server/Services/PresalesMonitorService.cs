@@ -2,9 +2,9 @@
 using Google.Protobuf.WellKnownTypes;
 using PresalesMonitor;
 using PresalesMonitor.Shared;
-using Entities;
+using PresalesMonitor.Entities;
 using Microsoft.EntityFrameworkCore;
-using Entities.Enums;
+using PresalesMonitor.Entities.Enums;
 using PresalesMonitor.Shared.CustomTypes;
 using Microsoft.EntityFrameworkCore.Internal;
 using System.Linq;
@@ -22,24 +22,37 @@ namespace PresalesMonitor.Server.Services
             if (presale == null)
                 return Task.FromResult(new KpiResponse { Error = new Error{ Message = "Пресейл не найден в базе данных."}});
 
+            var from = request.Period.From.ToDateTime();
+            var to = request.Period.To.ToDateTime();
+
+
             presale = db.Presales
                 .Include(p => p.Invoices
-                    .Where(i => i.Date >= request.Period.From.ToDateTime()
-                             || i.LastPayAt >= request.Period.From.ToDateTime()
-                             || i.LastShipmentAt >= request.Period.From.ToDateTime()))
+                    .Where(i => i.Date >= from
+                             || i.LastPayAt >= from
+                             || i.LastShipmentAt >= from))
                     .ThenInclude(i => i.Project).ThenInclude(p => p.Actions)
                 .Include(p => p.Invoices
-                    .Where(i => i.Date >= request.Period.From.ToDateTime()
-                             || i.LastPayAt >= request.Period.From.ToDateTime()
-                             || i.LastShipmentAt >= request.Period.From.ToDateTime()))
+                    .Where(i => i.Date >= from
+                             || i.LastPayAt >= from
+                             || i.LastShipmentAt >= from))
                     .ThenInclude(i => i.Project).ThenInclude(p => p.MainProject)
+                .Include(p => p.Invoices
+                    .Where(i => i.Date >= from
+                             || i.LastPayAt >= from
+                             || i.LastShipmentAt >= from))
+                    .ThenInclude(i => i.ProfitPeriods)
                 .Single(p => p.Name == request.PresaleName);
+
+
+            if (presale.Projects == null)
+                return Task.FromResult(new KpiResponse());
 
             HashSet<Entities.Project> projects = new();
             RecurseLoad(presale.Projects, db, ref projects);
 
             HashSet<Entities.Invoice>? invoices = new();
-            presale.SumProfit(request.Period.From.ToDateTime(), request.Period.To.ToDateTime(), ref invoices);
+            presale.SumProfit(from, to, ref invoices);
 
             if (invoices == null)
                 return Task.FromResult(new KpiResponse());
@@ -62,16 +75,18 @@ namespace PresalesMonitor.Server.Services
                 // Console.WriteLine("------------------------------------");
                 // Console.WriteLine($"{invoice.Number} -- {invoice.Amount} -- {percent}");
 
+                var profit = invoice.GetProfit(from, to);
+
                 var invoiceReply = new Shared.Invoice
                 {
                     Counterpart = invoice.Counterpart,
                     Nubmer = invoice.Number,
                     Date = Timestamp.FromDateTime(invoice.Date),
                     Amount = DecimalValue.FromDecimal(invoice.Amount),
-                    Cost = DecimalValue.FromDecimal(invoice.Amount - invoice.Profit),
-                    SalesAmount = DecimalValue.FromDecimal(invoice.Profit),
+                    Cost = DecimalValue.FromDecimal(invoice.Amount - profit),
+                    SalesAmount = DecimalValue.FromDecimal(profit),
                     Percent = percent,
-                    Profit = DecimalValue.FromDecimal(invoice.Profit * (decimal)percent),
+                    Profit = DecimalValue.FromDecimal(profit * (decimal)percent),
                 };
 
                 foreach (var inv in projectsIgnored)
@@ -138,10 +153,21 @@ namespace PresalesMonitor.Server.Services
             var prevMonth = thisMonth.AddMonths(-1);
 
             using var db = new DbController.Context();
-            var presales = db.Presales.Include(p => p.Projects).ToList();
-            var actions = db.Actions.ToList();
-            var projects = db.Projects.ToList();
-            var invoices = db.Invoices.Include(i => i.Presale).ToList();
+            var presales = db.Presales
+                .Include(p => p.Projects.Where(p => p.Actions != null && p.Actions.Any(a => a.Date >= prevMonth)))
+                .ThenInclude(p => p.Actions)
+                .ToList();
+
+            _ = db.Invoices
+                .Where(i => i.Date >= prevMonth)
+                .Include(i => i.Presale)
+                .Include(i => i.ProfitPeriods).ToList();
+
+            List<Entities.Project> projects = new();
+
+            foreach (var presale in presales)
+                if (presale.Projects != null)
+                    projects.AddRange(presale.Projects);
 
             decimal maxPotential = presales.Max(p => p.Projects?
                 .Where(p => p.Presale?.Department == Department.Russian)?
@@ -315,7 +341,7 @@ namespace PresalesMonitor.Server.Services
         }
     }
 
-    public static class ProjectExtensions
+    public static class Extensions
     {
         public static Shared.Project Translate(this Entities.Project project) => new()
         {

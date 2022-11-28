@@ -28,13 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\PresalesMonitor.Entities\PresalesMonitor.Entities.csproj" />
     <ProjectReference Include="..\PresalesMonitor.Parser\PresalesMonitor.Parser.csproj" />
     <ProjectReference Include="..\PresalesMonitor.Settings\PresalesMonitor.Settings.csproj" />

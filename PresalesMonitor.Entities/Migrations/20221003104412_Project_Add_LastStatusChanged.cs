@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Entities.Migrations
+namespace PresalesMonitor.Entities.Migrations
 {
     public partial class Project_Add_LastStatusChanged : Migration
     {

@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using Entities;
+using PresalesMonitor.Entities;
 using System.Configuration;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
@@ -33,12 +33,12 @@ namespace PresalesMonitor
             appSettings.CurrentConfiguration.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection(appSettings.SectionInformation.Name);
         }
-
         private static void GetUpdate(DateTime prevUpdate)
         {
             try
             {
                 var currentUpdate = (DateTime.Now - prevUpdate).TotalDays > 1 ? prevUpdate.AddDays(1) : DateTime.Now;
+                
                 if (TryGetData(_lastProjectsUpdate, currentUpdate, out List<Project> projects))
                 {
                     foreach (var project in projects)
@@ -88,16 +88,25 @@ namespace PresalesMonitor
                             using var sw = File.AppendText(_workLog.FullName);
                             if (isNew) sw.Write($"\tAdd: ");
                             else sw.Write($"\tUpdate: ");
-                            sw.WriteLine($"Номер:{inv.Number}," +
-                                $"Дата:{inv.Date}," +
-                                $"Контрагент:{inv.Counterpart}," +
-                                $"СуммаРуб:{inv.Amount}," +
-                                $"Прибыль:{inv.Profit}," +
-                                $"ПрибыльИзменение:{inv.ProfitDelta}," +
-                                $"ДатаПоследнейОплаты:{inv.LastPayAt}," +
-                                $"ДатаПоследнейОтгрузки:{inv.LastShipmentAt}," +
-                                $"Пресейл:{inv.Presale?.Name}," +
-                                $"Проект:{inv.Project?.Number}");
+
+                            string profitPeriods = string.Empty;
+
+                            if (inv.ProfitPeriods!= null)
+                            {
+                                foreach (var p in inv.ProfitPeriods)
+                                    profitPeriods += $"\"{p.StartTime}\":\"{p.Amount}\",";
+                            }
+
+                            sw.WriteLine($"\"Номер\":\"{inv.Number}\"," +
+                                $"\"Дата\":\"{inv.Date}\"," +
+                                $"\"Контрагент\":\"{inv.Counterpart}\"," +
+                                $"\"Проект\":\"{inv.Project?.Number}\"," +
+                                $"\"СуммаРуб\":\"{inv.Amount}\"," +
+                                $"\"ДатаПоследнейОплаты\":\"{inv.LastPayAt}\"," +
+                                $"\"ДатаПоследнейОтгрузки\":\"{inv.LastShipmentAt}\"," +
+                                $"\"Пресейл\":\"{inv.Presale?.Name}\"," +
+                                $"\"Суммарная прибыль за периоды\":[{profitPeriods}]"
+                                );
                         }
                     }
                     _lastInvoicesUpdate = currentUpdate;
@@ -110,7 +119,6 @@ namespace PresalesMonitor
                 sw.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] {e}\n");
             }
         }
-
         private static bool TryGetData<T>(DateTime startTime, DateTime endTime, out List<T> result)
         {
             result = new List<T>();

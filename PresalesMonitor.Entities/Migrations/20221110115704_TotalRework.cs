@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Entities.Migrations
+namespace PresalesMonitor.Entities.Migrations
 {
     /// <inheritdoc />
     public partial class TotalRework : Migration

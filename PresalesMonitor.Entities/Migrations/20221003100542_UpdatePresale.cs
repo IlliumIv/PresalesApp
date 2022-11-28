@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Entities.Migrations
+namespace PresalesMonitor.Entities.Migrations
 {
     public partial class UpdatePresale : Migration
     {

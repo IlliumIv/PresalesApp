@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace PresalesMonitor.Client.Web.Helpers
 {

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Entities.Migrations
+namespace PresalesMonitor.Entities.Migrations
 {
     /// <inheritdoc />
     public partial class FixInvoiceLastShipment : Migration

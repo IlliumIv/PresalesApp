@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using PresalesMonitor;
 using System.Configuration;
 
-namespace Entities
+namespace PresalesMonitor.Entities
 {
     public static class DbController
     {
@@ -30,7 +29,7 @@ namespace Entities
             public DbSet<Project> Projects { get; set; }
             public DbSet<Invoice> Invoices { get; set; }
             public DbSet<PresaleAction> Actions { get; set; }
-            public DbSet<ProfitDelta> ProfitDeltas { get; set; }
+            public DbSet<ProfitPeriod> ProfitPeriods { get; set; }
             public void Create() => Database.EnsureCreated();
             public void Delete() => Database.EnsureDeleted();
             public bool CanConnect() => Database.CanConnect();
@@ -42,6 +41,7 @@ namespace Entities
             isNew = true;
             var pr = db.Projects
                 .Where(p => p.Number == project.Number)
+                .Include(p => p.Actions)
                 .FirstOrDefault();
             if (pr != null)
             {
@@ -57,8 +57,7 @@ namespace Entities
                 pr.MainProject = project.MainProject;
                 pr.ClosedAt = project.ClosedAt;
                 pr.PotentialWinAt = project.PotentialWinAt;
-                pr.DeleteActions(db);
-                pr.Actions = project.Actions;
+                pr.Actions = Update(pr.Actions, project.Actions, db);
                 project = pr;
             }
             else
@@ -68,26 +67,25 @@ namespace Entities
             db.SaveChanges();
             return project;
         }
-
         public static Invoice AddOrUpdate(this Invoice invoice, Context db, out bool isNew)
         {
             isNew = true;
             var inv = db.Invoices
                 .Where(i => i.Number == invoice.Number && i.Date.Date == invoice.Date.Date
                 || i.Number == invoice.Number && i.Counterpart == invoice.Counterpart)
+                .Include(i => i.ProfitPeriods)
                 .FirstOrDefault();
             if (inv != null)
             {
                 isNew = false;
-                inv.Counterpart = invoice.Counterpart;
                 inv.Date = invoice.Date;
-                inv.Amount = invoice.Amount;
-                inv.Profit = invoice.Profit;
-                inv.Presale = invoice.Presale;
+                inv.Counterpart = invoice.Counterpart;
                 inv.Project = invoice.Project;
+                inv.Amount = invoice.Amount;
                 inv.LastPayAt = invoice.LastPayAt;
                 inv.LastShipmentAt = invoice.LastShipmentAt;
-                if (invoice.ProfitDelta != 0) inv.ProfitDeltas.Add(new(invoice.ProfitDelta));
+                inv.Presale = invoice.Presale;
+                inv.ProfitPeriods = Update(inv.ProfitPeriods, invoice.ProfitPeriods, db);
                 invoice = inv;
             }
             else
@@ -97,7 +95,6 @@ namespace Entities
             db.SaveChanges();
             return invoice;
         }
-
         public static Project? GetOrAdd(this Project? project, Context db)
         {
             if (project != null)
@@ -114,7 +111,6 @@ namespace Entities
             }
             return project;
         }
-
         public static Presale? GetOrAdd(this Presale? presale, Context db)
         {
             if (presale != null)
@@ -131,17 +127,39 @@ namespace Entities
             }
             return presale;
         }
-
-        public static void DeleteActions(this Project project, Context db)
+        private static List<PresaleAction>? Update(List<PresaleAction>? items, List<PresaleAction>? newItems, Context db)
         {
-            var proj = db.Projects
-                .Where(p => p.Number == project.Number)
-                .FirstOrDefault();
-            if (proj != null)
-            {
-                var actions = db.Actions.Where(a => a.Project == proj).ToList();
-                foreach (var action in actions) db.Actions.Remove(action);
-            };
+            if (newItems == null) return null;
+            if (items != null)
+                foreach (var item in items)
+                {
+                    var equalItem = newItems.FirstOrDefault(i => i.Equals(item));
+                    if (equalItem == null)
+                    {
+                        db.Remove(item);
+                        continue;
+                    }
+                    newItems.Remove(equalItem);
+                    newItems.Add(item);
+                }
+            return newItems;
+        }
+        private static List<ProfitPeriod>? Update(List<ProfitPeriod>? items, List<ProfitPeriod>? newItems, Context db)
+        {
+            if (newItems == null) return null;
+            if (items != null)
+                foreach (var item in items)
+                {
+                    var equalItem = newItems.FirstOrDefault(i => i.Equals(item));
+                    if (equalItem == null)
+                    {
+                        db.Remove(item);
+                        continue;
+                    }
+                    newItems.Remove(equalItem);
+                    newItems.Add(item);
+                }
+            return newItems;
         }
     }
 }

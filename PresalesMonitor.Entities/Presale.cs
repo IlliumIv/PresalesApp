@@ -1,6 +1,6 @@
-﻿using Entities.Enums;
+﻿using PresalesMonitor.Entities.Enums;
 
-namespace Entities
+namespace PresalesMonitor.Entities
 {
     public class Presale
     {
@@ -106,7 +106,7 @@ namespace Entities
                 .Where(i => (i.LastShipmentAt >= from && i.LastShipmentAt <= to && i.LastPayAt != DateTime.MinValue && i.LastPayAt <= to)
                          || (i.LastPayAt >= from && i.LastPayAt <= to && i.LastShipmentAt != DateTime.MinValue && i.LastShipmentAt <= to))?
                 .ToHashSet();
-            return invoices?.Sum(i => SumP(i, from, to)) ?? 0;
+            return invoices?.Sum(i => i.GetProfit(from, to)) ?? 0;
         }
         public TimeSpan AverageTimeToWin() => AvgTTW(Projects);
         public TimeSpan AverageTimeToWin(DateTime from) => AvgTTW(Projects?.Where(p => p.ClosedAt.ToLocalTime() >= from));
@@ -118,14 +118,6 @@ namespace Entities
         public TimeSpan AverageTimeSpend() => AvgTS(Projects, DateTime.MinValue, DateTime.MaxValue);
         public TimeSpan AverageTimeSpend(DateTime from) => AvgTS(Projects, from, DateTime.MaxValue);
         public TimeSpan AverageTimeSpend(DateTime from, DateTime to) => AvgTS(Projects, from, to);
-        private static decimal SumP(Invoice i, DateTime from, DateTime to)
-        {
-            var p = i.ProfitDeltas?
-                .Where(pd => pd.TimeStamp >= from)?
-                .Where(pd => pd.TimeStamp <= to)?
-                .Sum(pd => pd.Value) ?? 0;
-            return p == 0 ? i.Profit : p;
-        }
         private static TimeSpan AvgTTW(IEnumerable<Project>? projects)
         {
             var days = projects?

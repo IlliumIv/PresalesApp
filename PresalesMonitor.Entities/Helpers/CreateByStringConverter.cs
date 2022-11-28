@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Entities;
 
-namespace Entities.Helpers
+namespace PresalesMonitor.Entities.Helpers
 {
     public class CreateByStringConverter : JsonConverter
     {
