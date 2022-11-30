@@ -1,0 +1,25 @@
+﻿.chart {
+    width: 75%;
+}
+
+.percent {
+    position: absolute;
+    font-size: 5em;
+    margin: 2% 5%;
+    font-weight: bold;
+}
+
+.pie {
+    width: 95%;
+    margin-top: 30px;
+    margin-left: 5%;
+}
+
+.dashboard {
+    display: flex;
+}
+
+.legend {
+    text-align: center;
+    display: inline-block;
+}
