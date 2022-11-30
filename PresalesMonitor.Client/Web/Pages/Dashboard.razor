@@ -1,0 +1,133 @@
+﻿@page "/dashboard"
+@using PresalesMonitor.Shared;
+@using Google.Protobuf.WellKnownTypes;
+@using ChartJs.Blazor.PieChart;
+@using PresalesMonitor.Client.Web.Helpers;
+@inject Presales.PresalesClient PresalesClient
+@implements IDisposable
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Dashboard</h1>
+
+@if (overview == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="dashboard">
+        <div class="chart">
+            <div class="legend">
+                @foreach (var presale in overview.Presales)
+                {
+                    <div style="display: inline-block; margin: 0 5px">
+                        <div style="width: 25px; height: 10px; display: inline-block; background: @colors[i]"></div>
+                        <p style="display: inline-block; margin: 0;">@presale.Name:</p>
+                        <p style="display: inline-block; margin: 0;">@Helpers.ToCurrencyString(presale.Statistics.Profit)</p>
+                    </div>
+                    i++;
+                }
+            </div>
+            <div class="percent">@Helpers.ToPercentString((double)(overview.Statistics.Profit/planned))</div>
+            <div class="pie">
+                <Chart Config="_pieConfig"></Chart>
+            </div>
+        </div>
+        <div>
+            <img src="@_img.Small" alt="@_img.AltDescription" />
+        </div>
+    </div>
+}
+
+@code {
+    private Overview? overview;
+    private PieConfig _pieConfig;
+    private Image? _img;
+    private string[] colors = new[]
+        {
+            ColorUtil.ColorHexString(5,47,97),
+            ColorUtil.ColorHexString(12,90,74),
+            ColorUtil.ColorHexString(165,14,130),
+            ColorUtil.ColorHexString(106,158,31),
+            ColorUtil.ColorHexString(232,125,55),
+            ColorUtil.ColorHexString(20,150,124),
+            ColorUtil.ColorHexString(99,8,78),
+            ColorUtil.ColorHexString(198,35,36),
+            ColorUtil.ColorHexString(3,28,58),
+    };
+    private int i = 0;
+    private decimal planned = 20000000;
+    private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
+
+    protected override void OnInitialized()
+    {
+        RunTimer();
+    }
+
+    async void RunTimer()
+    {
+        while (await periodicTimer.WaitForNextTickAsync())
+        {
+            overview = await UpdateData();
+            _img = await UpdateImage();
+            UpdateChart();
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        periodicTimer?.Dispose();
+    }
+
+    private async Task<Overview> UpdateData() => await PresalesClient.GetOverviewAsync(new Period
+        {
+            From = Timestamp.FromDateTime(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToUniversalTime())
+        });
+
+    private async Task<Image> UpdateImage() => await PresalesClient.GetImageUrlAsync(new ImageRequest { Keyword = "girl" });
+
+    private void UpdateChart()
+    {
+        i = 0;
+        if (overview == null) return;
+        var dataset = new PieDataset<decimal>();
+        foreach (var presale in overview.Presales)
+            dataset.Add(presale.Statistics.Profit);
+        dataset.BackgroundColor = colors;
+        _pieConfig.Data.Datasets.Clear();
+        _pieConfig.Data.Datasets.Add(dataset);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        overview = await UpdateData();
+        _img = await UpdateImage();
+
+        _pieConfig = new PieConfig();
+        _pieConfig.Options = new PieOptions
+            {
+                Responsive = true,
+                Title = new OptionsTitle
+                {
+                    Display = false,
+                    Text = $"Всего: {Helpers.ToCurrencyString(overview.Presales.Sum(p => p.Statistics.Profit))} из {Helpers.ToCurrencyString(20000000)}"
+                },
+            };
+        _pieConfig.Options.Animation = new ArcAnimation
+            {
+                AnimateScale = true,
+                AnimateRotate = true
+            };
+        _pieConfig.Options.CutoutPercentage = 30;
+        _pieConfig.Options.Legend = new Legend
+            {
+                Display = false
+            };
+        foreach (var presale in overview.Presales)
+            _pieConfig.Data.Labels.Add($"{presale.Name}: {Helpers.ToCurrencyString(presale.Statistics.Profit)}");
+
+        UpdateChart();
+    }
+}

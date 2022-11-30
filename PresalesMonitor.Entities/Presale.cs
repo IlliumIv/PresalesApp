@@ -30,9 +30,14 @@ namespace PresalesMonitor.Entities
             .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() <= to)?
             .Where(p => p.IsOverdue());
         public int CountProjectsAbandoned(TimeSpan within) => Projects?
-            .Where(p => p.Status == ProjectStatus.WorkInProgress)
-            .Where(p => p.Actions != null
-                && p.Actions.Max(a => a.Date).ToLocalTime() < DateTime.Now.Add(-within))?
+            .Where(p => p.Status == ProjectStatus.WorkInProgress)?
+            .Where(p => p.Actions != null && p.Actions.Any())?
+            .Where(p => p.Actions?.Max(a => a.Date) < DateTime.UtcNow.Add(-within))?
+            .Count() ?? 0;
+        public int CountProjectsInWork(TimeSpan since) => Projects?
+            .Where(p => p.Status == ProjectStatus.WorkInProgress)?
+            .Where(p => p.Actions != null && p.Actions.Any())?
+            .Where(p => p.Actions?.Max(a => a.Date) > DateTime.UtcNow.Add(-since))?
             .Count() ?? 0;
         public IEnumerable<Project>? ProjectsAbandoned(TimeSpan within) => Projects?
             .Where(p => p.Status == ProjectStatus.WorkInProgress)
@@ -123,6 +128,7 @@ namespace PresalesMonitor.Entities
             var days = projects?
                 .Where(p => p.Status == ProjectStatus.Won)?
                 .Where(p => p.ApprovalByTechDirectorAt > DateTime.MinValue)?
+                .Where(p => p.ClosedAt > DateTime.MinValue)?
                 .DefaultIfEmpty()
                 .Average(p => p is null ? 0 : (p.ClosedAt - p.ApprovalByTechDirectorAt).TotalDays);
             return days == null ? TimeSpan.Zero : TimeSpan.FromDays((double)days);

@@ -10,6 +10,25 @@ service Presales {
 	rpc GetOverview(Period) returns (Overview);
 	rpc GetNames(google.protobuf.Empty) returns (Names);
 	rpc GetKpi(KpiRequest) returns (KpiResponse);
+	rpc GetImageUrl(ImageRequest) returns (Image);
+}
+
+message ImageRequest {
+	string keyword = 1;
+}
+
+message Image {
+	string raw = 1;
+	string full = 2;
+	string regular = 3;
+	string small = 4;
+	string thumb = 5;
+	string small_s3 = 6;
+	string alt_description = 7;
+	string author_name = 8;
+	string author_url = 9;
+	string source_name = 10;
+	string source_url = 11;
 }
 
 message KpiRequest{
