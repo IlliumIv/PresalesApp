@@ -28,12 +28,12 @@ else
                 <th rowspan="2" title="Среднее время жизни проекта до выигрыша в днях">AvgTTW</th>
                 <th rowspan="2" title="Среднее время реакции пресейла в минутах">AvgTTR</th>
                 <th rowspan="2" title="Средний ранг проектов">AvgR</th>
-                <th colspan="2" title="Потрачено времени на проекты, @curMonthName">Spend</th>
+                <th colspan="2" title="Потрачено времени на проекты, @Helpers.CurMonthName">Spend</th>
                 <th rowspan="2">Чистые за месяц</th>
                 <th colspan="2">Требуется распределить</th>
             </tr>
             <tr>
-                <th colspan="4">@Helpers.ToUpperFirstLetterString(curMonthName)</th>
+                <th colspan="4">@Helpers.ToUpperFirstLetterString(Helpers.CurMonthName)</th>
                 <th title="За месяц">Sum</th>
                 <th title="В среднем">Avg</th>
                 <th>шт.</th>
@@ -122,15 +122,36 @@ else
 @code {
     private Overview? overview;
 
+    private async Task<Overview> UpdateData() => await PresalesClient.GetOverviewAsync(new Period
+        {
+            From = Timestamp.FromDateTime(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToUniversalTime())
+        });
+
     protected override async Task OnInitializedAsync()
     {
-        overview = await PresalesClient.GetOverviewAsync(new Period
-            {
-                From = Timestamp.FromDateTime(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToUniversalTime())
-            });
+        overview = await UpdateData();
     }
 
-    string curMonthName => $"{DateTime.Now:MMMM}";
-
     private string Format(Project project) => $"{project.Number} {(project.ApprovalByTechDirectorAt.ToDateTime() == DateTime.MinValue ? project.ApprovalBySalesDirectorAt.ToDateTime().ToLocalTime() : project.ApprovalByTechDirectorAt.ToDateTime().ToLocalTime())}{(project.PresaleStartAt.ToDateTime() != DateTime.MinValue ? $" - {project.PresaleStartAt.ToDateTime().ToLocalTime()}" : "")}{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
+
+    private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
+
+    protected override void OnInitialized()
+    {
+        RunTimer();
+    }
+
+    async void RunTimer()
+    {
+        while (await periodicTimer.WaitForNextTickAsync())
+        {
+            overview = await UpdateData();
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        periodicTimer?.Dispose();
+    }
 }

@@ -6,6 +6,7 @@
 @using Google.Protobuf.WellKnownTypes;
 @using System.Runtime.Serialization;
 @inject Presales.PresalesClient PresalesClient
+@inject IJSRuntime js
 
 <PageTitle>KPI</PageTitle>
 
@@ -33,6 +34,7 @@
             }
         </select>
     <button class="btn btn-primary" @onclick="OnReportRequested">Построить отчёт</button>
+    <button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadFile">Скачать отчёт</button>
     }
 </p>
 <p role="status">@status</p>
@@ -143,22 +145,16 @@
 @code {
     private Names? presales;
     private Kpi? kpi;
-
-    protected override async Task OnInitializedAsync()
-    {
-        presales = await PresalesClient.GetNamesAsync(new Empty());
-    }
-
+    private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() {{ "disabled", "disabled" }};
+    protected override async Task OnInitializedAsync() { presales = await PresalesClient.GetNamesAsync(new Empty()); }
     private string selectedName = string.Empty;
     private static DateOnly firstDay = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
     private DateOnly? from = firstDay;
     private DateOnly? to = firstDay.AddMonths(1).AddDays(-1);
     private string status = string.Empty;
-
     private string SetColor(PresalesMonitor.Shared.Invoice invoice) => invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
     private string Format(PresalesMonitor.Shared.Project project) => $"{project.Number} [{Helpers.ToEnumString((ProjectStatus)project.Status)}], \"{project.Name}\"";
     private string Format(PresalesMonitor.Shared.Action action) => $"{action.ProjectNumber} [{Helpers.ToEnumString((ActionType)action.Type)}],{(action.Date.ToDateTime() == DateTime.MinValue ? "" : $" {action.Date.ToDateTime().ToLocalTime()}")} ({action.Timespend.ToTimeSpan().TotalMinutes}), \"{action.Description}\"";
-
     private async void OnReportRequested()
     {
         status = await GenerateReport();
@@ -167,6 +163,8 @@
     private async Task<string> GenerateReport()
     {
         kpi = null;
+        downloadBtnAttrs = new() {{ "disabled", "disabled" }};
+
         if (string.IsNullOrEmpty(selectedName)) return "Выберите пресейла.";
         if (from == null || to == null) return "Укажите период.";
         if (from > to) return "Начало периода должно быть меньше окончания периода.";
@@ -183,6 +181,7 @@
         );
 
         if (response.ResponseCase == KpiResponse.ResponseOneofCase.Kpi) kpi = response.Kpi;
+        downloadBtnAttrs = new();
 
         return response.ResponseCase switch
         {
@@ -191,5 +190,10 @@
             KpiResponse.ResponseOneofCase.None => "Нет счетов за указанный период.",
             _ => "Неизвестный ответ сервера."
         };
+    }
+    private void DownloadFile()
+    {
+        if (kpi == null) return;
+        Helpers.DownloadFile(kpi, js, selectedName);
     }
 }

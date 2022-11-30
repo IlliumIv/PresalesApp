@@ -374,7 +374,7 @@ namespace PresalesMonitor.Server.Services
             {
                 BaseAddress = new Uri("https://api.unsplash.com"),
             };
-            var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random/?query={request.Keyword}");
+            var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random/?query={request.Keyword}&orientation=portrait");
             unsplashRequest.Headers.Add("Authorization", "Client-ID zoKHly26A5L5BCYWXdctm0hc9u5JGaqcsMv_znpsIR0");
 
             var unsplashResponse = unsplashClient.SendAsync(unsplashRequest).Result;
@@ -382,17 +382,14 @@ namespace PresalesMonitor.Server.Services
 
             var response = JsonConvert.DeserializeObject<dynamic>(unsplashResponse.Content.ReadAsStringAsync().Result);
 
-            var alt_desc = response.alt_description;
-            var author_name = response.user.name;
-
             _cashedImage.Raw = response.urls.raw;
             _cashedImage.Full = response.urls.full;
             _cashedImage.Regular = response.urls.regular;
             _cashedImage.Small = response.urls.small;
             _cashedImage.Thumb = response.urls.thumb;
             _cashedImage.SmallS3 = response.urls.small_s3;
-            _cashedImage.AltDescription = alt_desc ?? "";
-            _cashedImage.AuthorName = author_name ?? "";
+            _cashedImage.AltDescription = $"{response.alt_description}";
+            _cashedImage.AuthorName = $"{response.user.name}";
             _cashedImage.SourceName = "Unsplash";
             _cashedImage.AuthorUrl = $"{response.user.links.self}?utm_source=presales_monitor&utm_medium=referral";
             _cashedImage.SourceUrl = @"https://unsplash.com/?utm_source=presales_monitor&utm_medium=referral";
