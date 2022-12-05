@@ -139,7 +139,7 @@ namespace PresalesMonitor
 
                 using var sw = File.AppendText(_workLog.FullName);
                 sw.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] Request: {message.RequestUri}");
-                var response = httpClient.SendAsync(message).Result;
+                HttpResponseMessage response = httpClient.SendAsync(message).Result;
 
                 if (response.IsSuccessStatusCode)
                 {

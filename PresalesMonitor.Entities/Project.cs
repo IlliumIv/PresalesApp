@@ -94,7 +94,7 @@ namespace PresalesMonitor.Entities
         private int CalcRankByTimeSpend(ActionType actionType, int minTimeToRank)
         {
             var ts = Actions?.Where(a => a.Type == actionType).Sum(a => a.TimeSpend) ?? 0;
-            return ts % 60 > minTimeToRank ? (int)Math.Ceiling(ts / 60d) : (int)Math.Round(ts / 60d);
+            return ts % 60 >= minTimeToRank ? (int)Math.Ceiling(ts / 60d) : (int)Math.Round(ts / 60d);
         }
     }
 }

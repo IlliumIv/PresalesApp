@@ -8,9 +8,9 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<h1>Dashboard</h1>
+<h1>@timeLeft</h1>
 
-@if (overview == null)
+@if (overview == null || _img == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -21,15 +21,23 @@ else
             <div class="legend">
                 @foreach (var presale in overview.Presales)
                 {
-                    <div style="display: inline-block; margin: 0 5px">
-                        <div style="width: 25px; height: 10px; display: inline-block; background: @colors[i]"></div>
-                        <p style="display: inline-block; margin: 0;">@presale.Name:</p>
-                        <p style="display: inline-block; margin: 0;">@Helpers.ToCurrencyString(presale.Statistics.Profit)</p>
-                    </div>
-                    i++;
+                    if ((decimal)presale.Statistics.Profit > 0)
+                    {
+                        <div style="display: inline-block; margin: 0 5px">
+                            <div style="width: 25px; height: 10px; display: inline-block; background: @colors[i]"></div>
+                            <p style="display: inline-block; margin: 0;">@presale.Name:</p>
+                            <p style="display: inline-block; margin: 0;">@Helpers.ToCurrencyString(presale.Statistics.Profit)</p>
+                        </div>
+                        i++;
+                    }
                 }
             </div>
-            <div class="percent">@Helpers.ToPercentString((double)(overview.Statistics.Profit/planned))</div>
+            @if ((decimal)overview.DeltaDay > 0)
+            {
+                <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay)</div>
+            }
+            <div class="percent">@Helpers.ToPercentString((double)(overview.Profit/overview.Plan), 1)</div>
+            <div class="left">@Helpers.ToCurrencyString((decimal)overview.Left)</div>
             <div class="pie">
                 <Chart Config="_pieConfig"></Chart>
             </div>
@@ -41,37 +49,55 @@ else
 }
 
 @code {
-    private Overview? overview;
-    private PieConfig _pieConfig;
+    private TimeSpan timeLeft = new (0, 10, 0);
+    private MonthProfit? overview;
+    private PieConfig _pieConfig = new PieConfig();
     private Image? _img;
     private string[] colors = new[]
         {
-            ColorUtil.ColorHexString(5,47,97),
-            ColorUtil.ColorHexString(12,90,74),
-            ColorUtil.ColorHexString(165,14,130),
-            ColorUtil.ColorHexString(106,158,31),
-            ColorUtil.ColorHexString(232,125,55),
-            ColorUtil.ColorHexString(20,150,124),
-            ColorUtil.ColorHexString(99,8,78),
-            ColorUtil.ColorHexString(198,35,36),
-            ColorUtil.ColorHexString(3,28,58),
+            ColorUtil.ColorHexString(5, 47, 97),
+            ColorUtil.ColorHexString(12, 90, 74),
+            ColorUtil.ColorHexString(165, 14, 130),
+            ColorUtil.ColorHexString(106, 158, 31),
+            ColorUtil.ColorHexString(232, 125, 55),
+            ColorUtil.ColorHexString(20, 150, 124),
+            ColorUtil.ColorHexString(99, 8, 78),
+            ColorUtil.ColorHexString(198, 35, 36),
+            ColorUtil.ColorHexString(3, 28, 58),
     };
     private int i = 0;
-    private decimal planned = 20000000;
-    private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
+    private PeriodicTimer periodicTimer = new(TimeSpan.FromSeconds(1));
+    // private PeriodicTimer timer = new(TimeSpan.FromSeconds(10));
 
     protected override void OnInitialized()
     {
         RunTimer();
     }
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        i = 0;
+    }
+
+    DateTime from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0);
+    DateTime to = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
+
     async void RunTimer()
     {
+        int count = 0;
+        var second = new TimeSpan(0, 0, 1);
         while (await periodicTimer.WaitForNextTickAsync())
         {
-            overview = await UpdateData();
-            _img = await UpdateImage();
-            UpdateChart();
+            if (count > 600)
+            {
+                count = 0;
+                overview = await UpdateData(from, to);
+                _img = await UpdateImage();
+                UpdateChart();
+                timeLeft = new(0, 10, 0);
+            }
+            timeLeft = timeLeft.Subtract(second);
+            count++;
             StateHasChanged();
         }
     }
@@ -81,10 +107,22 @@ else
         periodicTimer?.Dispose();
     }
 
-    private async Task<Overview> UpdateData() => await PresalesClient.GetOverviewAsync(new Period
+    private async Task<MonthProfit> UpdateData(DateTime from, DateTime to)
+    {
+        var overview = await PresalesClient.GetMonthProfitAsync(new Period
         {
-            From = Timestamp.FromDateTime(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToUniversalTime())
+            From = Timestamp.FromDateTime(from.ToUniversalTime()),
+            To = Timestamp.FromDateTime(to.ToUniversalTime())
         });
+
+        if (overview == null || (decimal)overview.Profit == 0)
+            overview = await PresalesClient.GetMonthProfitAsync(new Period
+            {
+                From = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, 1).ToUniversalTime()),
+                To = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, from.AddDays(-1).Day).ToUniversalTime())
+            });
+        return overview;
+    }
 
     private async Task<Image> UpdateImage() => await PresalesClient.GetImageUrlAsync(new ImageRequest { Keyword = "girl" });
 
@@ -93,27 +131,40 @@ else
         i = 0;
         if (overview == null) return;
         var dataset = new PieDataset<decimal>();
-        foreach (var presale in overview.Presales)
-            dataset.Add(presale.Statistics.Profit);
-        dataset.BackgroundColor = colors;
+        List<string> datasetColors = new();
+        List<string> datasetLabels = new();
+        _pieConfig.Data.Labels.Clear();
         _pieConfig.Data.Datasets.Clear();
+
+        foreach (var presale in overview.Presales)
+            if ((decimal)presale.Statistics.Profit > 0)
+            {
+                dataset.Add(presale.Statistics.Profit);
+                datasetColors.Add(colors[i]);
+                _pieConfig.Data.Labels.Add($"{presale.Name}: {Helpers.ToCurrencyString(presale.Statistics.Profit)}");
+                i++;
+            }
+        i = 0;
+        if ((decimal)overview.Left > 0)
+        {
+            dataset.Add((decimal)overview.Left);
+            _pieConfig.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)overview.Left)}");
+            datasetColors.Add(ColorUtil.ColorHexString(240, 240, 240));
+        }
+
+        dataset.BackgroundColor = datasetColors.ToArray();
         _pieConfig.Data.Datasets.Add(dataset);
     }
 
     protected override async Task OnInitializedAsync()
     {
-        overview = await UpdateData();
+        overview = await UpdateData(from, to);
         _img = await UpdateImage();
 
-        _pieConfig = new PieConfig();
         _pieConfig.Options = new PieOptions
             {
                 Responsive = true,
-                Title = new OptionsTitle
-                {
-                    Display = false,
-                    Text = $"Всего: {Helpers.ToCurrencyString(overview.Presales.Sum(p => p.Statistics.Profit))} из {Helpers.ToCurrencyString(20000000)}"
-                },
+                Title = new OptionsTitle { Display = false },
             };
         _pieConfig.Options.Animation = new ArcAnimation
             {
@@ -121,12 +172,11 @@ else
                 AnimateRotate = true
             };
         _pieConfig.Options.CutoutPercentage = 30;
-        _pieConfig.Options.Legend = new Legend
+        _pieConfig.Options.Legend = new Legend { Display = false };
+        _pieConfig.Options.Tooltips = new Tooltips
             {
-                Display = false
+                Enabled = false
             };
-        foreach (var presale in overview.Presales)
-            _pieConfig.Data.Labels.Add($"{presale.Name}: {Helpers.ToCurrencyString(presale.Statistics.Profit)}");
 
         UpdateChart();
     }
