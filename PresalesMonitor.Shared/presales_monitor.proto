@@ -11,6 +11,15 @@ service Presales {
 	rpc GetNames(google.protobuf.Empty) returns (Names);
 	rpc GetKpi(KpiRequest) returns (KpiResponse);
 	rpc GetImageUrl(ImageRequest) returns (Image);
+	rpc GetMonthProfit(Period) returns (MonthProfit);
+}
+
+message MonthProfit {
+	repeated Presale presales = 1;
+	custom_types.DecimalValue profit = 2;
+	custom_types.DecimalValue plan = 3;
+	custom_types.DecimalValue left = 4;
+	custom_types.DecimalValue delta_day = 5;
 }
 
 message ImageRequest {
@@ -53,7 +62,7 @@ message Error {
 
 message Invoice {
 	string counterpart = 1;
-	string nubmer = 2;
+	string number = 2;
 	google.protobuf.Timestamp date = 3;
 	custom_types.DecimalValue amount = 4;
 	custom_types.DecimalValue cost = 5;

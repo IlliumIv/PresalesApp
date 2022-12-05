@@ -18,25 +18,23 @@
     <label>Конец периода:</label>
     <input type="date" min="@Helpers.ToMinMaxFormatString(from)" @bind=to />
 </p>
-<p>
-    <label>Пресейл:</label>
-    @if (presales == null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        <select @bind="selectedName">
-            <option selected=""></option>
-            @foreach (var name in presales.Names_)
-            {
-                <option value="@name">@name</option>
-            }
-        </select>
-    <button class="btn btn-primary" @onclick="OnReportRequested">Построить отчёт</button>
-    <button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadFile">Скачать отчёт</button>
-    }
-</p>
+<label>Пресейл:</label>
+@if (presales == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <select @bind="selectedName">
+        <option selected=""></option>
+        @foreach (var name in presales.Names_)
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+<button class="btn btn-primary" @onclick="OnReportRequested">Построить отчёт</button>
+<button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadFile">Скачать отчёт</button>
+}
 <p role="status">@status</p>
 @if (kpi is not null)
 {
@@ -58,12 +56,29 @@
             <p>
                 Красным выделены те счета, по которым есть игнорируемые действия\проекты или премия посчитана 0.
                 </p>
+        <p>Сортировка:</p>
+            <p style="margin-left: 100px">
+                Чтобы порядок счетов тут совпадал с порядком счетов в 1С, нужно, чтобы отчёт по чистым группировал данные не по партнёру, а по контрагенту.
+                Для этого можно воспользоваться преднастроенным вариантом отчёта из Органайзера ("Органайзер" > "Отчёты (органайзер)" > "Пресейлы, чистые продажи по контрагенту") или настроить отчёт самостоятельно.
+                Если преднастроенный отчёт не отображается в органайзере, то его нужно включить ("Все действия" > "Настроить" > отметить отчёт галкой > "Сохранить изменения").
+                Инструкция по самостоятельной настройке:
+                <ol style="margin-left: 100px">
+                    <li>В отчёте по чистым выбриаем вариант отчёта "ОТЧЕТ: Подразделение\Менеджер\Партнер\Валюта\ЗаказКлиента".</li>
+                    <li>Нажимаем "Все действия" > "Изменить вариант".</li>
+                    <li>В "Структуре отчёта" в четвёртом варианте группировки два раза тыкаем в "Партнёр":
+                        <img style="width: 65%" src="partner_example.png">
+                    </li>
+                    <li>В открывшемся окне два раза тыкаем в "Партнёр" и заменяем на "Контрагент", нажимаем "ОК".</li>
+                    <li>Нажимаем "Завершить редактирование" и формируем отчёт.</li>
+                </ol>
+            </p>
          </details>
 
     <table class="table">
         <thead>
             <tr>
-                <th style="width: 34%">Контрагент</th>
+                <th style="width: 2%">№</th>
+                <th style="width: 32%">Контрагент</th>
                 <th style="width: 5%">Номер</th>
                 <th style="width: 15%">Дата</th>
                 <th style="width: 11%; text-align: right">Сумма по счёту</th>
@@ -74,11 +89,13 @@
             </tr>
         </thead>
         <tbody>
-            @foreach(var inv in kpi.Invoices)
+            @foreach (var inv in kpi.Invoices)
             {
+                i++;
                 <tr style="color: @SetColor(inv)">
+                    <td>@i</td>
                     <td>@inv.Counterpart</td>
-                    <td>@inv.Nubmer</td>
+                    <td>@inv.Number</td>
                     <td>@inv.Date.ToDateTime().ToLocalTime()</td>
                     <td style="text-align: right">@Helpers.ToCurrencyString(inv.Amount)</td>
                     <td style="text-align: right">@Helpers.ToCurrencyString(inv.Cost)</td>
@@ -128,10 +145,10 @@
                         </details>
                     }
                     </td></tr>
-                <p>&nbsp</p>
+                <tr>&nbsp</tr>
             }
             <tr style="text-align: right">
-                <td colspan="3">Всего:</td>
+                <td colspan="4">Всего:</td>
                 <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.Amount))</td>
                 <td></td>
                 <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.SalesAmount))</td>
@@ -143,6 +160,7 @@
 }
 
 @code {
+    int i = 0;
     private Names? presales;
     private Kpi? kpi;
     private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() {{ "disabled", "disabled" }};
@@ -163,6 +181,7 @@
     private async Task<string> GenerateReport()
     {
         kpi = null;
+        i = 0;
         downloadBtnAttrs = new() {{ "disabled", "disabled" }};
 
         if (string.IsNullOrEmpty(selectedName)) return "Выберите пресейла.";

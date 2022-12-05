@@ -1,16 +1,13 @@
 ﻿using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
-using PresalesMonitor;
 using PresalesMonitor.Shared;
 using PresalesMonitor.Entities;
 using Microsoft.EntityFrameworkCore;
 using PresalesMonitor.Entities.Enums;
 using PresalesMonitor.Shared.CustomTypes;
-using Microsoft.EntityFrameworkCore.Internal;
-using System.Linq;
 using System.Security.Authentication;
 using Newtonsoft.Json;
-using System.Net.NetworkInformation;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace PresalesMonitor.Server.Services
 {
@@ -30,11 +27,9 @@ namespace PresalesMonitor.Server.Services
             AuthorUrl = @"https://api.unsplash.com/users/ganinph?utm_source=presales_monitor&utm_medium=referral",
             SourceUrl = @"https://unsplash.com/?utm_source=presales_monitor&utm_medium=referral",
         };
-
         public override Task<KpiResponse> GetKpi(KpiRequest request, ServerCallContext context)
         {
             using var db = new DbController.Context();
-            db.ChangeTracker.LazyLoadingEnabled = false;
             var presale = db.Presales.Single(p => p.Name == request.PresaleName);
 
             if (presale == null)
@@ -43,31 +38,26 @@ namespace PresalesMonitor.Server.Services
             var from = request.Period.From.ToDateTime();
             var to = request.Period.To.ToDateTime();
 
-
-            presale = db.Presales
+#pragma warning disable CS8604 // Possible null reference argument.
+            presale = db.Presales?
+                .Where(p => p.Name == request.PresaleName)?
+                .Where(p => p != null && p.Invoices != null)?
                 .Include(p => p.Invoices
                     .Where(i => i.Date >= from
-                             || i.LastPayAt >= from
-                             || i.LastShipmentAt >= from))
-                    .ThenInclude(i => i.Project).ThenInclude(p => p.Actions)
+                                || i.LastPayAt >= from
+                                || i.LastShipmentAt >= from))?.ThenInclude(i => i.Project)
                 .Include(p => p.Invoices
                     .Where(i => i.Date >= from
-                             || i.LastPayAt >= from
-                             || i.LastShipmentAt >= from))
-                    .ThenInclude(i => i.Project).ThenInclude(p => p.MainProject)
-                .Include(p => p.Invoices
-                    .Where(i => i.Date >= from
-                             || i.LastPayAt >= from
-                             || i.LastShipmentAt >= from))
-                    .ThenInclude(i => i.ProfitPeriods)
-                .Single(p => p.Name == request.PresaleName);
+                                || i.LastPayAt >= from
+                                || i.LastShipmentAt >= from))?.ThenInclude(i => i.ProfitPeriods)
+                .FirstOrDefault();
+#pragma warning restore CS8604 // Possible null reference argument.
 
-
-            if (presale.Projects == null)
+            if (presale?.Projects == null)
                 return Task.FromResult(new KpiResponse());
 
             HashSet<Entities.Project> projects = new();
-            RecurseLoad(presale.Projects, db, ref projects);
+            RecurseLoad(presale.Projects.ToList(), db, ref projects);
 
             HashSet<Entities.Invoice>? invoices = new();
             presale.SumProfit(from, to, ref invoices);
@@ -77,7 +67,7 @@ namespace PresalesMonitor.Server.Services
 
             var reply = new Kpi();
 
-            foreach(var invoice in invoices)
+            foreach(var invoice in invoices.OrderBy(i => (int)i.Counterpart[0]).ThenBy(i => i.Counterpart).ThenBy(i => i.Number))
             {
                 HashSet<PresaleAction> actionsIgnored = new(), actionsTallied = new();
                 HashSet<Entities.Project> projectsIgnored = new(), projectsFound = new();
@@ -90,15 +80,12 @@ namespace PresalesMonitor.Server.Services
                     _ => 0,
                 };
 
-                // Console.WriteLine("------------------------------------");
-                // Console.WriteLine($"{invoice.Number} -- {invoice.Amount} -- {percent}");
-
                 var profit = invoice.GetProfit(from, to);
 
                 var invoiceReply = new Shared.Invoice
                 {
                     Counterpart = invoice.Counterpart,
-                    Nubmer = invoice.Number,
+                    Number = invoice.Number,
                     Date = Timestamp.FromDateTime(invoice.Date),
                     Amount = DecimalValue.FromDecimal(invoice.Amount),
                     Cost = DecimalValue.FromDecimal(invoice.Amount - profit),
@@ -124,25 +111,6 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(new KpiResponse { Kpi = reply });
         }
-        private void RecurseLoad(IEnumerable<Entities.Project?> projects, DbController.Context db, ref HashSet<Entities.Project> projectsViewed)
-        {
-            if (projects == null || projects.All(p => p?.MainProject == null)) return;
-            var mainProjects = projects.Select(p => p?.MainProject);
-            if (mainProjects == null || mainProjects?.Count() == 0) return;
-
-            foreach (var project in mainProjects)
-            {
-                if (project == null) continue;
-                if (projectsViewed.Contains(project)) continue;
-                else projectsViewed.Add(project);
-
-                var prjs = db.Projects.Where(p => p == project)
-                    .Include(p => p.Actions)
-                    .Include(p => p.MainProject);
-
-                RecurseLoad(prjs, db, ref projectsViewed);
-            }
-        }
         public override Task<Names> GetNames(Empty request, ServerCallContext context)
         {
             using var db = new DbController.Context();
@@ -163,21 +131,90 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(GetOverview(from, to));
         }
+        public override Task<Image> GetImageUrl(ImageRequest request, ServerCallContext context)
+        {
+            var macroscopClientHandler = new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+                SslProtocols = SslProtocols.Tls12
+            };
+            var unsplashClient = new HttpClient(macroscopClientHandler) { BaseAddress = new Uri("https://api.unsplash.com") };
+            var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random/?query={request.Keyword}&orientation=portrait");
+            unsplashRequest.Headers.Add("Authorization", "Client-ID zoKHly26A5L5BCYWXdctm0hc9u5JGaqcsMv_znpsIR0");
+            var unsplashResponse = unsplashClient.SendAsync(unsplashRequest).Result;
+            if (!unsplashResponse.IsSuccessStatusCode) return Task.FromResult(_cashedImage);
+            var response = JsonConvert.DeserializeObject<dynamic>(unsplashResponse.Content.ReadAsStringAsync().Result);
+            if (response == null) return Task.FromResult(_cashedImage);
+
+            _cashedImage.Raw = response.urls.raw;
+            _cashedImage.Full = response.urls.full;
+            _cashedImage.Regular = response.urls.regular;
+            _cashedImage.Small = response.urls.small;
+            _cashedImage.Thumb = response.urls.thumb;
+            _cashedImage.SmallS3 = response.urls.small_s3;
+            _cashedImage.AltDescription = $"{response.alt_description}";
+            _cashedImage.AuthorName = $"{response.user.name}";
+            _cashedImage.SourceName = "Unsplash";
+            _cashedImage.AuthorUrl = $"{response.user.links.self}?utm_source=presales_monitor&utm_medium=referral";
+            _cashedImage.SourceUrl = @"https://unsplash.com/?utm_source=presales_monitor&utm_medium=referral";
+
+            return Task.FromResult(_cashedImage);
+        }
+        public override Task<MonthProfit> GetMonthProfit(Period request, ServerCallContext context)
+        {
+            var from = request?.From?.ToDateTime() ?? DateTime.MinValue;
+            var to = request?.To?.ToDateTime() ?? DateTime.MaxValue;
+            decimal plan = 75000000;
+
+            using var db = new DbController.Context();
+            var presales = db.Presales.ToList();
+            _ = db.Invoices
+                .Where(i => i.Date >= from
+                    || i.LastPayAt >= from
+                    || i.LastShipmentAt >= from)
+                .Include(i => i.Presale)
+                .Include(i => i.ProfitPeriods).ToList();
+
+            var reply = new MonthProfit();
+            foreach (var presale in presales)
+            {
+                if (presale.Position == Position.None
+                 || presale.Position == Position.Director) continue;
+
+                reply.Presales.Add(new Shared.Presale()
+                {
+                    Name = presale.Name,
+                    Statistics = new Statistic()
+                    {
+                        Profit = DecimalValue.FromDecimal(presale.SumProfit(from, to))
+                    }
+                });
+            }
+
+            var profit = presales?.Where(p => p.Department != Department.None)
+                .Sum(p => p.SumProfit(from, to)) ?? 0;
+
+            var profitPrevDay = presales?.Where(p => p.Department != Department.None)
+                .Sum(p => p.SumProfit(from, to.AddDays(-1))) ?? 0;
+
+            reply.Profit = profit;
+            reply.Plan = plan;
+            reply.Left = plan - profit > 0 ? plan - profit : 0;
+            reply.DeltaDay = profit - profitPrevDay > 0 ? profit - profitPrevDay : 0;
+
+            return Task.FromResult(reply);
+        }
         private static Overview GetOverview(DateTime from, DateTime to)
         {
             using var db = new DbController.Context();
+#pragma warning disable CS8604 // Possible null reference argument.
             var presales = db.Presales
                 .Include(p => p.Projects
-                /*
-                    .Where(p => 
-                        (p.Actions != null && p.Actions.Any(a => a.Date >= from.AddYears(-1)))
-                        || p.PresaleStartAt >= from.AddYears(-1)
-                        || p.ApprovalBySalesDirectorAt >= from.AddYears(-1)
-                        || p.ApprovalByTechDirectorAt >= from.AddYears(-1))
-                    //*/
-                    )
+                    .Where(p => p.Actions != null)
+                )
                 .ThenInclude(p => p.Actions)
                 .ToList();
+#pragma warning restore CS8604 // Possible null reference argument.
 
             _ = db.Invoices
                 .Where(i => i.Date >= from
@@ -187,10 +224,13 @@ namespace PresalesMonitor.Server.Services
                 .Include(i => i.ProfitPeriods).ToList();
 
             List<Entities.Project> projects = new();
-
             foreach (var presale in presales)
                 if (presale.Projects != null)
                     projects.AddRange(presale.Projects);
+
+            var otherProjects = db.Projects.Where(p => p.Presale == null).ToList();
+            if (otherProjects != null)
+                projects.AddRange(otherProjects);
 
             decimal maxPotential = presales.Max(p => p.Projects?
                 .Where(p => p.Presale?.Department == Department.Russian)?
@@ -301,13 +341,15 @@ namespace PresalesMonitor.Server.Services
                 AvgTimeToWin = Duration.FromTimeSpan(TimeSpan.FromDays(presales?
                     .Where(p => p.Position == Position.Engineer
                              || p.Position == Position.Account)?
-                    .Average(p => p.AverageTimeToWin(from).TotalDays) ?? 0)),
+                    .DefaultIfEmpty()
+                    .Average(p => p?.AverageTimeToWin().TotalDays ?? 0) ?? 0)),
                 #endregion
                 #region Среднее время реакции
                 AvgTimeToReaction = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?
                     .Where(p => p.Position == Position.Engineer
                              || p.Position == Position.Account)?
-                    .Average(p => p.AverageTimeToReaction(from).TotalMinutes) ?? 0)),
+                    .DefaultIfEmpty()
+                    .Average(p => p?.AverageTimeToReaction(from).TotalMinutes ?? 0) ?? 0)),
                 #endregion
                 #region Суммарное потраченное время на проекты в этом месяце
                 SumSpend = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?.Where(p => p.Position == Position.Engineer
@@ -322,7 +364,8 @@ namespace PresalesMonitor.Server.Services
                 #region Средний ранг проектов
                 AvgRank = presales?.Where(p => p.Position == Position.Engineer
                              || p.Position == Position.Account)?
-                    .Average(p => p.AverageRang()) ?? 0,
+                    .DefaultIfEmpty()
+                    .Average(p => p?.AverageRang() ?? 0) ?? 0,
                 #endregion
                 #region Количество "брошенных" проектов
                 Abnd = presales?.Where(p => p.Position == Position.Engineer
@@ -356,48 +399,31 @@ namespace PresalesMonitor.Server.Services
             reply.AvgDirectorTimeToReaction = Duration.FromTimeSpan(TimeSpan.FromMinutes(projects?
                 .Where(p => p.ApprovalBySalesDirectorAt > from)?
                 .Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue)?
-                .Average(p => p.TimeToDirectorReaction().TotalMinutes) ?? 0 ));
+                .DefaultIfEmpty()
+                .Average(p => p?.TimeToDirectorReaction().TotalMinutes ?? 0) ?? 0));
             #endregion
             #endregion
 
             return reply;
         }
-
-        public override Task<Image> GetImageUrl(ImageRequest request, ServerCallContext context)
+        private void RecurseLoad(List<Entities.Project>? projects, DbController.Context db, ref HashSet<Entities.Project> projectsViewed)
         {
-            var macroscopClientHandler = new HttpClientHandler()
+            if (projects == null || projects.Count == 0) return;
+            foreach (var project in projects)
             {
-                ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
-                SslProtocols = SslProtocols.Tls12
-            };
-            var unsplashClient = new HttpClient(macroscopClientHandler)
-            {
-                BaseAddress = new Uri("https://api.unsplash.com"),
-            };
-            var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random/?query={request.Keyword}&orientation=portrait");
-            unsplashRequest.Headers.Add("Authorization", "Client-ID zoKHly26A5L5BCYWXdctm0hc9u5JGaqcsMv_znpsIR0");
-
-            var unsplashResponse = unsplashClient.SendAsync(unsplashRequest).Result;
-            if (!unsplashResponse.IsSuccessStatusCode) return Task.FromResult(_cashedImage);
-
-            var response = JsonConvert.DeserializeObject<dynamic>(unsplashResponse.Content.ReadAsStringAsync().Result);
-
-            _cashedImage.Raw = response.urls.raw;
-            _cashedImage.Full = response.urls.full;
-            _cashedImage.Regular = response.urls.regular;
-            _cashedImage.Small = response.urls.small;
-            _cashedImage.Thumb = response.urls.thumb;
-            _cashedImage.SmallS3 = response.urls.small_s3;
-            _cashedImage.AltDescription = $"{response.alt_description}";
-            _cashedImage.AuthorName = $"{response.user.name}";
-            _cashedImage.SourceName = "Unsplash";
-            _cashedImage.AuthorUrl = $"{response.user.links.self}?utm_source=presales_monitor&utm_medium=referral";
-            _cashedImage.SourceUrl = @"https://unsplash.com/?utm_source=presales_monitor&utm_medium=referral";
-
-            return Task.FromResult(_cashedImage);
+                if (project == null) continue;
+                if (projectsViewed.Contains(project)) continue;
+                else projectsViewed.Add(project);
+                _ = db.Actions?.Where(a => a.Project.Number == project.Number)?.ToList();
+                var prj = db.Projects?.Where(p => p.Number == project.Number)?.Include(p => p.MainProject).FirstOrDefault();
+                if (prj?.MainProject?.Number != null)
+                {
+                    var mainPrjs = db.Projects?.Where(p => p.Number == prj.MainProject.Number)?.ToList();
+                    RecurseLoad(mainPrjs, db, ref projectsViewed);
+                }
+            }
         }
     }
-
     public static class Extensions
     {
         public static Shared.Project Translate(this Entities.Project project) => new()

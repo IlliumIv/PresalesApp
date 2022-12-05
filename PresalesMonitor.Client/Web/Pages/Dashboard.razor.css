@@ -4,8 +4,22 @@
 
 .percent {
     position: absolute;
-    font-size: 5em;
+    font-size: 4em;
+    font-weight: bold;
+    bottom: 1em;
     margin: 2% 5%;
+}
+
+.left {
+    position: absolute;
+    font-size: 5em;
+    font-weight: bold;
+    bottom: 0;
+}
+
+.delta {
+    position: absolute;
+    font-size: 3.5em;
     font-weight: bold;
 }
 

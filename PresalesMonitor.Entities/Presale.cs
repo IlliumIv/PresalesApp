@@ -79,27 +79,27 @@ namespace PresalesMonitor.Entities
         public double AverageRang() => Projects?
             .Where(p => p.Name != string.Empty)?
             .DefaultIfEmpty()
-            .Average(p => p is null ? 0 : p.Rank()) ?? 0;
+            .Average(p => p?.Rank() ?? 0) ?? 0;
         public double AverageRangByStatus(ProjectStatus status) => Projects?
             .Where(p => p.Name != string.Empty)?
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
-            .Average(p => p is null ? 0 : p.Rank()) ?? 0;
+            .Average(p => p?.Rank() ?? 0) ?? 0;
         public decimal AveragePotentialByStatus(ProjectStatus status) => Projects?
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
-            .Average(p => p is null ? 0 : p.PotentialAmount) ?? 0;
+            .Average(p => p?.PotentialAmount ?? 0) ?? 0;
         public decimal AveragePotentialByStatus(ProjectStatus status, DateTime from) => Projects?
             .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
-            .Average(p => p is null ? 0 : p.PotentialAmount) ?? 0;
+            .Average(p => p?.PotentialAmount ?? 0) ?? 0;
         public decimal AveragePotentialByStatus(ProjectStatus status, DateTime from, DateTime to) => Projects?
             .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
             .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() <= to)?
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
-            .Average(p => p is null ? 0 : p.PotentialAmount) ?? 0;
+            .Average(p => p?.PotentialAmount ?? 0) ?? 0;
         public decimal SumProfit() { var i = new HashSet<Invoice>(); return SumProfit(ref i); }
         public decimal SumProfit(ref HashSet<Invoice>? invoices) => SumProfit(DateTime.MinValue, DateTime.MaxValue, ref invoices);
         public decimal SumProfit(DateTime from) { var i = new HashSet<Invoice>(); return SumProfit(from, ref i); }
@@ -136,7 +136,7 @@ namespace PresalesMonitor.Entities
         private static TimeSpan AvgTTR(IEnumerable<Project>? projects)
         {
             var minutes = projects?
-                .Where(p => p.PresaleStartAt != DateTime.MinValue)
+                .Where(p => p.PresaleStartAt != DateTime.MinValue)?
                 .DefaultIfEmpty()
                 .Average(p => p is null ? 0 : CalculateWorkingMinutes
                 (p.ApprovalByTechDirectorAt.ToLocalTime(),
@@ -162,11 +162,12 @@ namespace PresalesMonitor.Entities
             var minutes = projects?
                 .Where(p => p.Actions != null
                     && p.Actions.Any(a => a.Date.ToLocalTime() >= from)
-                    && p.Actions.Any(a => a.Date.ToLocalTime() <= to))
-                .Average(p => p.Actions?
+                    && p.Actions.Any(a => a.Date.ToLocalTime() <= to))?
+                .DefaultIfEmpty()
+                .Average(p => p?.Actions?
                     .Where(a => a.Date.ToLocalTime() >= from)?
                     .Where(a => a.Date.ToLocalTime() <= to)?
-                    .Sum(a => a.TimeSpend));
+                    .Sum(a => a.TimeSpend) ?? 0);
             return minutes == null ? TimeSpan.Zero : TimeSpan.FromMinutes((int)minutes);
         }
 
