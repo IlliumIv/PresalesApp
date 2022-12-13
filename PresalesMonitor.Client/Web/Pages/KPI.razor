@@ -148,7 +148,8 @@ else
                 <tr>&nbsp</tr>
             }
             <tr style="text-align: right">
-                <td colspan="4">Всего:</td>
+                <td colspan="3">Оплачено времени: @Helpers.ToMinutesString(TimeSpan.FromMinutes(kpi.Invoices.Sum(i => i.ActionsTallied.Sum(a => a.Timespend.ToTimeSpan().TotalMinutes))))</td>
+                <td>Всего:</td>
                 <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.Amount))</td>
                 <td></td>
                 <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.SalesAmount))</td>

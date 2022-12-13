@@ -40,9 +40,8 @@ namespace PresalesMonitor.Console
 
         public static void ShowData(DateTime prevUpdate)
         {
-            System.Console.Clear();
-            System.Console.WriteLine($"\n\tДоступны данные за период: 20.09.2022 00:00:00 - {prevUpdate:dd.MM.yyyy HH:mm:ss}");
-            System.Console.WriteLine($"\tПоследнее обновление: {prevUpdate:dd.MM.yyyy HH:mm:ss.fff}");
+            System.Console.WriteLine($"\nДоступны данные за период: 20.09.2022 00:00:00 - {prevUpdate:dd.MM.yyyy HH:mm:ss}");
+            System.Console.WriteLine($"Последнее обновление: {prevUpdate:dd.MM.yyyy HH:mm:ss.fff}");
         }
     }
 }

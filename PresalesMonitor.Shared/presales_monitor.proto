@@ -7,13 +7,24 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/duration.proto";
 
 service Presales {
-	rpc GetOverview(Period) returns (Overview);
+	rpc GetOverview(OverviewRequest) returns (Overview);
 	rpc GetNames(google.protobuf.Empty) returns (Names);
 	rpc GetKpi(KpiRequest) returns (KpiResponse);
 	rpc GetImageUrl(ImageRequest) returns (Image);
 	rpc GetMonthProfit(Period) returns (MonthProfit);
+	rpc GetSalesOverview(google.protobuf.Empty) returns (SalesOverview);
 }
 
+message SalesOverview {
+	custom_types.DecimalValue profit = 1;
+	custom_types.DecimalValue plan_small = 2;
+	custom_types.DecimalValue plan_full = 3;
+	repeated Manager top = 4;
+}
+message Manager {
+	string name = 1;
+	custom_types.DecimalValue profit = 2;
+}
 message MonthProfit {
 	repeated Presale presales = 1;
 	custom_types.DecimalValue profit = 2;
@@ -21,11 +32,10 @@ message MonthProfit {
 	custom_types.DecimalValue left = 4;
 	custom_types.DecimalValue delta_day = 5;
 }
-
 message ImageRequest {
 	string keyword = 1;
+	string orientation = 2;
 }
-
 message Image {
 	string raw = 1;
 	string full = 2;
@@ -39,27 +49,22 @@ message Image {
 	string source_name = 10;
 	string source_url = 11;
 }
-
 message KpiRequest{
 	string presale_name = 1;
 	Period period = 2;
 }
-
 message KpiResponse {
 	oneof response {
 		Kpi kpi = 1;
 		Error error = 2;
 	}
 }
-
 message Kpi {
 	repeated Invoice invoices = 1; 
 }
-
 message Error {
 	string message = 1;
 }
-
 message Invoice {
 	string counterpart = 1;
 	string number = 2;
@@ -74,16 +79,18 @@ message Invoice {
 	repeated Action actions_tallied = 11;
 	repeated Action actions_ignored = 12;
 }
-
 message Names {
 	repeated string names = 1;
 }
-
 message Period {
 	google.protobuf.Timestamp from = 1;
 	google.protobuf.Timestamp to = 2;
 }
-
+message OverviewRequest {
+	Period period = 1;
+	Department department = 2;
+	Position position = 3;
+}
 message Overview {
 	repeated Presale presales = 1;
 	Statistic statistics = 2;
@@ -92,14 +99,12 @@ message Overview {
 	repeated Project forgotten = 5;
 	repeated Project new = 6;
 }
-
 message Presale {
 	string name = 1;
 	Statistic statistics = 2;
 	int32 deficit_projects = 3;
 	custom_types.DecimalValue deficit_potential = 4;
 }
-
 message Statistic {
 	int32 in_work = 1;
 	int32 assign = 2;
@@ -114,7 +119,6 @@ message Statistic {
 	google.protobuf.Duration sum_spend = 11;
 	custom_types.DecimalValue profit = 12;
 }
-
 message Project {
 	string number = 1;
 	string name = 2;
@@ -124,7 +128,6 @@ message Project {
 	string presale_name = 6;
 	int32 status = 7;
 }
-
 message Action {
 	string project_number = 1;
 	int32 number = 2;
@@ -132,4 +135,17 @@ message Action {
 	int32 type = 4;
 	google.protobuf.Duration timespend = 5;
 	string description = 6;
+}
+enum Department {
+	DEPARTMENT_NONE = 0;
+	DEPARTMENT_INTERNATIONAL = 1;
+	DEPARTMENT_RUSSIAN = 2;
+	DEPARTMENT_ALL = 3;
+}
+enum Position {
+	POSITION_NONE = 0;
+	POSITION_ENGINEER = 1;
+	POSITION_ACCOUNT = 2;
+	POSITION_DIRECTOR = 3;
+	POSITION_ALL = 4;
 }

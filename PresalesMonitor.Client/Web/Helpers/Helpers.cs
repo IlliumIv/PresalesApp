@@ -13,7 +13,7 @@ namespace PresalesMonitor.Client.Web.Helpers
         public static string ToPercentString(double value, int digits = 0) => $"{(value == 0 ? "" : value.ToString($"P{digits}"))}";
         public static string ToDaysString(TimeSpan avgTTW) => $"{(avgTTW == TimeSpan.Zero ? "" : avgTTW.TotalDays):f0}";
         public static string ToMinutesString(TimeSpan avgTTR) => $"{(avgTTR == TimeSpan.Zero ? "" : avgTTR.TotalMinutes):f0}";
-        public static string ToHoursOrMinutesString(TimeSpan timeSpend) => $"{(timeSpend == TimeSpan.Zero ? "" : timeSpend.TotalMinutes / 60 < 1 ? $"{timeSpend.TotalMinutes / 60:f1}" : $"{timeSpend.TotalMinutes / 60:f0}")}";
+        public static string ToHoursString(TimeSpan timeSpend) => $"{(timeSpend == TimeSpan.Zero ? "" : timeSpend.TotalHours):f1}";
         public static string ToEnumString<T>(T type) where T : Enum
         {
             var enumType = typeof(T);

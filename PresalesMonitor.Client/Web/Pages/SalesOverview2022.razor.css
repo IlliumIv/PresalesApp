@@ -1,0 +1,51 @@
+﻿.percent {
+    position: absolute;
+    right: -3%;
+    font-size: 700%;
+    bottom: 0;
+    margin: 0;
+    font-weight: bold;
+}
+.charts {
+    display: flex;
+}
+
+.chart_small,
+.chart_full {
+    width: 45%;
+    position: relative;
+    margin-right: 5%;
+}
+
+.top {
+    display: flex;
+    margin-top: 4em;
+}
+
+.top table {
+    font-size: 250%;
+    font-weight: bold;
+    width: 48%;
+    margin-left: 2%;
+}
+
+.background {
+    z-index: -1;
+    opacity: 0.25;
+    position: absolute;
+    left: auto;
+    top: 0;
+    width: 100%;
+}
+
+.legend {
+    display: flex;
+    padding-top: 2%;
+}
+
+.legend div {
+    text-align: center;
+    font-size: 4em;
+    width: 45%;
+    margin-right: 5%;
+}
