@@ -1,5 +1,6 @@
 ﻿.chart {
-    width: 75%;
+    width: 68%;
+    position: relative;
 }
 
 .percent {
@@ -7,7 +8,7 @@
     font-size: 4em;
     font-weight: bold;
     bottom: 1em;
-    margin: 2% 5%;
+    margin: 3% 5%;
 }
 
 .left {
@@ -15,18 +16,20 @@
     font-size: 5em;
     font-weight: bold;
     bottom: 0;
+    margin-left: 1%;
 }
 
 .delta {
     position: absolute;
     font-size: 3.5em;
     font-weight: bold;
+    padding-left: 1%;
 }
 
 .pie {
-    width: 95%;
-    margin-top: 30px;
-    margin-left: 5%;
+    width: 100%;
+    margin-top: 5%;
+    position: absolute;
 }
 
 .dashboard {
@@ -35,5 +38,59 @@
 
 .legend {
     text-align: center;
+    margin: auto;
+    font-size: 1.5em;
+}
+
+.legend div {
     display: inline-block;
+    margin: 0 5px;
+}
+
+
+.legend div div {
+    width: 25px;
+    height: 10px;
+    display: inline-block;
+}
+
+.legend div p {
+    display: inline-block;
+    margin: 0;
+}
+
+.timer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 2.5em;
+    padding-right: 2%;
+}
+
+.img-container {
+    width: 32%;
+    display: grid;
+    margin-top: 5%;
+}
+
+.img-container img {
+    width: 95%;
+}
+
+.img-container div {
+    text-align: center;
+}
+
+.img-container div p {
+    margin: 0;
+}
+
+.img-container div input {
+    background: none;
+    border: none;
+    text-align: center;
+}
+
+.delta-container {
+    position: relative;
 }

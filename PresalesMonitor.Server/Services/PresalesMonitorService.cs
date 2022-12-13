@@ -7,13 +7,15 @@ using PresalesMonitor.Entities.Enums;
 using PresalesMonitor.Shared.CustomTypes;
 using System.Security.Authentication;
 using Newtonsoft.Json;
-using Microsoft.EntityFrameworkCore.Internal;
+using Department = PresalesMonitor.Entities.Enums.Department;
+using Position = PresalesMonitor.Entities.Enums.Position;
 
 namespace PresalesMonitor.Server.Services
 {
     public class PresalesMonitorService : Presales.PresalesBase
     {
-        private Image _cashedImage = new()
+        private string cachedTop = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
+        private Image _cashedImageGirl = new()
         {
             Raw = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3",
             Full = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?crop=entropy&cs=tinysrgb&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3&q=80",
@@ -24,8 +26,22 @@ namespace PresalesMonitor.Server.Services
             AltDescription = "",
             AuthorName = "Dmitry Ganin",
             SourceName = "Unsplash",
-            AuthorUrl = @"https://api.unsplash.com/users/ganinph?utm_source=presales_monitor&utm_medium=referral",
-            SourceUrl = @"https://unsplash.com/?utm_source=presales_monitor&utm_medium=referral",
+            AuthorUrl = @"https://unsplash.com/@ganinph",
+            SourceUrl = @"https://unsplash.com/",
+        };
+        private Image _cashedImageNY = new()
+        {
+            Raw = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3",
+            Full = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?crop=entropy&cs=tinysrgb&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3&q=80",
+            Regular = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3&q=80&w=1080",
+            Small = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3&q=80&w=400",
+            Thumb = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3&q=80&w=200",
+            SmallS3 = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1514803530614-3a2bef88f31c",
+            AltDescription = "person holding sparkler",
+            AuthorName = "Chinh Le Duc",
+            SourceName = "Unsplash",
+            AuthorUrl = @"https://unsplash.com/@mero_dnt",
+            SourceUrl = @"https://unsplash.com/",
         };
         public override Task<KpiResponse> GetKpi(KpiRequest request, ServerCallContext context)
         {
@@ -124,41 +140,62 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(reply);
         }
-        public override Task<Overview> GetOverview(Period request, ServerCallContext context)
+        public override Task<Overview> GetOverview(OverviewRequest request, ServerCallContext context)
         {
-            var from = request?.From?.ToDateTime() ?? DateTime.MinValue;
-            var to = request?.To?.ToDateTime() ?? DateTime.MaxValue;
+            var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
+            var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
 
-            return Task.FromResult(GetOverview(from, to));
+            return Task.FromResult(GetOverview(from, to, request.Department, request.Position));
         }
         public override Task<Image> GetImageUrl(ImageRequest request, ServerCallContext context)
         {
-            var macroscopClientHandler = new HttpClientHandler()
+            try
             {
-                ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
-                SslProtocols = SslProtocols.Tls12
-            };
-            var unsplashClient = new HttpClient(macroscopClientHandler) { BaseAddress = new Uri("https://api.unsplash.com") };
-            var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random/?query={request.Keyword}&orientation=portrait");
-            unsplashRequest.Headers.Add("Authorization", "Client-ID zoKHly26A5L5BCYWXdctm0hc9u5JGaqcsMv_znpsIR0");
-            var unsplashResponse = unsplashClient.SendAsync(unsplashRequest).Result;
-            if (!unsplashResponse.IsSuccessStatusCode) return Task.FromResult(_cashedImage);
-            var response = JsonConvert.DeserializeObject<dynamic>(unsplashResponse.Content.ReadAsStringAsync().Result);
-            if (response == null) return Task.FromResult(_cashedImage);
-
-            _cashedImage.Raw = response.urls.raw;
-            _cashedImage.Full = response.urls.full;
-            _cashedImage.Regular = response.urls.regular;
-            _cashedImage.Small = response.urls.small;
-            _cashedImage.Thumb = response.urls.thumb;
-            _cashedImage.SmallS3 = response.urls.small_s3;
-            _cashedImage.AltDescription = $"{response.alt_description}";
-            _cashedImage.AuthorName = $"{response.user.name}";
-            _cashedImage.SourceName = "Unsplash";
-            _cashedImage.AuthorUrl = $"{response.user.links.self}?utm_source=presales_monitor&utm_medium=referral";
-            _cashedImage.SourceUrl = @"https://unsplash.com/?utm_source=presales_monitor&utm_medium=referral";
-
-            return Task.FromResult(_cashedImage);
+                var clientHandler = new HttpClientHandler()
+                {
+                    ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+                    SslProtocols = SslProtocols.Tls12
+                };
+                var unsplashClient = new HttpClient(clientHandler) { BaseAddress = new Uri("https://api.unsplash.com") };
+                var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random?query={request.Keyword}&orientation={request.Orientation}");
+                unsplashRequest.Headers.Add("Authorization", "Client-ID zoKHly26A5L5BCYWXdctm0hc9u5JGaqcsMv_znpsIR0");
+                var unsplashResponse = unsplashClient.SendAsync(unsplashRequest).Result;
+                if (!unsplashResponse.IsSuccessStatusCode) return Task.FromResult(_cashedImageGirl);
+                var response = JsonConvert.DeserializeObject<dynamic>(unsplashResponse.Content.ReadAsStringAsync().Result);
+                if (response == null) return request.Keyword switch
+                {
+                    "happy new year" => Task.FromResult(_cashedImageNY),
+                    _ => Task.FromResult(_cashedImageGirl)
+                };
+                var _img = new Image
+                {
+                    Raw = response.urls.raw,
+                    Full = response.urls.full,
+                    Regular = response.urls.regular,
+                    Small = response.urls.small,
+                    Thumb = response.urls.thumb,
+                    SmallS3 = response.urls.small_s3,
+                    AltDescription = $"{response.alt_description}",
+                    AuthorName = $"{response.user.name}",
+                    AuthorUrl = $"{response.user.links.html}",
+                    SourceName = "Unsplash",
+                    SourceUrl = @"https://unsplash.com/",
+                };
+                switch (request.Keyword)
+                {
+                    case "happy new year":
+                        _cashedImageNY = _img;
+                        break;
+                    default:
+                        _cashedImageGirl = _img;
+                        break;
+                }
+                return Task.FromResult(_img);
+            }
+            catch
+            {
+                return Task.FromResult(_cashedImageGirl);
+            }
         }
         public override Task<MonthProfit> GetMonthProfit(Period request, ServerCallContext context)
         {
@@ -204,7 +241,30 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(reply);
         }
-        private static Overview GetOverview(DateTime from, DateTime to)
+        public override Task<SalesOverview> GetSalesOverview(Empty request, ServerCallContext context)
+        {
+            var httpClient = new HttpClient() { BaseAddress = new Uri("http://127.0.0.1") };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"trade/hs/API/GetTradeData");
+            httpRequest.Headers.Add("Authorization", "Basic 0J/QvtC70Y/QutC+0LLQmDpraDk5OFh0Rg==");
+            var httpResponse = httpClient.SendAsync(httpRequest).Result;
+            var result = httpResponse.Content.ReadAsStringAsync().Result;
+
+            if (!httpResponse.IsSuccessStatusCode) result = cachedTop;
+            cachedTop = result;
+
+            var response = JsonConvert.DeserializeObject<dynamic>(result);
+            var reply = new SalesOverview();
+
+            foreach (var manager in response.Топ)
+                reply.Top.Add(new Manager { Name = string.Join(" ", ((string)manager.Имя).Split().Take(2)), Profit = (decimal)manager.Сумма });
+
+            reply.Profit = (decimal)response.Всего;
+            reply.PlanFull = 440000000;
+            reply.PlanSmall = 420000000;
+
+            return Task.FromResult(reply);
+        }
+        private static Overview GetOverview(DateTime from, DateTime to, Shared.Department department, Shared.Position position)
         {
             using var db = new DbController.Context();
 #pragma warning disable CS8604 // Possible null reference argument.
