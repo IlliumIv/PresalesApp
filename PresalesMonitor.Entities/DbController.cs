@@ -22,7 +22,7 @@ namespace PresalesMonitor.Entities
                     $"database={dbSettings.DatabaseName};" +
                     $"username={dbSettings.Username};" +
                     $"password={dbSettings.Password}")
-                    // .EnableSensitiveDataLogging().LogTo(message => Debug.WriteLine(message))
+                    // .EnableSensitiveDataLogging().LogTo(message => Console.WriteLine(message))
                     ;
             }
             public DbSet<Presale> Presales { get; set; }

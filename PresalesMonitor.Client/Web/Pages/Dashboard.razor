@@ -3,13 +3,15 @@
 @using Google.Protobuf.WellKnownTypes;
 @using ChartJs.Blazor.PieChart;
 @using PresalesMonitor.Client.Web.Helpers;
+@using Department = PresalesMonitor.Shared.Department;
+@using Position = PresalesMonitor.Shared.Position;
 @inject Presales.PresalesClient PresalesClient
 @implements IDisposable
 @layout DashboardLayout
 
 <PageTitle>Dashboard</PageTitle>
 
-@if (monthProfit == null || _img == null)
+@if (overview == null || _img == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -18,7 +20,7 @@ else
     <div class="dashboard">
         <div class="chart">
             <div class="legend">
-                @foreach (var presale in monthProfit.Presales)
+                @foreach (var presale in overview.Presales)
                 {
                     if ((decimal)presale.Statistics.Profit > 0)
                     {
@@ -36,9 +38,9 @@ else
             </div>
             <div class="delta-container timer-container">
                 <div class="timer">@timeLeft</div>
-                @if ((decimal)monthProfit.DeltaDay > 0)
+                @if ((decimal)overview.DeltaDay > 0)
                 {
-                    <div class="delta">+@Helpers.ToCurrencyString((decimal)monthProfit.DeltaDay)</div>
+                    <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay)</div>
                 }
             </div>
         </div>
@@ -50,13 +52,13 @@ else
             </div>
         </div>
     </div>
-    <div class="percent">@Helpers.ToPercentString((double)(monthProfit.Profit/monthProfit.Plan), 1)</div>
-    <div class="left">@Helpers.ToCurrencyString((decimal)monthProfit.Left)</div>
+    <div class="percent">@Helpers.ToPercentString((double)(overview.Profit/overview.Plan), 1)</div>
+    <div class="left">@Helpers.ToCurrencyString((decimal)overview.Left)</div>
 }
 
 @code {
     private TimeSpan timeLeft = new (0, 10, 0);
-    private MonthProfit? monthProfit;
+    private MonthProfitOverview? overview;
     private PieConfig _pieConfig = new PieConfig();
     private Image? _img;
     private string query = "girl";
@@ -104,7 +106,7 @@ else
             {
                 count = 0;
                 to = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
-                monthProfit = await UpdateData(from, to);
+                overview = await UpdateData(from, to);
                 _img = await UpdateImage();
                 UpdateChart();
                 timeLeft = new(0, 10, 0);
@@ -114,20 +116,30 @@ else
         }
     }
 
-    private async Task<MonthProfit> UpdateData(DateTime from, DateTime to)
+    private async Task<MonthProfitOverview> UpdateData(DateTime from, DateTime to)
     {
-        var overview = await PresalesClient.GetMonthProfitAsync(new Period
-        {
-            From = Timestamp.FromDateTime(from.ToUniversalTime()),
-            To = Timestamp.FromDateTime(to.ToUniversalTime())
-        });
+        var overview = await PresalesClient.GetMonthProfitOverviewAsync(new OverviewRequest
+            {
+                Period = new Period
+                {
+                    From = Timestamp.FromDateTime(from.ToUniversalTime()),
+                    To = Timestamp.FromDateTime(to.ToUniversalTime())
+                },
+                Department = Department.Russian,
+                Position = Position.Any
+            });
 
         if (overview == null || (decimal)overview.Profit == 0)
-            overview = await PresalesClient.GetMonthProfitAsync(new Period
-            {
-                From = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, 1).ToUniversalTime()),
-                To = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, from.AddDays(-1).Day).ToUniversalTime())
-            });
+            overview = await PresalesClient.GetMonthProfitOverviewAsync(new OverviewRequest
+                {
+                    Period = new Period
+                    {
+                        From = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, 1).ToUniversalTime()),
+                        To = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, from.AddDays(-1).Day).ToUniversalTime())
+                    },
+                    Department = Department.Russian,
+                    Position = Position.Any
+                });
         return overview;
     }
 
@@ -136,14 +148,14 @@ else
     private void UpdateChart()
     {
         i = 0;
-        if (monthProfit == null) return;
+        if (overview == null) return;
         var dataset = new PieDataset<decimal>();
         List<string> datasetColors = new();
         List<string> datasetLabels = new();
         _pieConfig.Data.Labels.Clear();
         _pieConfig.Data.Datasets.Clear();
 
-        foreach (var presale in monthProfit.Presales)
+        foreach (var presale in overview.Presales)
             if ((decimal)presale.Statistics.Profit > 0)
             {
                 dataset.Add(presale.Statistics.Profit);
@@ -152,10 +164,10 @@ else
                 i++;
             }
         i = 0;
-        if ((decimal)monthProfit.Left > 0)
+        if ((decimal)overview.Left > 0)
         {
-            dataset.Add((decimal)monthProfit.Left);
-            _pieConfig.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)monthProfit.Left)}");
+            dataset.Add((decimal)overview.Left);
+            _pieConfig.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)overview.Left)}");
             datasetColors.Add(ColorUtil.ColorHexString(240, 240, 240));
         }
 
@@ -165,7 +177,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        monthProfit = await UpdateData(from, to);
+        overview = await UpdateData(from, to);
         _img = await UpdateImage();
 
         _pieConfig.Options = new PieOptions

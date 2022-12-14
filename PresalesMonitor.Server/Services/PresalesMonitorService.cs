@@ -9,6 +9,7 @@ using System.Security.Authentication;
 using Newtonsoft.Json;
 using Department = PresalesMonitor.Entities.Enums.Department;
 using Position = PresalesMonitor.Entities.Enums.Position;
+using Enum = System.Enum;
 
 namespace PresalesMonitor.Server.Services
 {
@@ -145,7 +146,202 @@ namespace PresalesMonitor.Server.Services
             var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
             var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
 
-            return Task.FromResult(GetOverview(from, to, request.Department, request.Position));
+            using var db = new DbController.Context();
+            var presales = db.Presales
+                .Where(p => ((request.Position == Shared.Position.Any && p.Position != Position.None)
+                    || (request.Position != Shared.Position.Any && p.Position == request.Position.Translate()))
+                    && ((request.Department == Shared.Department.Any && p.Department != Department.None)
+                    || (request.Department != Shared.Department.Any && p.Department == request.Department.Translate())))
+                .Include(p => p.Projects.Where(p => p.Actions != null)).ThenInclude(p => p.Actions)
+                .ToList();
+
+            _ = db.Invoices
+                .Where(i => (i.Date >= from && i.Date <= to)
+                    || (i.LastPayAt >= from && i.LastPayAt <= to)
+                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
+                .Include(i => i.Presale)
+                .Include(i => i.ProfitPeriods).ToList();
+
+            List<Entities.Project> projects = new();
+            foreach (var presale in presales)
+                if (presale.Projects != null)
+                    projects.AddRange(presale.Projects);
+
+            var otherProjects = db.Projects.Where(p => p.Presale == null).ToList();
+            if (otherProjects != null)
+                projects.AddRange(otherProjects);
+
+            decimal maxPotential = presales.Max(p => p.Projects?
+                .Where(p => p.Presale?.Department == Department.Russian)?
+                .Where(p => p.Presale?.Position == Position.Engineer)?
+                .Where(p => p.ApprovalByTechDirectorAt >= from && p.ApprovalByTechDirectorAt <= to)?
+                .Sum(p => p.PotentialAmount)) ?? 0;
+            int maxCount = presales.Max(p => p.Projects?
+                .Where(p => p.Presale?.Department == Department.Russian)?
+                .Where(p => p.Presale?.Position == Position.Engineer)?
+                .Where(p => p.ApprovalByTechDirectorAt >= from && p.ApprovalByTechDirectorAt <= to)?
+                .Count()) ?? 0;
+
+            int won, assign;
+            var reply = new Overview();
+            #region Метрики пресейла
+            foreach (var presale in presales)
+            {
+                if (presale.Position == Position.Director) continue;
+                var isRuEngineer = presale.Department == Department.Russian
+                                && presale.Position == Position.Engineer;
+                won = presale.ClosedByStatus(ProjectStatus.Won, from, to);
+                assign = presale.CountProjectsAssigned(from, to);
+
+                reply.Presales.Add(new Shared.Presale()
+                {
+                    Name = presale.Name,
+                    Statistics = new Statistic()
+                    {
+                        #region В работе
+                        InWork = presale.CountProjectsInWork(from, to),
+                        #endregion
+                        #region Назначено в этом месяце
+                        Assign = assign,
+                        #endregion
+                        #region Выиграно в этом месяце
+                        Won = won,
+                        #endregion
+                        #region Проиграно в этом месяце
+                        Loss = presale.ClosedByStatus(ProjectStatus.Loss, from, to),
+                        #endregion
+                        #region Конверсия
+                        Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
+                        #endregion
+                        #region Среднее время жизни проекта до выигрыша
+                        AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
+                        #endregion
+                        #region Среднее время реакции
+                        AvgTimeToReaction = Duration.FromTimeSpan(presale.AverageTimeToReaction(from, to)),
+                        #endregion
+                        #region Суммарное потраченное время на проекты в этом месяце
+                        SumSpend = Duration.FromTimeSpan(presale.SumTimeSpend(from, to)),
+                        #endregion
+                        #region Cреднее время потраченное на проект в этом месяце
+                        AvgSpend = Duration.FromTimeSpan(presale.AverageTimeSpend(from, to)),
+                        #endregion
+                        #region Средний ранг проектов
+                        AvgRank = presale.AverageRang(),
+                        #endregion
+                        #region Количество "брошенных" проектов
+                        Abnd = presale.CountProjectsAbandoned(from, 30),
+                        #endregion
+                        #region Чистые за месяц
+                        Profit = DecimalValue.FromDecimal(presale.SumProfit(from, to)),
+                        #endregion
+                    },
+                    #region Недостаток проектов
+                    DeficitProjects = isRuEngineer ? maxCount - presale.CountProjectsAssigned(from, to) : 0,
+                    #endregion
+                    #region Недостаток потенциала
+                    DeficitPotential = isRuEngineer ? maxPotential - presale.SumPotential(from, to) : 0,
+                    #endregion
+                });
+            }
+            #endregion
+            #region Метрики службы
+
+            won = presales.Where(p => p.Position == Position.Engineer
+                                       || p.Position == Position.Account)
+                    .Sum(p => p.ClosedByStatus(ProjectStatus.Won, from, to));
+            assign = presales.Where(p => p.Position == Position.Engineer
+                                          || p.Position == Position.Account)
+                    .Sum(p => p.CountProjectsAssigned(from, to));
+
+            reply.Statistics = new Statistic()
+            {
+                #region В работе
+                InWork = presales.Where(p => p.Position == Position.Engineer
+                                          || p.Position == Position.Account)
+                    .Sum(p => p.CountProjectsInWork(from, to)),
+                #endregion
+                #region Назначено в этом месяце
+                Assign = assign,
+                #endregion
+                #region Выиграно в этом месяце
+                Won = won,
+                #endregion
+                #region Проиграно в этом месяце
+                Loss = presales.Where(p => p.Position == Position.Engineer
+                                        || p.Position == Position.Account)
+                    .Sum(p => p.ClosedByStatus(ProjectStatus.Loss, from, to)),
+                #endregion
+                #region Конверсия
+                Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
+                #endregion
+                #region Среднее время жизни проекта до выигрыша
+                AvgTimeToWin = Duration.FromTimeSpan(TimeSpan.FromDays(presales?
+                    .Where(p => p.Position == Position.Engineer
+                             || p.Position == Position.Account)?
+                    .DefaultIfEmpty()
+                    .Average(p => p?.AverageTimeToWin().TotalDays ?? 0) ?? 0)),
+                #endregion
+                #region Среднее время реакции
+                AvgTimeToReaction = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?
+                    .Where(p => p.Position == Position.Engineer
+                             || p.Position == Position.Account)?
+                    .DefaultIfEmpty()
+                    .Average(p => p?.AverageTimeToReaction(from, to).TotalMinutes ?? 0) ?? 0)),
+                #endregion
+                #region Суммарное потраченное время на проекты в этом месяце
+                SumSpend = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?.Where(p => p.Position == Position.Engineer
+                                                                  || p.Position == Position.Account)
+                        .Sum(p => p.SumTimeSpend(from, to).TotalMinutes) ?? 0)),
+                #endregion
+                #region Cреднее время потраченное на проект в этом месяце
+                AvgSpend = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?.Where(p => p.Position == Position.Engineer
+                                                                     || p.Position == Position.Account)
+                        .Sum(p => p.AverageTimeSpend(from, to).TotalMinutes) ?? 0)),
+                #endregion
+                #region Средний ранг проектов
+                AvgRank = presales?.Where(p => p.Position == Position.Engineer
+                             || p.Position == Position.Account)?
+                    .DefaultIfEmpty()
+                    .Average(p => p?.AverageRang() ?? 0) ?? 0,
+                #endregion
+                #region Количество "брошенных" проектов
+                Abnd = presales?.Where(p => p.Position == Position.Engineer
+                                             || p.Position == Position.Account)
+                    .Sum(p => p.CountProjectsAbandoned(from, 30)) ?? 0,
+                #endregion
+                #region Чистые за месяц
+                Profit = presales?.Where(p => p.Department != Department.None)
+                    .Sum(p => p.SumProfit(from, to)) ?? 0,
+                #endregion
+            };
+            #region Просроченные проекты
+            foreach (var proj in projects
+                    .Where(p => p.ApprovalByTechDirectorAt >= from && p.ApprovalByTechDirectorAt <= to)
+                    .Where(p => p.IsOverdue()))
+                reply.Escalations.Add(proj.Translate());
+            #endregion
+            #region Забытые проекты
+            foreach (var proj in projects
+                    .Where(p => p.ApprovalByTechDirectorAt >= from && p.ApprovalByTechDirectorAt <= to)
+                    .Where(p => p.IsForgotten()))
+                reply.Forgotten.Add(proj.Translate());
+            #endregion
+            #region Новые проекты
+            foreach (var proj in projects
+                    .Where(p => p.ApprovalBySalesDirectorAt >= from && p.ApprovalBySalesDirectorAt <= to)
+                    .Where(p => p.ApprovalByTechDirectorAt == DateTime.MinValue))
+                reply.New.Add(proj.Translate());
+            #endregion
+            #region Среднее время реакции руководителя
+            reply.AvgDirectorTimeToReaction = Duration.FromTimeSpan(TimeSpan.FromMinutes(projects?
+                .Where(p => p.ApprovalBySalesDirectorAt >= from && p.ApprovalBySalesDirectorAt <= to)?
+                .Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue)?
+                .DefaultIfEmpty()
+                .Average(p => p?.TimeToDirectorReaction().TotalMinutes ?? 0) ?? 0));
+            #endregion
+            #endregion
+
+            return Task.FromResult(reply);
         }
         public override Task<Image> GetImageUrl(ImageRequest request, ServerCallContext context)
         {
@@ -197,27 +393,32 @@ namespace PresalesMonitor.Server.Services
                 return Task.FromResult(_cashedImageGirl);
             }
         }
-        public override Task<MonthProfit> GetMonthProfit(Period request, ServerCallContext context)
+        public override Task<MonthProfitOverview> GetMonthProfitOverview(OverviewRequest request, ServerCallContext context)
         {
-            var from = request?.From?.ToDateTime() ?? DateTime.MinValue;
-            var to = request?.To?.ToDateTime() ?? DateTime.MaxValue;
+            var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
+            var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
             decimal plan = 75000000;
 
             using var db = new DbController.Context();
-            var presales = db.Presales.ToList();
+            var presales = db.Presales?
+                .Where(p => ((request.Position == Shared.Position.Any && p.Position != Position.None)
+                    || (request.Position != Shared.Position.Any && p.Position == request.Position.Translate()))
+                    && ((request.Department == Shared.Department.Any && p.Department != Department.None)
+                    || (request.Department != Shared.Department.Any && p.Department == request.Department.Translate())))
+                .ToList();
+
             _ = db.Invoices
-                .Where(i => i.Date >= from
-                    || i.LastPayAt >= from
-                    || i.LastShipmentAt >= from)
+                .Where(i => (i.Date >= from && i.Date <= to)
+                    || (i.LastPayAt >= from && i.LastPayAt <= to)
+                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
                 .Include(i => i.Presale)
                 .Include(i => i.ProfitPeriods).ToList();
 
-            var reply = new MonthProfit();
+            var reply = new MonthProfitOverview();
+            if (presales == null) return Task.FromResult(reply);
+
             foreach (var presale in presales)
             {
-                if (presale.Position == Position.None
-                 || presale.Position == Position.Director) continue;
-
                 reply.Presales.Add(new Shared.Presale()
                 {
                     Name = presale.Name,
@@ -228,11 +429,8 @@ namespace PresalesMonitor.Server.Services
                 });
             }
 
-            var profit = presales?.Where(p => p.Department != Department.None)
-                .Sum(p => p.SumProfit(from, to)) ?? 0;
-
-            var profitPrevDay = presales?.Where(p => p.Department != Department.None)
-                .Sum(p => p.SumProfit(from, to.AddDays(-1))) ?? 0;
+            var profit = presales?.Sum(p => p.SumProfit(from, to)) ?? 0;
+            var profitPrevDay = presales?.Sum(p => p.SumProfit(from, to.AddDays(-1))) ?? 0;
 
             reply.Profit = profit;
             reply.Plan = plan;
@@ -263,208 +461,6 @@ namespace PresalesMonitor.Server.Services
             reply.PlanSmall = 420000000;
 
             return Task.FromResult(reply);
-        }
-        private static Overview GetOverview(DateTime from, DateTime to, Shared.Department department, Shared.Position position)
-        {
-            using var db = new DbController.Context();
-#pragma warning disable CS8604 // Possible null reference argument.
-            var presales = db.Presales
-                .Include(p => p.Projects
-                    .Where(p => p.Actions != null)
-                )
-                .ThenInclude(p => p.Actions)
-                .ToList();
-#pragma warning restore CS8604 // Possible null reference argument.
-
-            _ = db.Invoices
-                .Where(i => i.Date >= from
-                    || i.LastPayAt >= from
-                    || i.LastShipmentAt >= from)
-                .Include(i => i.Presale)
-                .Include(i => i.ProfitPeriods).ToList();
-
-            List<Entities.Project> projects = new();
-            foreach (var presale in presales)
-                if (presale.Projects != null)
-                    projects.AddRange(presale.Projects);
-
-            var otherProjects = db.Projects.Where(p => p.Presale == null).ToList();
-            if (otherProjects != null)
-                projects.AddRange(otherProjects);
-
-            decimal maxPotential = presales.Max(p => p.Projects?
-                .Where(p => p.Presale?.Department == Department.Russian)?
-                .Where(p => p.Presale?.Position == Position.Engineer)?
-                .Where(p => p.ApprovalByTechDirectorAt > from)?
-                .Sum(p => p.PotentialAmount)) ?? 0;
-            int maxCount = presales.Max(p => p.Projects?
-                .Where(p => p.Presale?.Department == Department.Russian)?
-                .Where(p => p.Presale?.Position == Position.Engineer)?
-                .Where(p => p.ApprovalByTechDirectorAt > from)?
-                .Count()) ?? 0;
-
-            int won, assign;
-            var reply = new Overview();
-            foreach (var presale in presales)
-            {
-                if (presale.Position == Position.None
-                 || presale.Position == Position.Director) continue;
-
-                var isRuEngineer = presale.Department == Department.Russian
-                                && presale.Position == Position.Engineer;
-                won = presale.ClosedByStatus(ProjectStatus.Won, from);
-                assign = presale.CountProjectsAssigned(from);
-
-                #region Метрики пресейла
-                reply.Presales.Add(new Shared.Presale()
-                {
-                    Name = presale.Name,
-                    Statistics = new Statistic()
-                    {
-                        #region В работе
-                        InWork = presale.CountProjectsInWork(TimeSpan.FromDays(30)),
-                        #endregion
-                        #region Назначено в этом месяце
-                        Assign = assign,
-                        #endregion
-                        #region Выиграно в этом месяце
-                        Won = won,
-                        #endregion
-                        #region Проиграно в этом месяце
-                        Loss = presale.ClosedByStatus(ProjectStatus.Loss, from),
-                        #endregion
-                        #region Конверсия
-                        Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
-                        #endregion
-                        #region Среднее время жизни проекта до выигрыша
-                        AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
-                        #endregion
-                        #region Среднее время реакции
-                        AvgTimeToReaction = Duration.FromTimeSpan(presale.AverageTimeToReaction(from)),
-                        #endregion
-                        #region Суммарное потраченное время на проекты в этом месяце
-                        SumSpend = Duration.FromTimeSpan(presale.SumTimeSpend(from)),
-                        #endregion
-                        #region Cреднее время потраченное на проект в этом месяце
-                        AvgSpend = Duration.FromTimeSpan(presale.AverageTimeSpend(from)),
-                        #endregion
-                        #region Средний ранг проектов
-                        AvgRank = presale.AverageRang(),
-                        #endregion
-                        #region Количество "брошенных" проектов
-                        Abnd = presale.CountProjectsAbandoned(TimeSpan.FromDays(30)),
-                        #endregion
-                        #region Чистые за месяц
-                        Profit = DecimalValue.FromDecimal(presale.SumProfit(from)),
-                        #endregion
-                    },
-                    #region Недостаток проектов
-                    DeficitProjects = isRuEngineer ? maxCount - presale.CountProjectsAssigned(from) : 0,
-                    #endregion
-                    #region Недостаток потенциала
-                    DeficitPotential = isRuEngineer ? maxPotential - presale.SumPotential(from) : 0,
-                    #endregion
-                });
-                #endregion
-            }
-            #region Метрики службы
-
-            won = presales.Where(p => p.Position == Position.Engineer
-                                       || p.Position == Position.Account)
-                    .Sum(p => p.ClosedByStatus(ProjectStatus.Won, from));
-            assign = presales.Where(p => p.Position == Position.Engineer
-                                          || p.Position == Position.Account)
-                    .Sum(p => p.CountProjectsAssigned(from));
-
-            reply.Statistics = new Statistic()
-            {
-                #region В работе
-                InWork = presales.Where(p => p.Position == Position.Engineer
-                                          || p.Position == Position.Account)
-                    .Sum(p => p.CountProjectsInWork(TimeSpan.FromDays(30))),
-                #endregion
-                #region Назначено в этом месяце
-                Assign = assign,
-                #endregion
-                #region Выиграно в этом месяце
-                Won = won,
-                #endregion
-                #region Проиграно в этом месяце
-                Loss = presales.Where(p => p.Position == Position.Engineer
-                                        || p.Position == Position.Account)
-                    .Sum(p => p.ClosedByStatus(ProjectStatus.Loss, from)),
-                #endregion
-                #region Конверсия
-                Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
-                #endregion
-                #region Среднее время жизни проекта до выигрыша
-                AvgTimeToWin = Duration.FromTimeSpan(TimeSpan.FromDays(presales?
-                    .Where(p => p.Position == Position.Engineer
-                             || p.Position == Position.Account)?
-                    .DefaultIfEmpty()
-                    .Average(p => p?.AverageTimeToWin().TotalDays ?? 0) ?? 0)),
-                #endregion
-                #region Среднее время реакции
-                AvgTimeToReaction = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?
-                    .Where(p => p.Position == Position.Engineer
-                             || p.Position == Position.Account)?
-                    .DefaultIfEmpty()
-                    .Average(p => p?.AverageTimeToReaction(from).TotalMinutes ?? 0) ?? 0)),
-                #endregion
-                #region Суммарное потраченное время на проекты в этом месяце
-                SumSpend = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?.Where(p => p.Position == Position.Engineer
-                                                                  || p.Position == Position.Account)
-                        .Sum(p => p.SumTimeSpend(from).TotalMinutes) ?? 0)),
-                #endregion
-                #region Cреднее время потраченное на проект в этом месяце
-                AvgSpend = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?.Where(p => p.Position == Position.Engineer
-                                                                     || p.Position == Position.Account)
-                        .Sum(p => p.AverageTimeSpend(from).TotalMinutes) ?? 0)),
-                #endregion
-                #region Средний ранг проектов
-                AvgRank = presales?.Where(p => p.Position == Position.Engineer
-                             || p.Position == Position.Account)?
-                    .DefaultIfEmpty()
-                    .Average(p => p?.AverageRang() ?? 0) ?? 0,
-                #endregion
-                #region Количество "брошенных" проектов
-                Abnd = presales?.Where(p => p.Position == Position.Engineer
-                                             || p.Position == Position.Account)
-                    .Sum(p => p.CountProjectsAbandoned(TimeSpan.FromDays(30))) ?? 0,
-                #endregion
-                #region Чистые за месяц
-                Profit = presales?.Where(p => p.Department != Department.None)
-                    .Sum(p => p.SumProfit(from)) ?? 0,
-                #endregion
-            };
-            #region Просроченные проекты
-            foreach (var proj in projects
-                    .Where(p => p.ApprovalByTechDirectorAt > from)
-                    .Where(p => p.IsOverdue()))
-                reply.Escalations.Add(proj.Translate());
-            #endregion
-            #region Забытые проекты
-            foreach (var proj in projects
-                    .Where(p => p.ApprovalByTechDirectorAt > from)
-                    .Where(p => p.IsForgotten()))
-                reply.Forgotten.Add(proj.Translate());
-            #endregion
-            #region Новые проекты
-            foreach (var proj in projects
-                    .Where(p => p.ApprovalBySalesDirectorAt >= from)
-                    .Where(p => p.ApprovalByTechDirectorAt == DateTime.MinValue))
-                reply.New.Add(proj.Translate());
-            #endregion
-            #region Среднее время реакции руководителя
-            reply.AvgDirectorTimeToReaction = Duration.FromTimeSpan(TimeSpan.FromMinutes(projects?
-                .Where(p => p.ApprovalBySalesDirectorAt > from)?
-                .Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue)?
-                .DefaultIfEmpty()
-                .Average(p => p?.TimeToDirectorReaction().TotalMinutes ?? 0) ?? 0));
-            #endregion
-            #endregion
-
-            return reply;
         }
         private void RecurseLoad(List<Entities.Project>? projects, DbController.Context db, ref HashSet<Entities.Project> projectsViewed)
         {
@@ -509,5 +505,15 @@ namespace PresalesMonitor.Server.Services
             Timespend = Duration.FromTimeSpan(TimeSpan.FromMinutes(action.TimeSpend)),
             Description = action.Description
         };
+        public static Department Translate(this Shared.Department value)
+        {
+            if (value == Shared.Department.Any) return Department.None;
+            return (Department)Enum.Parse(typeof(Department), value.ToString());
+        }
+        public static Position Translate(this Shared.Position value)
+        {
+            if (value == Shared.Position.Any) return Position.None;
+            return (Position)Enum.Parse(typeof(Position), value.ToString());
+        }
     }
 }

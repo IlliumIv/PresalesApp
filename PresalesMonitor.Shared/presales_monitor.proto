@@ -11,7 +11,7 @@ service Presales {
 	rpc GetNames(google.protobuf.Empty) returns (Names);
 	rpc GetKpi(KpiRequest) returns (KpiResponse);
 	rpc GetImageUrl(ImageRequest) returns (Image);
-	rpc GetMonthProfit(Period) returns (MonthProfit);
+	rpc GetMonthProfitOverview(OverviewRequest) returns (MonthProfitOverview);
 	rpc GetSalesOverview(google.protobuf.Empty) returns (SalesOverview);
 }
 
@@ -25,7 +25,7 @@ message Manager {
 	string name = 1;
 	custom_types.DecimalValue profit = 2;
 }
-message MonthProfit {
+message MonthProfitOverview {
 	repeated Presale presales = 1;
 	custom_types.DecimalValue profit = 2;
 	custom_types.DecimalValue plan = 3;
@@ -140,12 +140,12 @@ enum Department {
 	DEPARTMENT_NONE = 0;
 	DEPARTMENT_INTERNATIONAL = 1;
 	DEPARTMENT_RUSSIAN = 2;
-	DEPARTMENT_ALL = 3;
+	DEPARTMENT_ANY = 3;
 }
 enum Position {
 	POSITION_NONE = 0;
 	POSITION_ENGINEER = 1;
 	POSITION_ACCOUNT = 2;
 	POSITION_DIRECTOR = 3;
-	POSITION_ALL = 4;
+	POSITION_ANY = 4;
 }
