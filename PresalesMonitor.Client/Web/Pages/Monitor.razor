@@ -149,8 +149,8 @@ else
 
     private async Task<Overview> UpdateData() => await PresalesClient.GetOverviewAsync(new OverviewRequest
     {
-        Department = Department.All,
-        Position = Position.All,
+        Department = Department.Any,
+        Position = Position.Any,
         Period = new Period
         {
             From = Timestamp.FromDateTime(from.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),

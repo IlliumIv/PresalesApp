@@ -14,66 +14,65 @@ namespace PresalesMonitor.Entities
         public int CountProjectsAssigned() => Projects?
             .Count ?? 0;
         public int CountProjectsAssigned(DateTime from) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
             .Count() ?? 0;
         public int CountProjectsAssigned(DateTime from, DateTime to) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() <= to)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt <= to)?
             .Count() ?? 0;
         public IEnumerable<Project>? ProjectsOverdue() => Projects?
             .Where(p => p.IsOverdue());
         public IEnumerable<Project>? ProjectsOverdue(DateTime from) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
             .Where(p => p.IsOverdue());
         public IEnumerable<Project>? ProjectsOverdue(DateTime from, DateTime to) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() <= to)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt <= to)?
             .Where(p => p.IsOverdue());
-        public int CountProjectsAbandoned(TimeSpan within) => Projects?
+        public int CountProjectsAbandoned(DateTime from, int since) => Projects?
             .Where(p => p.Status == ProjectStatus.WorkInProgress)?
             .Where(p => p.Actions != null && p.Actions.Any())?
-            .Where(p => p.Actions?.Max(a => a.Date) < DateTime.UtcNow.Add(-within))?
+            .Where(p => p.Actions?.Max(a => a.Date) < from.AddDays(-since))?
             .Count() ?? 0;
-        public int CountProjectsInWork(TimeSpan since) => Projects?
-            .Where(p => p.Status == ProjectStatus.WorkInProgress)?
-            .Where(p => p.Actions != null && p.Actions.Any())?
-            .Where(p => p.Actions?.Max(a => a.Date) > DateTime.UtcNow.Add(-since))?
+        public int CountProjectsInWork(DateTime from, DateTime to) => Projects?
+            .Where(p => p.Actions != null
+                && p.Actions.Any(a => a.Date >= from && a.Date <= to))?
             .Count() ?? 0;
         public IEnumerable<Project>? ProjectsAbandoned(TimeSpan within) => Projects?
             .Where(p => p.Status == ProjectStatus.WorkInProgress)
             .Where(p => p.Actions != null
-                && p.Actions.Max(a => a.Date).ToLocalTime() < DateTime.Now.Add(-within));
+                && p.Actions.Max(a => a.Date) < DateTime.Now.Add(-within));
         public int CountProjectsByStatus(ProjectStatus status) => Projects?
             .Where(p => p.Status == status)?
             .Count() ?? 0;
         public int ClosedByStatus(ProjectStatus status, DateTime from) => Projects?
-            .Where(p => p.ClosedAt.ToLocalTime() >= from)?
+            .Where(p => p.ClosedAt >= from)?
             .Where(p => p.Status == status)?
             .Count() ?? 0;
         public int ClosedByStatus(ProjectStatus status, DateTime from, DateTime to) => Projects?
-            .Where(p => p.ClosedAt.ToLocalTime() >= from)?
-            .Where(p => p.ClosedAt.ToLocalTime() <= to)?
+            .Where(p => p.ClosedAt >= from)?
+            .Where(p => p.ClosedAt <= to)?
             .Where(p => p.Status == status)?
             .Count() ?? 0;
         public decimal SumPotential() => Projects?
             .Sum(p => p.PotentialAmount) ?? 0;
         public decimal SumPotential(DateTime from) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
             .Sum(p => p.PotentialAmount) ?? 0;
         public decimal SumPotential(DateTime from, DateTime to) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() <= to)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt <= to)?
             .Sum(p => p.PotentialAmount) ?? 0;
         public decimal SumPotentialByStatus(ProjectStatus status) => Projects?
             .Where(p => p.Status == status)?
             .Sum(p => p.PotentialAmount) ?? 0;
         public decimal SumPotentialByStatus(ProjectStatus status, DateTime from) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
             .Where(p => p.Status == status)?
             .Sum(p => p.PotentialAmount) ?? 0;
         public decimal SumPotentialByStatus(ProjectStatus status, DateTime from, DateTime to) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() <= to)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt <= to)?
             .Where(p => p.Status == status)
             .Sum(p => p.PotentialAmount) ?? 0;
         public double AverageRang() => Projects?
@@ -90,13 +89,13 @@ namespace PresalesMonitor.Entities
             .DefaultIfEmpty()
             .Average(p => p?.PotentialAmount ?? 0) ?? 0;
         public decimal AveragePotentialByStatus(ProjectStatus status, DateTime from) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
             .Average(p => p?.PotentialAmount ?? 0) ?? 0;
         public decimal AveragePotentialByStatus(ProjectStatus status, DateTime from, DateTime to) => Projects?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from)?
-            .Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() <= to)?
+            .Where(p => p.ApprovalByTechDirectorAt >= from)?
+            .Where(p => p.ApprovalByTechDirectorAt <= to)?
             .Where(p => p.Status == status)?
             .DefaultIfEmpty()
             .Average(p => p?.PotentialAmount ?? 0) ?? 0;
@@ -114,9 +113,10 @@ namespace PresalesMonitor.Entities
             return invoices?.Sum(i => i.GetProfit(from, to)) ?? 0;
         }
         public TimeSpan AverageTimeToWin() => AvgTTW(Projects);
-        public TimeSpan AverageTimeToWin(DateTime from) => AvgTTW(Projects?.Where(p => p.ClosedAt.ToLocalTime() >= from));
+        public TimeSpan AverageTimeToWin(DateTime from) => AvgTTW(Projects?.Where(p => p.ClosedAt >= from));
         public TimeSpan AverageTimeToReaction() => AvgTTR(Projects);
-        public TimeSpan AverageTimeToReaction(DateTime from) => AvgTTR(Projects?.Where(p => p.ApprovalByTechDirectorAt.ToLocalTime() >= from));
+        public TimeSpan AverageTimeToReaction(DateTime from) => AvgTTR(Projects?.Where(p => p.PresaleStartAt >= from));
+        public TimeSpan AverageTimeToReaction(DateTime from, DateTime to) => AvgTTR(Projects?.Where(p => p.PresaleStartAt >= from && p.PresaleStartAt <= to));
         public TimeSpan SumTimeSpend() => SumTS(Projects, DateTime.MinValue, DateTime.MaxValue);
         public TimeSpan SumTimeSpend(DateTime from) => SumTS(Projects, from, DateTime.MaxValue);
         public TimeSpan SumTimeSpend(DateTime from, DateTime to) => SumTS(Projects, from, to);
@@ -139,11 +139,11 @@ namespace PresalesMonitor.Entities
                 .Where(p => p.PresaleStartAt != DateTime.MinValue)?
                 .DefaultIfEmpty()
                 .Average(p => p is null ? 0 : CalculateWorkingMinutes
-                (p.ApprovalByTechDirectorAt.ToLocalTime(),
+                (p.ApprovalByTechDirectorAt,
                 new List<DateTime?>() {
-                    (p.Actions?.FirstOrDefault(a => a.Number == 1)?.Date.ToLocalTime() ?? DateTime.Now)
+                    (p.Actions?.FirstOrDefault(a => a.Number == 1)?.Date ?? DateTime.Now)
                         .AddMinutes(p.Actions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
-                    p.PresaleStartAt.ToLocalTime()
+                    p.PresaleStartAt
                 }.Min(dt => dt)));
 
             return minutes == null ? TimeSpan.Zero : TimeSpan.FromMinutes((double)minutes);
@@ -152,8 +152,8 @@ namespace PresalesMonitor.Entities
         {
             var minutes = projects?
                 .Sum(p => p.Actions?
-                    .Where(a => a.Date.ToLocalTime() >= from)?
-                    .Where(a => a.Date.ToLocalTime() <= to)?
+                    .Where(a => a.Date >= from)?
+                    .Where(a => a.Date <= to)?
                     .Sum(a => a.TimeSpend));
             return minutes == null ? TimeSpan.Zero : TimeSpan.FromMinutes((int)minutes);
         }
@@ -161,12 +161,12 @@ namespace PresalesMonitor.Entities
         {
             var minutes = projects?
                 .Where(p => p.Actions != null
-                    && p.Actions.Any(a => a.Date.ToLocalTime() >= from)
-                    && p.Actions.Any(a => a.Date.ToLocalTime() <= to))?
+                    && p.Actions.Any(a => a.Date >= from)
+                    && p.Actions.Any(a => a.Date <= to))?
                 .DefaultIfEmpty()
                 .Average(p => p?.Actions?
-                    .Where(a => a.Date.ToLocalTime() >= from)?
-                    .Where(a => a.Date.ToLocalTime() <= to)?
+                    .Where(a => a.Date >= from)?
+                    .Where(a => a.Date <= to)?
                     .Sum(a => a.TimeSpend) ?? 0);
             return minutes == null ? TimeSpan.Zero : TimeSpan.FromMinutes((int)minutes);
         }
