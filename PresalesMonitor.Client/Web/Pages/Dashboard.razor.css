@@ -64,28 +64,27 @@
     right: 0;
     top: 0;
     font-size: 2.5em;
-    padding-right: 2%;
 }
 
 .img-container {
     width: 32%;
     display: grid;
-    margin-top: 5%;
 }
 
 .img-container img {
-    width: 95%;
+    width: 100%;
+    padding: 5% 5% 0 5%;
 }
 
 .img-container div {
     text-align: center;
 }
 
-.img-container div p {
+.img-container p {
     margin: 0;
 }
 
-.img-container div input {
+.img-container input {
     background: none;
     border: none;
     text-align: center;
