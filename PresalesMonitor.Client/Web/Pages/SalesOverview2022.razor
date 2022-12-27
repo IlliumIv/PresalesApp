@@ -69,14 +69,14 @@ else
 
 @code {
     private SalesOverview? overview;
-    private Image? _img;
+    private ImageResponse? _img;
     private PieConfig _pieSmall = new PieConfig();
     private PieConfig _pieFull = new PieConfig();
 
     private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
 
     private async Task<SalesOverview> UpdateData() => await PresalesClient.GetSalesOverviewAsync(new Empty());
-    private async Task<Image> UpdateImage() => await PresalesClient.GetImageUrlAsync(new ImageRequest { Keyword = "happy new year", Orientation = "landscape" });
+    private async Task<ImageResponse> UpdateImage() => await PresalesClient.GetImageAsync(new ImageRequest { Keyword = "happy new year", Orientation = ImageOrientation.Landscape });
 
     protected override void OnInitialized() => RunTimer();
     public void Dispose() => periodicTimer?.Dispose();

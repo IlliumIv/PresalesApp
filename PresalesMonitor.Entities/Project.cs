@@ -45,17 +45,19 @@ namespace PresalesMonitor.Entities
         public Project(string number) => Number = number;
         public bool IsOverdue(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {
-            return Presale.CalculateWorkingMinutes(ApprovalByTechDirectorAt.ToLocalTime(),
-                new List<DateTime?>() {
-                    (Actions?.FirstOrDefault(a => a.Number == 1)?.Date.ToLocalTime() ?? DateTime.Now)
-                        .AddMinutes(-Actions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
-                    PresaleStartAt.ToLocalTime()
-                }.Min(dt => dt)) > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
+            return Presale.CalculateWorkingMinutes
+                (
+                    ApprovalByTechDirectorAt,
+                    new List<DateTime?>() {
+                        (Actions?.FirstOrDefault(a => a.Number == 1)?.Date ?? DateTime.Now)
+                            .AddMinutes(-Actions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
+                        PresaleStartAt }.Min(dt => dt)
+                ) > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
         }
         public bool IsForgotten(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {
-            return PresaleStartAt == DateTime.MinValue && Presale.CalculateWorkingMinutes(ApprovalByTechDirectorAt.ToLocalTime(), DateTime.Now)
-                    > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
+            return PresaleStartAt == DateTime.MinValue && Presale.CalculateWorkingMinutes(ApprovalByTechDirectorAt, DateTime.Now)
+                > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
         }
         public TimeSpan TimeToDirectorReaction() => TimeSpan.FromMinutes(Presale.CalculateWorkingMinutes(ApprovalBySalesDirectorAt, ApprovalByTechDirectorAt) ?? 0);
         public int Rank()
