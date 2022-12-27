@@ -42,14 +42,16 @@ namespace PresalesMonitor.Client.Web.Helpers
                 filename,
                 Convert.ToBase64String(data));
         }
-        public async static void DownloadFile(Kpi kpi, IJSRuntime js, string presaleName)
+        public async static void DownloadFile(Kpi kpi, IJSRuntime js, string presaleName, string monthName)
         {
             if (kpi == null) return;
 
-            string text = $"Контрагент;Номер;Дата;Сумма по счёту;Себестоимость;Прибыль;Процент;Премия;Проекты\n";
+            string text = $"№;Контрагент;Номер;Дата;Сумма по счёту;Себестоимость;Прибыль;Процент;Премия;Проекты\n";
+            int i = 0;
             foreach (var inv in kpi.Invoices)
             {
-                text += $"{inv.Counterpart};{inv.Number};{inv.Date.ToDateTime().ToLocalTime()};" +
+                i++;
+                text += $"{i};{inv.Counterpart};{inv.Number};{inv.Date.ToDateTime().ToLocalTime()};" +
                 $"{(decimal)inv.Amount};{(decimal)inv.Cost};" +
                 $"{(decimal)inv.SalesAmount};{(inv.Percent > 0 ? inv.Percent * 100 : "")};" +
                 $"{((decimal)inv.Profit > 0 ? (decimal)inv.Profit : "")};";
@@ -65,7 +67,7 @@ namespace PresalesMonitor.Client.Web.Helpers
             byte[] result = Encoding.UTF8.GetPreamble().Concat(bytes).ToArray();
             UTF8Encoding encoder = new(true);
             text = encoder.GetString(result);
-            await SaveAs(js, $"Отчёт KPI за {ToUpperFirstLetterString(CurMonthName)}, {presaleName}.csv", Encoding.UTF8.GetBytes(text));
+            await SaveAs(js, $"Отчёт KPI за {ToUpperFirstLetterString(monthName)}, {presaleName}.csv", Encoding.UTF8.GetBytes(text));
         }
     }
 }

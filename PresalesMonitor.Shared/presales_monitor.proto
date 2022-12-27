@@ -8,9 +8,9 @@ import "google/protobuf/duration.proto";
 
 service Presales {
 	rpc GetOverview(OverviewRequest) returns (Overview);
-	rpc GetNames(google.protobuf.Empty) returns (Names);
+	rpc GetNames(google.protobuf.Empty) returns (NamesResponse);
 	rpc GetKpi(KpiRequest) returns (KpiResponse);
-	rpc GetImageUrl(ImageRequest) returns (Image);
+	rpc GetImage(ImageRequest) returns (ImageResponse);
 	rpc GetMonthProfitOverview(OverviewRequest) returns (MonthProfitOverview);
 	rpc GetSalesOverview(google.protobuf.Empty) returns (SalesOverview);
 }
@@ -34,9 +34,9 @@ message MonthProfitOverview {
 }
 message ImageRequest {
 	string keyword = 1;
-	string orientation = 2;
+	ImageOrientation orientation = 2;
 }
-message Image {
+message ImageResponse {
 	string raw = 1;
 	string full = 2;
 	string regular = 3;
@@ -79,7 +79,7 @@ message Invoice {
 	repeated Action actions_tallied = 11;
 	repeated Action actions_ignored = 12;
 }
-message Names {
+message NamesResponse {
 	repeated string names = 1;
 }
 message Period {
@@ -90,6 +90,7 @@ message OverviewRequest {
 	Period period = 1;
 	Department department = 2;
 	Position position = 3;
+	bool only_active = 4;
 }
 message Overview {
 	repeated Presale presales = 1;
@@ -104,6 +105,9 @@ message Presale {
 	Statistic statistics = 2;
 	int32 deficit_projects = 3;
 	custom_types.DecimalValue deficit_potential = 4;
+	Department department = 5;
+	Position position = 6;
+	bool is_active = 7;
 }
 message Statistic {
 	int32 in_work = 1;
@@ -148,4 +152,9 @@ enum Position {
 	POSITION_ACCOUNT = 2;
 	POSITION_DIRECTOR = 3;
 	POSITION_ANY = 4;
+}
+enum ImageOrientation {
+	IMAGEORIENTATION_LANDSCAPE = 0;
+	IMAGEORIENTATION_PORTRAIT = 1;
+	IMAGEORIENTATION_SQUARISH = 2;
 }

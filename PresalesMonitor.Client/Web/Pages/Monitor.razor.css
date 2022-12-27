@@ -1,13 +1,11 @@
 ﻿.pmthead {
-    vertical-align: middle !important;
     text-align: center;
 }
 
-    .pmthead tr,
-    .pmthead th {
-        border: 1px solid;
-        border-color: inherit !important;
-    }
+.pmthead tr,
+.pmthead th {
+    border-color: inherit !important;
+}
 
 .pmtbody td:not(:last-child) {
     border-right: 1px solid;

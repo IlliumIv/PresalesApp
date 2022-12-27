@@ -60,13 +60,13 @@ else
     private TimeSpan timeLeft = new (0, 10, 0);
     private MonthProfitOverview? overview;
     private PieConfig _pieConfig = new PieConfig();
-    private Image? _img;
+    private ImageResponse? _img;
     private string query = "girl";
     private string[] colors = new[]
         {
             ColorUtil.ColorHexString(5, 47, 97),
-            ColorUtil.ColorHexString(12, 90, 74),
             ColorUtil.ColorHexString(165, 14, 130),
+            ColorUtil.ColorHexString(12, 90, 74),
             ColorUtil.ColorHexString(106, 158, 31),
             ColorUtil.ColorHexString(232, 125, 55),
             ColorUtil.ColorHexString(20, 150, 124),
@@ -138,12 +138,13 @@ else
                         To = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, from.AddDays(-1).Day).ToUniversalTime())
                     },
                     Department = Department.Russian,
-                    Position = Position.Any
+                    Position = Position.Any,
+                    OnlyActive = false
                 });
         return overview;
     }
 
-    private async Task<Image> UpdateImage() => await PresalesClient.GetImageUrlAsync(new ImageRequest { Keyword = query, Orientation = "portrait" });
+    private async Task<ImageResponse> UpdateImage() => await PresalesClient.GetImageAsync(new ImageRequest { Keyword = query, Orientation = ImageOrientation.Portrait });
 
     private void UpdateChart()
     {

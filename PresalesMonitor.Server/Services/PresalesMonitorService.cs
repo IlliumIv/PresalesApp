@@ -16,7 +16,7 @@ namespace PresalesMonitor.Server.Services
     public class PresalesMonitorService : Presales.PresalesBase
     {
         private string cachedTop = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
-        private Image _cashedImageGirl = new()
+        private ImageResponse _cashedImageGirl = new()
         {
             Raw = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3",
             Full = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?crop=entropy&cs=tinysrgb&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3&q=80",
@@ -30,7 +30,7 @@ namespace PresalesMonitor.Server.Services
             AuthorUrl = @"https://unsplash.com/@ganinph",
             SourceUrl = @"https://unsplash.com/",
         };
-        private Image _cashedImageNY = new()
+        private ImageResponse _cashedImageNY = new()
         {
             Raw = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3",
             Full = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?crop=entropy&cs=tinysrgb&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3&q=80",
@@ -128,16 +128,17 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(new KpiResponse { Kpi = reply });
         }
-        public override Task<Names> GetNames(Empty request, ServerCallContext context)
+        public override Task<NamesResponse> GetNames(Empty request, ServerCallContext context)
         {
             using var db = new DbController.Context();
             var presalesNames = db.Presales
                 .Where(p => p.Department != Department.None)
                 .Where(p => p.Position != Position.None && p.Position != Position.Director)
+                .Where(p => p.IsActive)
                 .Select(column => column.Name).ToList();
 
-            var reply = new Names();
-            foreach (var name in presalesNames) reply.Names_.Add(name);
+            var reply = new NamesResponse();
+            foreach (var name in presalesNames) reply.Names.Add(name);
 
             return Task.FromResult(reply);
         }
@@ -145,13 +146,16 @@ namespace PresalesMonitor.Server.Services
         {
             var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
             var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
+            var position = request?.Position ?? Shared.Position.Any;
+            var department = request?.Department ?? Shared.Department.Any;
+            var onlyActive = request?.OnlyActive ?? false;
 
             using var db = new DbController.Context();
             var presales = db.Presales
-                .Where(p => ((request.Position == Shared.Position.Any && p.Position != Position.None)
-                    || (request.Position != Shared.Position.Any && p.Position == request.Position.Translate()))
-                    && ((request.Department == Shared.Department.Any && p.Department != Department.None)
-                    || (request.Department != Shared.Department.Any && p.Department == request.Department.Translate())))
+                .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
+                    || (position != Shared.Position.Any && p.Position == position.Translate()))
+                    && ((department == Shared.Department.Any && p.Department != Department.None)
+                    || (department != Shared.Department.Any && p.Department == department.Translate())))
                 .Include(p => p.Projects.Where(p => p.Actions != null)).ThenInclude(p => p.Actions)
                 .ToList();
 
@@ -188,6 +192,7 @@ namespace PresalesMonitor.Server.Services
             foreach (var presale in presales)
             {
                 if (presale.Position == Position.Director) continue;
+                if (onlyActive && !presale.IsActive) continue;
                 var isRuEngineer = presale.Department == Department.Russian
                                 && presale.Position == Position.Engineer;
                 won = presale.ClosedByStatus(ProjectStatus.Won, from, to);
@@ -214,16 +219,16 @@ namespace PresalesMonitor.Server.Services
                         Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
                         #endregion
                         #region Среднее время жизни проекта до выигрыша
-                        AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
+                        AvgTimeToWin = Duration.FromTimeSpan((TimeSpan)presale.AverageTimeToWin()),
                         #endregion
                         #region Среднее время реакции
-                        AvgTimeToReaction = Duration.FromTimeSpan(presale.AverageTimeToReaction(from, to)),
+                        AvgTimeToReaction = Duration.FromTimeSpan((TimeSpan)presale.AverageTimeToReaction(from, to)),
                         #endregion
                         #region Суммарное потраченное время на проекты в этом месяце
-                        SumSpend = Duration.FromTimeSpan(presale.SumTimeSpend(from, to)),
+                        SumSpend = Duration.FromTimeSpan((TimeSpan)presale.SumTimeSpend(from, to)),
                         #endregion
                         #region Cреднее время потраченное на проект в этом месяце
-                        AvgSpend = Duration.FromTimeSpan(presale.AverageTimeSpend(from, to)),
+                        AvgSpend = Duration.FromTimeSpan((TimeSpan)presale.AverageTimeSpend(from, to)),
                         #endregion
                         #region Средний ранг проектов
                         AvgRank = presale.AverageRang(),
@@ -232,7 +237,7 @@ namespace PresalesMonitor.Server.Services
                         Abnd = presale.CountProjectsAbandoned(from, 30),
                         #endregion
                         #region Чистые за месяц
-                        Profit = DecimalValue.FromDecimal(presale.SumProfit(from, to)),
+                        Profit = DecimalValue.FromDecimal((decimal)presale.SumProfit(from, to)),
                         #endregion
                     },
                     #region Недостаток проектов
@@ -241,6 +246,9 @@ namespace PresalesMonitor.Server.Services
                     #region Недостаток потенциала
                     DeficitPotential = isRuEngineer ? maxPotential - presale.SumPotential(from, to) : 0,
                     #endregion
+                    Department = Extensions.Translate(presale.Department),
+                    Position = Extensions.Translate(presale.Position),
+                    IsActive = presale.IsActive,
                 });
             }
             #endregion
@@ -343,7 +351,7 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(reply);
         }
-        public override Task<Image> GetImageUrl(ImageRequest request, ServerCallContext context)
+        public override Task<ImageResponse> GetImage(ImageRequest request, ServerCallContext context)
         {
             try
             {
@@ -353,7 +361,7 @@ namespace PresalesMonitor.Server.Services
                     SslProtocols = SslProtocols.Tls12
                 };
                 var unsplashClient = new HttpClient(clientHandler) { BaseAddress = new Uri("https://api.unsplash.com") };
-                var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random?query={request.Keyword}&orientation={request.Orientation}");
+                var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random?query={request.Keyword}&orientation={request.Orientation.ToString().ToLower()}");
                 unsplashRequest.Headers.Add("Authorization", "Client-ID zoKHly26A5L5BCYWXdctm0hc9u5JGaqcsMv_znpsIR0");
                 var unsplashResponse = unsplashClient.SendAsync(unsplashRequest).Result;
                 if (!unsplashResponse.IsSuccessStatusCode) return Task.FromResult(_cashedImageGirl);
@@ -363,7 +371,7 @@ namespace PresalesMonitor.Server.Services
                     "happy new year" => Task.FromResult(_cashedImageNY),
                     _ => Task.FromResult(_cashedImageGirl)
                 };
-                var _img = new Image
+                var _img = new ImageResponse
                 {
                     Raw = response.urls.raw,
                     Full = response.urls.full,
@@ -397,14 +405,18 @@ namespace PresalesMonitor.Server.Services
         {
             var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
             var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
+            var position = request?.Position ?? Shared.Position.Any;
+            var department = request?.Department ?? Shared.Department.Any;
+            var onlyActive = request?.OnlyActive ?? false;
+
             decimal plan = 75000000;
 
             using var db = new DbController.Context();
             var presales = db.Presales?
-                .Where(p => ((request.Position == Shared.Position.Any && p.Position != Position.None)
-                    || (request.Position != Shared.Position.Any && p.Position == request.Position.Translate()))
-                    && ((request.Department == Shared.Department.Any && p.Department != Department.None)
-                    || (request.Department != Shared.Department.Any && p.Department == request.Department.Translate())))
+                .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
+                    || (position != Shared.Position.Any && p.Position == position.Translate()))
+                    && ((department == Shared.Department.Any && p.Department != Department.None)
+                    || (department != Shared.Department.Any && p.Department == department.Translate())))
                 .ToList();
 
             _ = db.Invoices
@@ -419,6 +431,7 @@ namespace PresalesMonitor.Server.Services
 
             foreach (var presale in presales)
             {
+                if (onlyActive && !presale.IsActive) continue;
                 reply.Presales.Add(new Shared.Presale()
                 {
                     Name = presale.Name,
@@ -510,10 +523,12 @@ namespace PresalesMonitor.Server.Services
             if (value == Shared.Department.Any) return Department.None;
             return (Department)Enum.Parse(typeof(Department), value.ToString());
         }
+        public static Shared.Department Translate(this Department value) => (Shared.Department)Enum.Parse(typeof(Shared.Department), value.ToString());
         public static Position Translate(this Shared.Position value)
         {
             if (value == Shared.Position.Any) return Position.None;
             return (Position)Enum.Parse(typeof(Position), value.ToString());
         }
+        public static Shared.Position Translate(this Position value) => (Shared.Position)Enum.Parse(typeof(Shared.Position), value.ToString());
     }
 }
