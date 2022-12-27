@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Configuration;
+using PresalesMonitor.Entities;
 
 namespace PresalesMonitor.Console
 {
@@ -20,7 +21,7 @@ namespace PresalesMonitor.Console
                 };
             };
 
-            // using var db = new Context();
+            // using var db = new DbController.Context();
             // db.Delete();
             // db.Create();
 

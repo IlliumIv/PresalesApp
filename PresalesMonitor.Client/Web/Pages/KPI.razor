@@ -5,6 +5,7 @@
 @using PresalesMonitor.Client.Web.Helpers;
 @using Google.Protobuf.WellKnownTypes;
 @using System.Runtime.Serialization;
+@using System.Globalization;
 @inject Presales.PresalesClient PresalesClient
 @inject IJSRuntime js
 
@@ -13,28 +14,40 @@
 <h1>KPI</h1>
 
 <p>
-    <label>Начало периода:</label>
-    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" @bind=from />
-    <label>Конец периода:</label>
-    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" @bind=to />
-</p>
-<label>Пресейл:</label>
-@if (presales == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <select @bind="selectedName">
-        <option selected=""></option>
-        @foreach (var name in presales.Names_)
+    <label>Месяц:</label>
+    <select id="month" @bind="month" class="form-select">
+        @for(int m = 1; m <= 12; m++)
         {
-            <option value="@name">@name</option>
+            <option value="@m">@DateTimeFormatInfo.CurrentInfo.GetMonthName(m)</option>
         }
     </select>
-<button class="btn btn-primary" @onclick="OnReportRequested">Построить отчёт</button>
-<button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadFile">Скачать отчёт</button>
-}
+    <label>Год:</label>
+    <select id="year" @bind="year" class="form-select">
+        @for (int y = 2015; y <= DateTime.Now.Year; y++)
+        {
+            <option value="@y">@y</option>
+        }
+    </select>
+</p>
+<p>
+    <label>Пресейл:&nbsp;</label>
+    @if (presales == null)
+    {
+        <em>Loading...</em>
+    }
+    else
+    {
+        <select value="@selectedName" @onchange="((ChangeEventArgs e) => OnPresaleChange(e?.Value?.ToString() ?? string.Empty))" class="form-select">
+            <option selected=""></option>
+            @foreach (var name in presales.Names)
+            {
+                <option value="@name">@name</option>
+            }
+        </select>
+        <button class="btn btn-primary" @onclick="OnReportRequested">Построить отчёт</button>
+        <button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadFile">Скачать отчёт</button>
+    }
+</p>
 <p role="status">@status</p>
 @if (kpi is not null)
 {
@@ -91,6 +104,7 @@ else
         <tbody>
             @foreach (var inv in kpi.Invoices)
             {
+                int i = 0;
                 i++;
                 <tr style="color: @SetColor(inv)">
                     <td>@i</td>
@@ -103,7 +117,7 @@ else
                     <td style="text-align: right">@Helpers.ToPercentString(inv.Percent, 1)</td>
                     <td style="text-align: right">@Helpers.ToCurrencyString(inv.Profit)</td>
                 </tr>
-                <tr><td colspan="8">
+                <tr><td colspan="9">
                     @if (inv.ProjectsFound.Count > 0)
                     {
                         <details class="pmspoiler">
@@ -161,15 +175,14 @@ else
 }
 
 @code {
-    int i = 0;
-    private Names? presales;
+    private int month = DateTime.Now.Month;
+    private int year = DateTime.Now.Year;
+    private NamesResponse? presales;
     private Kpi? kpi;
     private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() {{ "disabled", "disabled" }};
     protected override async Task OnInitializedAsync() { presales = await PresalesClient.GetNamesAsync(new Empty()); }
     private string selectedName = string.Empty;
     private static DateOnly firstDay = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
-    private DateOnly? from = firstDay;
-    private DateOnly? to = firstDay.AddMonths(1).AddDays(-1);
     private string status = string.Empty;
     private string SetColor(PresalesMonitor.Shared.Invoice invoice) => invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
     private string Format(PresalesMonitor.Shared.Project project) => $"{project.Number} [{Helpers.ToEnumString((ProjectStatus)project.Status)}], \"{project.Name}\"";
@@ -179,23 +192,24 @@ else
         status = await GenerateReport();
         StateHasChanged();
     }
+
     private async Task<string> GenerateReport()
     {
         kpi = null;
-        i = 0;
         downloadBtnAttrs = new() {{ "disabled", "disabled" }};
 
         if (string.IsNullOrEmpty(selectedName)) return "Выберите пресейла.";
-        if (from == null || to == null) return "Укажите период.";
-        if (from > to) return "Начало периода должно быть меньше окончания периода.";
+
+        var from = new DateTime(year, month, 1);
+        var to = from.AddMonths(1).AddSeconds(-1);
 
         var response = await PresalesClient.GetKpiAsync(new KpiRequest
             {
                 PresaleName = selectedName,
                 Period = new Period
                 {
-                    From = Timestamp.FromDateTime(from.Value.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
-                    To = Timestamp.FromDateTime(to.Value.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
+                    From = Timestamp.FromDateTime(from.ToUniversalTime()),
+                    To = Timestamp.FromDateTime(to.ToUniversalTime())
                 }
             }
         );
@@ -214,6 +228,12 @@ else
     private void DownloadFile()
     {
         if (kpi == null) return;
-        Helpers.DownloadFile(kpi, js, selectedName);
+        Helpers.DownloadFile(kpi, js, selectedName, DateTimeFormatInfo.CurrentInfo.GetMonthName(month));
+    }
+    private void OnPresaleChange(string presaleName)
+    {
+        kpi = null;
+        selectedName = presaleName;
+        status = string.Empty;
     }
 }

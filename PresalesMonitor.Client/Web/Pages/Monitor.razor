@@ -13,9 +13,9 @@
 
 <p style="display: inline-block">
     <label>Начало периода:</label>
-    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" @bind=from />
+    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" @bind=from class="input-group-text"/>
     <label>Конец периода:</label>
-    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" @bind=to />
+    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" @bind=to class="input-group-text"/>
 </p>
 <button class="btn btn-primary" @onclick="OnUpdateRequested">Обновить данные</button>
 
@@ -149,6 +149,7 @@ else
 
     private async Task<Overview> UpdateData() => await PresalesClient.GetOverviewAsync(new OverviewRequest
     {
+        OnlyActive = true,
         Department = Department.Any,
         Position = Position.Any,
         Period = new Period
@@ -158,7 +159,7 @@ else
         }
     });
     protected override async Task OnInitializedAsync() => overview = await UpdateData();
-    private string Format(Project project) => $"{project.Number}, {(project.ApprovalByTechDirectorAt.ToDateTime() == DateTime.MinValue ? project.ApprovalBySalesDirectorAt.ToDateTime().ToLocalTime() : project.ApprovalByTechDirectorAt.ToDateTime().ToLocalTime())}{(project.PresaleStartAt.ToDateTime() != DateTime.MinValue ? $" - {project.PresaleStartAt.ToDateTime().ToLocalTime()}" : "")}{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
+    private string Format(Project project) => $"{project.Number}, {project.Name}, {(project.ApprovalByTechDirectorAt.ToDateTime() == DateTime.MinValue ? project.ApprovalBySalesDirectorAt.ToDateTime().ToLocalTime() : project.ApprovalByTechDirectorAt.ToDateTime().ToLocalTime())}{(project.PresaleStartAt.ToDateTime() != DateTime.MinValue ? $" - {project.PresaleStartAt.ToDateTime().ToLocalTime()}" : "")}{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
 
     private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
     protected override void OnInitialized() => RunTimer();
