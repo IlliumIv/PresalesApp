@@ -1,0 +1,6 @@
+@echo off
+del PresalesMonitor.Server.7z >nul 2>&1
+echo 	Create package...
+"C:\Program Files\7-Zip\7z.exe" a PresalesMonitor.Server.7z ./publish/linux/framework-dependent/* >nul 2>&1 && echo 	Package created successfully. || echo Error. Unable create package. && exit 1
+echo 	Send package...
+scp -i ~\.ssh\presalesMonitor %cd%\PresalesMonitor.Server.7z illium@presales-monitor:~/  >nul 2>&1 && echo 	Package sent successfully. || echo Error. Unable send package. && exit 1

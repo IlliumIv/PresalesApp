@@ -33,7 +33,7 @@ namespace PresalesMonitor.Entities
         public int CountProjectsAbandoned(DateTime from, int since) => Projects?
             .Where(p => p.Status == ProjectStatus.WorkInProgress)?
             .Where(p => p.Actions != null && p.Actions.Any())?
-            .Where(p => p.Actions?.Max(a => a.Date) < from.AddDays(-since))?
+            .Where(p => p.Actions?.Max(a => a.Date) < (from == DateTime.MinValue ? from : from.AddDays(-since)))?
             .Count() ?? 0;
         public int CountProjectsInWork(DateTime from, DateTime to) => Projects?
             .Where(p => p.Actions != null
@@ -180,8 +180,9 @@ namespace PresalesMonitor.Entities
             var e = (DateTime)end;
 
             if (s > e) return 0;
-            s = s.TimeOfDay == new DateTime().TimeOfDay ? s : s.ToLocalTime();
-            e = e.TimeOfDay == new DateTime().TimeOfDay ? e : e.ToLocalTime();
+            var timeZoneOffset = TimeSpan.FromHours(5);
+            s = s.TimeOfDay == new DateTime().TimeOfDay ? s : s + timeZoneOffset;
+            e = e.TimeOfDay == new DateTime().TimeOfDay ? e : e + timeZoneOffset;
 
             var tempStart = new DateTime(s.Year, s.Month, s.Day);
             var tempEnd = new DateTime(e.Year, e.Month, e.Day);
