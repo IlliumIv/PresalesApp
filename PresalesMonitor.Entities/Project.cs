@@ -45,14 +45,12 @@ namespace PresalesMonitor.Entities
         public Project(string number) => Number = number;
         public bool IsOverdue(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {
-            return Presale.CalculateWorkingMinutes
-                (
-                    ApprovalByTechDirectorAt,
-                    new List<DateTime?>() {
+            var from = ApprovalByTechDirectorAt;
+            var to = new List<DateTime?>() {
                         (Actions?.FirstOrDefault(a => a.Number == 1)?.Date ?? DateTime.Now)
                             .AddMinutes(-Actions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
-                        PresaleStartAt }.Min(dt => dt)
-                ) > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
+                        PresaleStartAt }.Min(dt => dt);
+            return Presale.CalculateWorkingMinutes(from, to) > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
         }
         public bool IsForgotten(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {

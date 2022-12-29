@@ -17,5 +17,8 @@
     <ProjectReference Include="..\PresalesMonitor.Shared\PresalesMonitor.Shared.csproj" />
   </ItemGroup>
 
+  <Target Name="PostPublish" AfterTargets="AfterPublish">
+    <Exec Command="cmd /c deploy.bat" />
+  </Target>
 
 </Project>
