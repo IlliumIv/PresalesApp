@@ -69,5 +69,22 @@ namespace PresalesMonitor.Client.Web.Helpers
             text = encoder.GetString(result);
             await SaveAs(js, $"Отчёт KPI за {ToUpperFirstLetterString(monthName)}, {presaleName}.csv", Encoding.UTF8.GetBytes(text));
         }
+        public static string GetName(this Department department) => department switch
+        {
+            Department.None => "Без направления",
+            Department.Russian => "Россия и СНГ",
+            Department.International => "Международное",
+            Department.Any => "Любое заданное",
+            _ => throw new NotImplementedException()
+        };
+        public static string GetName(this Position position) => position switch
+        {
+            Position.None => "Без должности",
+            Position.Account => "Аккаунт",
+            Position.Engineer => "Инженер",
+            Position.Director => "Руководитель",
+            Position.Any => "Любая заданная",
+            _ => throw new NotImplementedException()
+        };
     }
 }

@@ -11,13 +11,29 @@
 
 <h1>Presales Monitor</h1>
 
-<p style="display: inline-block">
+<p>
     <label>Начало периода:</label>
-    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" @bind=from class="input-group-text"/>
+    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" @bind=from class="input-group-text" />
     <label>Конец периода:</label>
-    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" @bind=to class="input-group-text"/>
+    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" @bind=to class="input-group-text" />
 </p>
-<button class="btn btn-primary" @onclick="OnUpdateRequested">Обновить данные</button>
+<p>
+    <label>Фильтр по направлению:</label>
+    <select @bind="department" class="form-select">
+        @foreach (Department dep in (Department[])System.Enum.GetValues(typeof(Department)))
+        {
+            <option value="@dep">@dep.GetName()</option>
+        }
+    </select>
+    <label>Фильтр по должности:</label>
+    <select @bind="position" class="form-select">
+        @foreach (Position pos in (Position[])System.Enum.GetValues(typeof(Position)))
+        {
+            <option value="@pos">@pos.GetName()</option>
+        }
+    </select>
+    <button class="btn btn-primary" @onclick="OnUpdateRequested">Обновить данные</button>
+</p>
 
 @if (overview == null)
 {
@@ -133,6 +149,8 @@ else
     private static DateOnly firstDay = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
     private DateOnly from = firstDay;
     private DateOnly to = firstDay.AddMonths(1).AddDays(-1);
+    private Department department = Department.Any;
+    private Position position = Position.Any;
 
     private Overview? overview;
     private readonly string inWorkTitle = "В работе (есть действия за последние 30 дней)";
@@ -150,8 +168,8 @@ else
     private async Task<Overview> UpdateData() => await PresalesClient.GetOverviewAsync(new OverviewRequest
     {
         OnlyActive = true,
-        Department = Department.Any,
-        Position = Position.Any,
+        Department = department,
+        Position = position,
         Period = new Period
         {
             From = Timestamp.FromDateTime(from.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
