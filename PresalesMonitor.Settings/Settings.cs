@@ -6,13 +6,22 @@ namespace PresalesMonitor
     {
         public sealed class Application : ConfigurationSection
         {
-            [ConfigurationProperty("lastUpdate",
+            [ConfigurationProperty("projectsUpdatedAt",
                 DefaultValue = "2022-09-20T00:00:00",
                 IsRequired = true)]
-            public DateTime PreviosUpdate
+            public DateTime ProjectsUpdatedAt
             {
-                get => (DateTime)this["lastUpdate"];
-                set => this["lastUpdate"] = value;
+                get => (DateTime)this["projectsUpdatedAt"];
+                set => this["projectsUpdatedAt"] = value;
+            }
+
+            [ConfigurationProperty("invoicesUpdatedAt",
+                DefaultValue = "2022-09-20T00:00:00",
+                IsRequired = true)]
+            public DateTime InvoicesUpdatedAt
+            {
+                get => (DateTime)this["invoicesUpdatedAt"];
+                set => this["invoicesUpdatedAt"] = value;
             }
 
             [ConfigurationProperty("debug",
@@ -24,7 +33,6 @@ namespace PresalesMonitor
                 set => this["debug"] = value;
             }
         }
-
         public sealed class Database : ConfigurationSection
         {
             [ConfigurationProperty("url",
@@ -74,7 +82,6 @@ namespace PresalesMonitor
                 set => this["password"] = value;
             }
         }
-
         public sealed class Connection : ConfigurationSection
         {
             [ConfigurationProperty("url",
@@ -105,47 +112,39 @@ namespace PresalesMonitor
             }
         }
 
+        private static readonly Configuration _configuration = ConfigurationManager
+                .OpenExeConfiguration(ConfigurationUserLevel.None);
         public static void CreateConfigurationFile()
         {
             try
             {
-                var configuration = ConfigurationManager
-                    .OpenExeConfiguration(ConfigurationUserLevel.None);
-
                 var sections = typeof(Settings).GetNestedTypes();
                 foreach (var section in sections)
                 {
                     var s = Activator.CreateInstance(section);
-                    if (configuration.Sections[section.Name] == null
+                    if (_configuration.Sections[section.Name] == null
                         && s != null)
                     {
                         var configurationSection = (ConfigurationSection)s;
-                        configuration.Sections.Add(section.Name, configurationSection);
+                        _configuration.Sections.Add(section.Name, configurationSection);
                         configurationSection.SectionInformation.ForceSave = true;
                     }
                 }
-                configuration.Save(ConfigurationSaveMode.Full);
+                _configuration.Save(ConfigurationSaveMode.Full);
             }
             catch (ConfigurationErrorsException e)
             {
                 Console.WriteLine("CreateConfigurationFile: {0}", e.ToString());
             }
         }
-
         public static bool TryGetSection<T>(out ConfigurationSection result)
         {
-            var configuration = ConfigurationManager
-                .OpenExeConfiguration(ConfigurationUserLevel.None);
-            result = configuration.Sections[typeof(T).Name];
+            result = _configuration.Sections[typeof(T).Name];
             return result != null;
         }
-
         public static bool ConfigurationFileIsExists()
         {
-            var configuration = ConfigurationManager
-                .OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            return File.Exists(configuration.FilePath);
+            return File.Exists(_configuration.FilePath);
         }
     }
 }

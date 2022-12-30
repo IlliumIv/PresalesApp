@@ -8,6 +8,7 @@ namespace PresalesMonitor
 {
     public class Parser
     {
+        private static DateTime lastError = DateTime.MinValue;
         private static readonly FileInfo _errorLog = new("Error.log");
         private static readonly FileInfo _workLog = new("Parser.log");
         private static bool _debug = false;
@@ -18,8 +19,10 @@ namespace PresalesMonitor
         {
             DateTimeZoneHandling = DateTimeZoneHandling.Utc
         };
+        /*
         public static void Run()
         {
+            if ((DateTime.Now - lastError) < TimeSpan.FromMinutes(10)) { Task.Delay(600000); }
             Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
             if (r == null) return;
             var appSettings = (Settings.Application)r;
@@ -33,6 +36,7 @@ namespace PresalesMonitor
             appSettings.CurrentConfiguration.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection(appSettings.SectionInformation.Name);
         }
+        //*/
         private static void GetUpdate(DateTime prevUpdate)
         {
             try
@@ -117,6 +121,7 @@ namespace PresalesMonitor
                 Console.WriteLine(e.ToString());
                 using var sw = File.AppendText(_errorLog.FullName);
                 sw.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] {e}\n");
+                lastError = DateTime.Now;
             }
         }
         private static bool TryGetData<T>(DateTime startTime, DateTime endTime, out List<T> result)
