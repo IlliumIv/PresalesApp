@@ -47,7 +47,7 @@ namespace PresalesMonitor.Server.Services
         public override Task<KpiResponse> GetKpi(KpiRequest request, ServerCallContext context)
         {
             using var db = new DbController.Context();
-            var presale = db.Presales.Single(p => p.Name == request.PresaleName);
+            var presale = db.Presales.SingleOrDefault(p => p.Name == request.PresaleName);
 
             if (presale == null)
                 return Task.FromResult(new KpiResponse { Error = new Error{ Message = "Пресейл не найден в базе данных."}});
@@ -79,7 +79,7 @@ namespace PresalesMonitor.Server.Services
             HashSet<Entities.Invoice>? invoices = new();
             presale.SumProfit(from, to, ref invoices);
 
-            if (invoices == null)
+            if (invoices == null || !invoices.Any())
                 return Task.FromResult(new KpiResponse());
 
             var reply = new Kpi();
@@ -409,7 +409,7 @@ namespace PresalesMonitor.Server.Services
             var department = request?.Department ?? Shared.Department.Any;
             var onlyActive = request?.OnlyActive ?? false;
 
-            decimal plan = 75000000;
+            decimal plan = 4977898;
 
             using var db = new DbController.Context();
             var presales = db.Presales?
