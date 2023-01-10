@@ -12,58 +12,48 @@
 <h1>Presales Monitor</h1>
 
 <p>
-    <label>Начало периода:</label>
-    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" @bind=from class="input-group-text" />
-    <label>Конец периода:</label>
-    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" @bind=to class="input-group-text" />
-</p>
-<p>
-    <label>Фильтр по направлению:</label>
-    <select @bind="department" class="form-select">
+    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" value="@Helpers.ToMinMaxFormatString(from)" @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text" />
+    <label>&nbsp;-&nbsp;</label>
+    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" value="@Helpers.ToMinMaxFormatString(to)" @onchange="((ChangeEventArgs e) => OnToChanged(e?.Value))" class="input-group-text" />
+    <label>Направление:</label>
+    <select value="@department" @onchange="((ChangeEventArgs e) => OnDepartmentChanged(e?.Value))" class="form-select">
         @foreach (Department dep in (Department[])System.Enum.GetValues(typeof(Department)))
-        {
-            <option value="@dep">@dep.GetName()</option>
-        }
+            { <option value="@dep">@dep.GetName()</option> }
     </select>
-    <label>Фильтр по должности:</label>
-    <select @bind="position" class="form-select">
+    <label>Должность:</label>
+    <select value="@position" @onchange="((ChangeEventArgs e) => OnPositionChanged(e?.Value))" class="form-select">
         @foreach (Position pos in (Position[])System.Enum.GetValues(typeof(Position)))
-        {
-            <option value="@pos">@pos.GetName()</option>
-        }
+            { <option value="@pos">@pos.GetName()</option> }
     </select>
-    <button class="btn btn-primary" @onclick="OnUpdateRequested">Обновить данные</button>
 </p>
 
 @if (overview == null)
-{
-    <p><em>Loading...</em></p>
-}
+    { <p><em>Loading...</em></p> }
 else
 {
     <table class="table">
         <thead class="pmthead">
             <tr>
-                <th rowspan="2">Пресейл</th>
-                <th rowspan="2" title="@inWorkTitle">InWork</th>
+                <th rowspan="2" style="width:13%">Пресейл</th>
+                <th rowspan="2" style="width:5%" title="@inWorkTitle">InWork</th>
                 <th colspan="4">@Helpers.ToUpperFirstLetterString(Helpers.CurMonthName)</th>
-                <th rowspan="2" title="@abndTitle">Abnd</th>
-                <th rowspan="2" title="@avgttwTitle">AvgTTW</th>
-                <th rowspan="2" title="@avgttrTitle">AvgTTR</th>
-                <th rowspan="2" title="@avgrTitle">AvgR</th>
+                <th rowspan="2" style="width:5%" title="@abndTitle">Abnd</th>
+                <th rowspan="2" style="width:6%" title="@avgttwTitle">AvgTTW</th>
+                <th rowspan="2" style="width:6%" title="@avgttrTitle">AvgTTR</th>
+                <th rowspan="2" style="width:5%" title="@avgrTitle">AvgR</th>
                 <th colspan="2" title="Потрачено времени на проекты, @Helpers.CurMonthName">Spend</th>
-                <th rowspan="2">Чистые за месяц</th>
+                <th rowspan="2" style="width:13%">Чистые за месяц</th>
                 <th colspan="2">Требуется распределить</th>
             </tr>
             <tr>
-                <th title="@assignTitle">Assign</th>
-                <th title="@wonTitle">Won</th>
-                <th title="@lossTitle">Loss</th>
-                <th title="@convrTitle">Convr</th>
-                <th title="За месяц в часах">Sum</th>
-                <th title="В среднем в часах">Avg</th>
-                <th>шт.</th>
-                <th>руб.</th>
+                <th style="width:5%" title="@assignTitle">Assign</th>
+                <th style="width:5%" title="@wonTitle">Won</th>
+                <th style="width:5%" title="@lossTitle">Loss</th>
+                <th style="width:5%" title="@convrTitle">Convr</th>
+                <th style="width:4%" title="За месяц в часах">Sum</th>
+                <th style="width:4%" title="В среднем в часах">Avg</th>
+                <th style="width:3%">шт.</th>
+                <th style="width:16%">руб.</th>
             </tr>
         </thead>
         <tbody class="pmtbody">
@@ -101,46 +91,34 @@ else
                 <td title="@spendSumTitle">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
                 <td title="@spendAvgTitle">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
                 <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
-                <td colspan="2"></td>
             </tr>
         </tbody>
     </table>
 
-    <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helpers.ToMinutesString(overview.AvgDirectorTimeToReaction.ToTimeSpan())</p>
+    @if (overview.AvgDirectorTimeToReaction.Seconds > 0)
+        { <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helpers.ToMinutesString(overview.AvgDirectorTimeToReaction.ToTimeSpan())</p> }
     @if (overview.Escalations.Count > 0)
     {
         <details class="pmspoiler">
-            <summary>
-                Проекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): @overview.Escalations.Count
-            </summary>
+            <summary>Проекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): @overview.Escalations.Count</summary>
             @foreach (var project in overview.Escalations)
-            {
-                <p>@Format(project)</p>
-            }
+                { <p>@Format(project)</p> }
         </details>
     }
     @if (overview.Forgotten.Count > 0)
     {
         <details class="pmspoiler">
-            <summary>
-                Проекты без отметки начала работы пресейлом (забытые): @overview.Forgotten.Count
-            </summary>
+            <summary>Проекты без отметки начала работы пресейлом (забытые): @overview.Forgotten.Count</summary>
             @foreach (var project in overview.Forgotten)
-            {
-                <p>@Format(project)</p>
-            }
+                { <p>@Format(project)</p> }
         </details>
     }
     @if (overview.New.Count > 0)
     {
         <details class="pmspoiler">
-            <summary>
-                Новые проекты (ожидают распределения): @overview.New.Count
-            </summary>
+            <summary>Новые проекты (ожидают распределения): @overview.New.Count</summary>
             @foreach (var project in overview.New)
-            {
-                <p>@Format(project)</p>
-            }
+                { <p>@Format(project)</p> }
         </details>
     }
 }
@@ -151,8 +129,9 @@ else
     private DateOnly to = firstDay.AddMonths(1).AddDays(-1);
     private Department department = Department.Any;
     private Position position = Position.Any;
-
     private Overview? overview;
+    private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
+    #region Descriptions
     private readonly string inWorkTitle = "В работе (есть действия за последние 30 дней)";
     private readonly string assignTitle = "Назначено";
     private readonly string wonTitle = "Выиграно";
@@ -164,34 +143,55 @@ else
     private readonly string avgrTitle = "Средний ранг проектов";
     private readonly string spendSumTitle = "Потрачено времени на проекты, суммарно в часах";
     private readonly string spendAvgTitle = "Потрачено времени на проекты, в среднем в часах";
+    #endregion
 
-    private async Task<Overview> UpdateData() => await PresalesClient.GetOverviewAsync(new OverviewRequest
-    {
-        OnlyActive = true,
-        Department = department,
-        Position = position,
-        Period = new Period
-        {
-            From = Timestamp.FromDateTime(from.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
-            To = Timestamp.FromDateTime(to.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
-        }
-    });
-    protected override async Task OnInitializedAsync() => overview = await UpdateData();
-    private string Format(Project project) => $"{project.Number}, {project.Name}, {(project.ApprovalByTechDirectorAt.ToDateTime() == DateTime.MinValue ? project.ApprovalBySalesDirectorAt.ToDateTime().ToLocalTime() : project.ApprovalByTechDirectorAt.ToDateTime().ToLocalTime())}{(project.PresaleStartAt.ToDateTime() != DateTime.MinValue ? $" - {project.PresaleStartAt.ToDateTime().ToLocalTime()}" : "")}{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
-
-    private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
-    protected override void OnInitialized() => RunTimer();
+    private string Format(Project project) =>
+        $"{project.Number}, {project.Name}, " +
+        $"{(project.ApprovalByTechDirectorAt.ToDateTime() == DateTime.MinValue ? project.ApprovalBySalesDirectorAt.ToDateTime().ToLocalTime() : project.ApprovalByTechDirectorAt.ToDateTime().ToLocalTime())}" +
+        $"{(project.PresaleStartAt.ToDateTime() != DateTime.MinValue ? $" - {project.PresaleStartAt.ToDateTime().ToLocalTime()}" : "")}" +
+        $"{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
     public void Dispose() => periodicTimer?.Dispose();
-
     private async void RunTimer()
     {
         while (await periodicTimer.WaitForNextTickAsync())
-            await OnUpdateRequested();
+            await UpdateData();
     }
-
-    private async Task OnUpdateRequested()
+    private async Task UpdateData()
     {
-        overview = await UpdateData();
+        overview = await PresalesClient.GetOverviewAsync(new OverviewRequest
+            {
+                OnlyActive = true,
+                Department = department,
+                Position = position,
+                Period = new Period
+                {
+                    From = Timestamp.FromDateTime(from.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
+                    To = Timestamp.FromDateTime(to.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
+                }
+            });
         StateHasChanged();
     }
+
+    protected override void OnInitialized() => RunTimer();
+    private async void OnFromChanged(object? obj)
+    {
+        DateOnly.TryParse(obj?.ToString(), out from);
+        await UpdateData();
+    }
+    private async void OnToChanged(object? obj)
+    {
+        DateOnly.TryParse(obj?.ToString(), out to);
+        await UpdateData();
+    }
+    private async void OnDepartmentChanged(object? obj)
+    {
+        System.Enum.TryParse<Department>(obj?.ToString(), out department);
+        await UpdateData();
+    }
+    private async void OnPositionChanged(object? obj)
+    {
+        System.Enum.TryParse<Position>(obj?.ToString(), out position);
+        await UpdateData();
+    }
+    protected override async Task OnInitializedAsync() => await UpdateData();
 }

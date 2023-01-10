@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using PresalesMonitor.Shared;
+using System.Globalization;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -42,7 +43,7 @@ namespace PresalesMonitor.Client.Web.Helpers
                 filename,
                 Convert.ToBase64String(data));
         }
-        public async static void DownloadFile(Kpi kpi, IJSRuntime js, string presaleName, string monthName)
+        public async static void DownloadFile(Kpi kpi, IJSRuntime js, string presaleName, int month, int year)
         {
             if (kpi == null) return;
 
@@ -67,7 +68,7 @@ namespace PresalesMonitor.Client.Web.Helpers
             byte[] result = Encoding.UTF8.GetPreamble().Concat(bytes).ToArray();
             UTF8Encoding encoder = new(true);
             text = encoder.GetString(result);
-            await SaveAs(js, $"Отчёт KPI за {ToUpperFirstLetterString(monthName)}, {presaleName}.csv", Encoding.UTF8.GetBytes(text));
+            await SaveAs(js, $"Отчёт KPI за {ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(month))} {year}, {presaleName}.csv", Encoding.UTF8.GetBytes(text));
         }
         public static string GetName(this Department department) => department switch
         {
