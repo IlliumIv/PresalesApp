@@ -12,24 +12,21 @@
 <PageTitle>Dashboard</PageTitle>
 
 @if (overview == null || _img == null)
-{
-    <p><em>Loading...</em></p>
-}
+    { <p><em>Loading...</em></p> }
 else
 {
     <div class="dashboard">
         <div class="chart">
             <div class="legend">
-                @foreach (var presale in overview.Presales)
+                @foreach (var item in overview.Presales.Select((presale, index) => new { index, presale }))
                 {
-                    if ((decimal)presale.Statistics.Profit > 0)
+                    if ((decimal)item.presale.Statistics.Profit > 0)
                     {
                         <div>
-                            <div style="background: @colors[i]"></div>
-                            <p>@presale.Name:</p>
-                            <p>@Helpers.ToCurrencyString(presale.Statistics.Profit)</p>
+                            <div style="background: @colors[item.index]"></div>
+                            <p>@item.presale.Name:</p>
+                            <p>@Helpers.ToCurrencyString(item.presale.Statistics.Profit)</p>
                         </div>
-                        i++;
                     }
                 }
             </div>
@@ -39,16 +36,14 @@ else
             <div class="delta-container timer-container">
                 <div class="timer">@timeLeft</div>
                 @if ((decimal)overview.DeltaDay > 0)
-                {
-                    <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay)</div>
-                }
+                    { <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay)</div> }
             </div>
         </div>
         <div class="img-container">
             <img src="@_img.Regular" alt="@_img.AltDescription" />
             <div>
                 <p>Photo by <a href="@_img.AuthorUrl">@_img.AuthorName</a> on <a href="@_img.SourceUrl">@_img.SourceName</a></p>
-                <input @bind="@query" @bind:event="oninput" @onkeydown="@UpdImg" />
+                <input @bind="@query" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
             </div>
         </div>
     </div>
@@ -62,6 +57,9 @@ else
     private PieConfig _pieConfig = new PieConfig();
     private ImageResponse? _img;
     private string query = "girl";
+    private PeriodicTimer periodicTimer = new(TimeSpan.FromSeconds(1));
+    private DateTime from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0);
+    private DateTime to = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
     private string[] colors = new[]
         {
             ColorUtil.ColorHexString(5, 47, 97),
@@ -74,28 +72,37 @@ else
             ColorUtil.ColorHexString(198, 35, 36),
             ColorUtil.ColorHexString(3, 28, 58),
     };
-    private int i = 0;
-    private PeriodicTimer periodicTimer = new(TimeSpan.FromSeconds(1));
-    // private PeriodicTimer timer = new(TimeSpan.FromSeconds(10));
 
-    protected override void OnInitialized() => RunTimer();
     public void Dispose() => periodicTimer?.Dispose();
-
-    protected override void OnAfterRender(bool firstRender)
+    private void UpdateChart()
     {
-        i = 0;
+        if (overview == null) return;
+        var dataset = new PieDataset<decimal>();
+        List<string> datasetColors = new();
+        List<string> datasetLabels = new();
+        _pieConfig.Data.Labels.Clear();
+        _pieConfig.Data.Datasets.Clear();
+
+        foreach (var item in overview.Presales.Select((presale, index) => new { index, presale }))
+        {
+            if ((decimal)item.presale.Statistics.Profit > 0)
+            {
+                dataset.Add(item.presale.Statistics.Profit);
+                datasetColors.Add(colors[item.index]);
+                _pieConfig.Data.Labels.Add($"{item.presale.Name}: {Helpers.ToCurrencyString(item.presale.Statistics.Profit)}");
+            };
+        };
+        if ((decimal)overview.Left > 0)
+        {
+            dataset.Add((decimal)overview.Left);
+            _pieConfig.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)overview.Left)}");
+            datasetColors.Add(ColorUtil.ColorHexString(240, 240, 240));
+        }
+
+        dataset.BackgroundColor = datasetColors.ToArray();
+        _pieConfig.Data.Datasets.Add(dataset);
     }
-
-    DateTime from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0);
-    DateTime to = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
-
-    public async void UpdImg(KeyboardEventArgs e)
-    {
-        if (e.Code == "Enter" || e.Code == "NumpadEnter")
-            _img = await UpdateImage();
-    }
-
-    async void RunTimer()
+    private async void RunTimer()
     {
         int count = 0;
         var second = new TimeSpan(0, 0, 1);
@@ -106,8 +113,8 @@ else
             {
                 count = 0;
                 to = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
-                overview = await UpdateData(from, to);
-                _img = await UpdateImage();
+                await UpdateData(from, to);
+                await UpdateImage();
                 UpdateChart();
                 timeLeft = new(0, 10, 0);
             }
@@ -115,10 +122,9 @@ else
             StateHasChanged();
         }
     }
-
-    private async Task<MonthProfitOverview> UpdateData(DateTime from, DateTime to)
+    private async Task UpdateData(DateTime from, DateTime to)
     {
-        var overview = await PresalesClient.GetMonthProfitOverviewAsync(new OverviewRequest
+        overview = await PresalesClient.GetMonthProfitOverviewAsync(new OverviewRequest
             {
                 Period = new Period
                 {
@@ -141,45 +147,19 @@ else
                     Position = Position.Any,
                     OnlyActive = false
                 });
-        return overview;
     }
+    private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = query, Orientation = ImageOrientation.Portrait});
 
-    private async Task<ImageResponse> UpdateImage() => await PresalesClient.GetImageAsync(new ImageRequest { Keyword = query, Orientation = ImageOrientation.Portrait });
-
-    private void UpdateChart()
+    protected override void OnInitialized() => RunTimer();
+    public async void OnManuallyImageUpdate(KeyboardEventArgs e)
     {
-        i = 0;
-        if (overview == null) return;
-        var dataset = new PieDataset<decimal>();
-        List<string> datasetColors = new();
-        List<string> datasetLabels = new();
-        _pieConfig.Data.Labels.Clear();
-        _pieConfig.Data.Datasets.Clear();
-
-        foreach (var presale in overview.Presales)
-            if ((decimal)presale.Statistics.Profit > 0)
-            {
-                dataset.Add(presale.Statistics.Profit);
-                datasetColors.Add(colors[i]);
-                _pieConfig.Data.Labels.Add($"{presale.Name}: {Helpers.ToCurrencyString(presale.Statistics.Profit)}");
-                i++;
-            }
-        i = 0;
-        if ((decimal)overview.Left > 0)
-        {
-            dataset.Add((decimal)overview.Left);
-            _pieConfig.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)overview.Left)}");
-            datasetColors.Add(ColorUtil.ColorHexString(240, 240, 240));
-        }
-
-        dataset.BackgroundColor = datasetColors.ToArray();
-        _pieConfig.Data.Datasets.Add(dataset);
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+            await UpdateImage();
     }
-
     protected override async Task OnInitializedAsync()
     {
-        overview = await UpdateData(from, to);
-        _img = await UpdateImage();
+        await UpdateData(from, to);
+        await UpdateImage();
 
         _pieConfig.Options = new PieOptions
             {

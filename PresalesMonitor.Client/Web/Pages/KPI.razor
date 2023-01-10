@@ -14,37 +14,24 @@
 <h1>KPI</h1>
 
 <p>
-    <label>Месяц:</label>
-    <select id="month" @bind="month" class="form-select">
-        @for(int m = 1; m <= 12; m++)
-        {
-            <option value="@m">@Helpers.ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(m))</option>
-        }
-    </select>
-    <label>Год:</label>
-    <select id="year" @bind="year" class="form-select">
-        @for (int y = 2015; y <= DateTime.Now.Year; y++)
-        {
-            <option value="@y">@y</option>
-        }
-    </select>
-</p>
-<p>
-    <label>Пресейл:&nbsp;</label>
     @if (presales == null)
-    {
-        <em>Loading...</em>
-    }
+        { <em>Loading...</em> }
     else
     {
-        <select value="@selectedName" @onchange="((ChangeEventArgs e) => OnPresaleChange(e?.Value?.ToString() ?? string.Empty))" class="form-select">
+        <label>Пресейл:</label>
+        <select value="@selectedName" @onchange="((ChangeEventArgs e) => OnPresaleChanged(e?.Value))" class="form-select">
             <option selected=""></option>
             @foreach (var name in presales.Names)
-            {
-                <option value="@name">@name</option>
-            }
+                { <option value="@name">@name</option> }
         </select>
-        <button class="btn btn-primary" @onclick="OnReportRequested">Построить отчёт</button>
+        <select id="month" value="@selectedMonth" @onchange="((ChangeEventArgs e) => OnMonthChanged(e?.Value))" class="form-select">
+            @for (int m = 1; m <= 12; m++)
+                { <option value="@m">@Helpers.ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(m))</option> }
+        </select>
+        <select id="year" value="@selectedYear" @onchange="((ChangeEventArgs e) => OnYearChanged(e?.Value))" class="form-select">
+            @for (int y = 2015; y <= DateTime.Now.Year; y++)
+                { <option value="@y">@y</option> }
+        </select>
         <button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadFile">Скачать отчёт</button>
     }
 </p>
@@ -88,60 +75,51 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var inv in kpi.Invoices)
+            @foreach (var item in kpi.Invoices.Select((invoice, index) => new { index, invoice }))
             {
-                int i = 0;
-                i++;
-                <tr style="color: @SetColor(inv)">
-                    <td>@i</td>
-                    <td>@inv.Counterpart</td>
-                    <td>@inv.Number</td>
-                    <td>@inv.Date.ToDateTime().ToLocalTime()</td>
-                    <td style="text-align: right">@Helpers.ToCurrencyString(inv.Amount)</td>
-                    <td style="text-align: right">@Helpers.ToCurrencyString(inv.Cost)</td>
-                    <td style="text-align: right">@Helpers.ToCurrencyString(inv.SalesAmount)</td>
-                    <td style="text-align: right">@Helpers.ToPercentString(inv.Percent, 1)</td>
-                    <td style="text-align: right">@Helpers.ToCurrencyString(inv.Profit)</td>
+                var invoice = item.invoice;
+                <tr style="color: @SetColor(invoice)">
+                    <td>@(item.index + 1)</td>
+                    <td>@invoice.Counterpart</td>
+                    <td>@invoice.Number</td>
+                    <td>@invoice.Date.ToDateTime().ToLocalTime()</td>
+                    <td style="text-align: right">@Helpers.ToCurrencyString(invoice.Amount)</td>
+                    <td style="text-align: right">@Helpers.ToCurrencyString(invoice.Cost)</td>
+                    <td style="text-align: right">@Helpers.ToCurrencyString(invoice.SalesAmount)</td>
+                    <td style="text-align: right">@Helpers.ToPercentString(invoice.Percent, 1)</td>
+                    <td style="text-align: right">@Helpers.ToCurrencyString(invoice.Profit)</td>
                 </tr>
                 <tr><td colspan="9">
-                    @if (inv.ProjectsFound.Count > 0)
+                    @if (invoice.ProjectsFound.Count > 0)
                     {
                         <details class="pmspoiler">
-                                <summary>Найдено проектов при подсчёте рангов: @inv.ProjectsFound.Count</summary>
-                                @foreach (var project in inv.ProjectsFound)
-                                {
-                                    <p>@Format(project)</p>
-                                }
+                                <summary>Найдено проектов при подсчёте рангов: @invoice.ProjectsFound.Count</summary>
+                                @foreach (var project in invoice.ProjectsFound)
+                                    { <p>@Format(project)</p> }
                         </details>
                     }
-                    @if (inv.ProjectsIgnored.Count > 0)
+                    @if (invoice.ProjectsIgnored.Count > 0)
                     {
                         <details class="pmspoiler">
-                                <summary style="color:red">Проигнорировано проектов при подсчёте рангов: @inv.ProjectsIgnored.Count</summary>
-                                @foreach (var project in inv.ProjectsIgnored)
-                                {
-                                    <p>@Format(project)</p>
-                                }
+                                <summary style="color:red">Проигнорировано проектов при подсчёте рангов: @invoice.ProjectsIgnored.Count</summary>
+                                @foreach (var project in invoice.ProjectsIgnored)
+                                    { <p>@Format(project)</p> }
                         </details>
                     }
-                    @if (inv.ActionsTallied.Count > 0)
+                    @if (invoice.ActionsTallied.Count > 0)
                     {
                         <details class="pmspoiler">
-                                <summary>Действий учтено при подсчёте рангов: @inv.ActionsTallied.Count</summary>
-                                @foreach (var action in inv.ActionsTallied)
-                                {
-                                    <p>@Format(action)</p>
-                                }
+                                <summary>Действий учтено при подсчёте рангов: @invoice.ActionsTallied.Count</summary>
+                                @foreach (var action in invoice.ActionsTallied)
+                                    { <p>@Format(action)</p> }
                         </details>
                     }
-                    @if (inv.ActionsIgnored.Count > 0)
+                    @if (invoice.ActionsIgnored.Count > 0)
                     {
                         <details class="pmspoiler">
-                                <summary style="color:red">Действий проигнорировано при подсчёте рангов: @inv.ActionsIgnored.Count</summary>
-                                @foreach (var action in inv.ActionsIgnored)
-                                {
-                                    <p>@Format(action)</p>
-                                }
+                                <summary style="color:red">Действий проигнорировано при подсчёте рангов: @invoice.ActionsIgnored.Count</summary>
+                                @foreach (var action in invoice.ActionsIgnored)
+                                    { <p>@Format(action)</p> }
                         </details>
                     }
                     </td></tr>
@@ -161,32 +139,36 @@
 }
 
 @code {
-    private int month = DateTime.Now.Month;
-    private int year = DateTime.Now.Year;
+    private int selectedMonth = DateTime.Now.Month;
+    private int selectedYear = DateTime.Now.Year;
+    private string selectedName = string.Empty;
     private NamesResponse? presales;
     private Kpi? kpi;
     private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() {{ "disabled", "disabled" }};
-    protected override async Task OnInitializedAsync() { presales = await PresalesClient.GetNamesAsync(new Empty()); }
-    private string selectedName = string.Empty;
     private static DateOnly firstDay = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
     private string status = string.Empty;
-    private string SetColor(PresalesMonitor.Shared.Invoice invoice) => invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
-    private string Format(PresalesMonitor.Shared.Project project) => $"{project.Number} [{Helpers.ToEnumString((ProjectStatus)project.Status)}], \"{project.Name}\"";
-    private string Format(PresalesMonitor.Shared.Action action) => $"{action.ProjectNumber} [{Helpers.ToEnumString((ActionType)action.Type)}],{(action.Date.ToDateTime() == DateTime.MinValue ? "" : $" {action.Date.ToDateTime().ToLocalTime()}")} ({action.Timespend.ToTimeSpan().TotalMinutes}), \"{action.Description}\"";
-    private async void OnReportRequested()
-    {
-        status = await GenerateReport();
-        StateHasChanged();
-    }
 
-    private async Task<string> GenerateReport()
+    private string SetColor(PresalesMonitor.Shared.Invoice invoice) =>
+        invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
+    private string Format(PresalesMonitor.Shared.Project project) =>
+        $"{project.Number} [{Helpers.ToEnumString((ProjectStatus)project.Status)}], \"{project.Name}\"";
+    private string Format(PresalesMonitor.Shared.Action action) =>
+        $"{action.ProjectNumber} [{Helpers.ToEnumString((ActionType)action.Type)}]," +
+        $"{(action.Date.ToDateTime() == DateTime.MinValue ? "" : $" {action.Date.ToDateTime().ToLocalTime()}")} " +
+        $"({action.Timespend.ToTimeSpan().TotalMinutes}), \"{action.Description}\"";
+    private void DownloadFile()
+    {
+        if (kpi == null) return;
+        Helpers.DownloadFile(kpi, js, selectedName, selectedMonth, selectedYear);
+    }
+    private async Task GenerateReport()
     {
         kpi = null;
         downloadBtnAttrs = new() {{ "disabled", "disabled" }};
 
-        if (string.IsNullOrEmpty(selectedName)) return "Выберите пресейла.";
+        if (string.IsNullOrEmpty(selectedName)) status = "Выберите пресейла.";
 
-        var from = new DateTime(year, month, 1);
+        var from = new DateTime(selectedYear, selectedMonth, 1);
         var to = from.AddMonths(1).AddSeconds(-1);
 
         var response = await PresalesClient.GetKpiAsync(new KpiRequest
@@ -200,26 +182,36 @@
             }
         );
 
-        if (response.ResponseCase == KpiResponse.ResponseOneofCase.Kpi) kpi = response.Kpi;
-        downloadBtnAttrs = new();
+        if (response.ResponseCase == KpiResponse.ResponseOneofCase.Kpi)
+        {
+            kpi = response.Kpi;
+            downloadBtnAttrs = new();
+        }
 
-        return response.ResponseCase switch
+        status = response.ResponseCase switch
         {
             KpiResponse.ResponseOneofCase.Error => response.Error.Message,
             KpiResponse.ResponseOneofCase.Kpi => "Отчёт сгенерирован!",
             KpiResponse.ResponseOneofCase.None => "Нет счетов за указанный период.",
             _ => "Неизвестный ответ сервера."
         };
+        StateHasChanged();
     }
-    private void DownloadFile()
+
+    protected override async Task OnInitializedAsync() { presales = await PresalesClient.GetNamesAsync(new Empty()); }
+    private async void OnPresaleChanged(object? obj)
     {
-        if (kpi == null) return;
-        Helpers.DownloadFile(kpi, js, selectedName, DateTimeFormatInfo.CurrentInfo.GetMonthName(month));
+        selectedName = obj?.ToString() ?? string.Empty;
+        await GenerateReport();
     }
-    private void OnPresaleChange(string presaleName)
+    private async void OnYearChanged(object? obj)
     {
-        kpi = null;
-        selectedName = presaleName;
-        status = string.Empty;
+        int.TryParse(obj?.ToString(), out selectedYear);
+        await GenerateReport();
+    }
+    private async void OnMonthChanged(object? obj)
+    {
+        int.TryParse(obj?.ToString(), out selectedMonth);
+        await GenerateReport();
     }
 }
