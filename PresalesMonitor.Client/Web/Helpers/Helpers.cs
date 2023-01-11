@@ -1,8 +1,11 @@
-﻿using Microsoft.JSInterop;
+﻿using Google.Protobuf.WellKnownTypes;
+using Microsoft.JSInterop;
 using PresalesMonitor.Shared;
+using System;
 using System.Globalization;
-using System.Runtime.Serialization;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PresalesMonitor.Client.Web.Helpers
 {
@@ -15,16 +18,10 @@ namespace PresalesMonitor.Client.Web.Helpers
         public static string ToDaysString(TimeSpan avgTTW) => $"{(avgTTW == TimeSpan.Zero ? "" : avgTTW.TotalDays):f0}";
         public static string ToMinutesString(TimeSpan avgTTR) => $"{(avgTTR == TimeSpan.Zero ? "" : avgTTR.TotalMinutes):f0}";
         public static string ToHoursString(TimeSpan timeSpend) => $"{(timeSpend == TimeSpan.Zero ? "" : timeSpend.TotalHours):f1}";
-        public static string ToEnumString<T>(T type) where T : Enum
-        {
-            var enumType = typeof(T);
-            var name = Enum.GetName(enumType, type);
-            if (name == null) return "";
-            var fieldName = enumType.GetField(name);
-            if (fieldName == null) return "";
-            EnumMemberAttribute enumMemberAttribute = ((EnumMemberAttribute[])fieldName.GetCustomAttributes(typeof(EnumMemberAttribute), true)).Single();
-            return enumMemberAttribute.Value ?? "";
-        }
+        public static string ToDateString(Timestamp timestamp, string separator) =>
+            timestamp.ToDateTime() == DateTime.MinValue ? "" : $"{separator}{timestamp.ToDateTime().ToPresaleTime()}";
+        public static string ToOneDateString(Timestamp a, Timestamp b) =>
+            $"{(a.ToDateTime() == DateTime.MinValue ? b.ToDateTime().ToPresaleTime() : a.ToDateTime().ToPresaleTime())}";
         public static string ToUpperFirstLetterString(string value) => value.Length switch
         {
             0 => value,
@@ -52,7 +49,7 @@ namespace PresalesMonitor.Client.Web.Helpers
             foreach (var inv in kpi.Invoices)
             {
                 i++;
-                text += $"{i};{inv.Counterpart};{inv.Number};{inv.Date.ToDateTime().ToLocalTime()};" +
+                text += $"{i};{inv.Counterpart};{inv.Number};{inv.Date.ToDateTime().ToPresaleTime()};" +
                 $"{(decimal)inv.Amount};{(decimal)inv.Cost};" +
                 $"{(decimal)inv.SalesAmount};{(inv.Percent > 0 ? inv.Percent * 100 : "")};" +
                 $"{((decimal)inv.Profit > 0 ? (decimal)inv.Profit : "")};";
@@ -87,5 +84,7 @@ namespace PresalesMonitor.Client.Web.Helpers
             Position.Any => "Любая заданная",
             _ => throw new NotImplementedException()
         };
+        // TODO: Реализовать поддержку рабочего времени пресейла.
+        public static DateTime ToPresaleTime(this DateTime dateTime) => dateTime.ToLocalTime();
     }
 }

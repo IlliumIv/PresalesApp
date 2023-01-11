@@ -130,15 +130,41 @@ message Project {
 	google.protobuf.Timestamp approval_by_sales_director_at = 4;
 	google.protobuf.Timestamp presale_start_at = 5;
 	string presale_name = 6;
-	int32 status = 7;
+	ProjectStatus status = 7;
+	google.protobuf.Timestamp closed_at = 8;
 }
 message Action {
 	string project_number = 1;
 	int32 number = 2;
 	google.protobuf.Timestamp date = 3;
-	int32 type = 4;
+	ActionType type = 4;
 	google.protobuf.Duration timespend = 5;
 	string description = 6;
+}
+enum ProjectStatus {
+	PROJECT_STATUS_UNKNOWN = 0;
+	PROJECT_STATUS_WORK_IN_PROGRESS = 1;
+	PROJECT_STATUS_WON = 2;
+	PROJECT_STATUS_LOSS = 3;
+}
+enum ActionType {
+	ACTION_TYPE_UNKNOWN = 0;
+	ACTION_TYPE_FULL_SETUP = 1;
+	ACTION_TYPE_SETTINGS_CHECKUP = 2;
+	ACTION_TYPE_PROBLEM_DIAGNOSTICS = 3;
+	ACTION_TYPE_CALCULATION = 4;
+	ACTION_TYPE_SPECIFICATION_CHECKUP = 5;
+	ACTION_TYPE_SPECIFICATION_CREATE_FROM_TEMPLATE = 6;
+	ACTION_TYPE_SPECIFICATION_CREATE = 7;
+	ACTION_TYPE_REQUIREMENTS_CREATE = 8;
+	ACTION_TYPE_CONSULTATION = 9;
+	ACTION_TYPE_NEGOTIATIONS = 10;
+	ACTION_TYPE_PRESENTATION = 11;
+	ACTION_TYPE_DEPARTURE_FULL_SETUP = 12;
+	ACTION_TYPE_DEPARTURE_SETTINGS_CHECKUP = 13;
+	ACTION_TYPE_DEPARTURE_PROBLEM_DIAGNOSIS = 14;
+	ACTION_TYPE_DEPARTURE_PRESENTATION = 15;
+	ACTION_TYPE_DEPARTURE_CONSULTATION = 16;
 }
 enum Department {
 	DEPARTMENT_NONE = 0;

@@ -3,12 +3,13 @@ using Google.Protobuf.WellKnownTypes;
 using PresalesMonitor.Shared;
 using PresalesMonitor.Entities;
 using Microsoft.EntityFrameworkCore;
-using PresalesMonitor.Entities.Enums;
 using PresalesMonitor.Shared.CustomTypes;
 using System.Security.Authentication;
 using Newtonsoft.Json;
 using Department = PresalesMonitor.Entities.Enums.Department;
 using Position = PresalesMonitor.Entities.Enums.Position;
+using ProjectStatus = PresalesMonitor.Entities.Enums.ProjectStatus;
+using ActionType = PresalesMonitor.Entities.Enums.ActionType;
 using Enum = System.Enum;
 
 namespace PresalesMonitor.Server.Services
@@ -62,7 +63,7 @@ namespace PresalesMonitor.Server.Services
                 .Include(p => p.Invoices
                     .Where(i => i.Date >= from
                                 || i.LastPayAt >= from
-                                || i.LastShipmentAt >= from))?.ThenInclude(i => i.Project)
+                                || i.LastShipmentAt >= from))?.ThenInclude(i => i.Project)?.ThenInclude(p => p.Actions)
                 .Include(p => p.Invoices
                     .Where(i => i.Date >= from
                                 || i.LastPayAt >= from
@@ -483,7 +484,14 @@ namespace PresalesMonitor.Server.Services
                 if (project == null) continue;
                 if (projectsViewed.Contains(project)) continue;
                 else projectsViewed.Add(project);
-                _ = db.Actions?.Where(a => a.Project.Number == project.Number)?.ToList();
+
+                var some = db.Actions?.Where(a => a.Project.Number == project.Number)?.ToList();
+
+                if (project.Number == "ЦБ-00067220")
+                {
+                    Console.WriteLine($"Catch! {some?.Count}");
+                }
+
                 var prj = db.Projects?.Where(p => p.Number == project.Number)?.Include(p => p.MainProject).FirstOrDefault();
                 if (prj?.MainProject?.Number != null)
                 {
@@ -499,22 +507,19 @@ namespace PresalesMonitor.Server.Services
         {
             Number = project.Number,
             Name = project.Name ?? "",
-            ApprovalByTechDirectorAt = Timestamp.FromDateTime(
-                project.ApprovalByTechDirectorAt == DateTime.MinValue ? DateTime.MinValue.ToUniversalTime() : project.ApprovalByTechDirectorAt),
-            ApprovalBySalesDirectorAt = Timestamp.FromDateTime(
-                project.ApprovalBySalesDirectorAt == DateTime.MinValue ? DateTime.MinValue.ToUniversalTime() : project.ApprovalBySalesDirectorAt),
-            PresaleStartAt = Timestamp.FromDateTime(
-                project.PresaleStartAt == DateTime.MinValue ? DateTime.MinValue.ToUniversalTime() : project.PresaleStartAt),
+            ApprovalByTechDirectorAt = Timestamp.FromDateTime(project.ApprovalByTechDirectorAt.ToUniversalTime()),
+            ApprovalBySalesDirectorAt = Timestamp.FromDateTime(project.ApprovalBySalesDirectorAt.ToUniversalTime()),
+            PresaleStartAt = Timestamp.FromDateTime(project.PresaleStartAt.ToUniversalTime()),
+            ClosedAt = Timestamp.FromDateTime(project.ClosedAt.ToUniversalTime()),
             PresaleName = project.Presale?.Name ?? "",
-            Status = (int)project.Status
+            Status = project.Status.Translate()
         };
         public static Shared.Action Translate(this PresaleAction action) => new()
         {
             ProjectNumber = action.Project?.Number ?? "",
             Number = action.Number,
-            Date = Timestamp.FromDateTime(
-                action.Date == DateTime.MinValue ? DateTime.MinValue.ToUniversalTime() : action.Date),
-            Type = (int)action.Type,
+            Date = Timestamp.FromDateTime(action.Date.ToUniversalTime()),
+            Type = action.Type.Translate(),
             Timespend = Duration.FromTimeSpan(TimeSpan.FromMinutes(action.TimeSpend)),
             Description = action.Description
         };
@@ -523,12 +528,18 @@ namespace PresalesMonitor.Server.Services
             if (value == Shared.Department.Any) return Department.None;
             return (Department)Enum.Parse(typeof(Department), value.ToString());
         }
-        public static Shared.Department Translate(this Department value) => (Shared.Department)Enum.Parse(typeof(Shared.Department), value.ToString());
+        public static Shared.Department Translate(this Department value) =>
+            (Shared.Department)Enum.Parse(typeof(Shared.Department), value.ToString());
         public static Position Translate(this Shared.Position value)
         {
             if (value == Shared.Position.Any) return Position.None;
             return (Position)Enum.Parse(typeof(Position), value.ToString());
         }
-        public static Shared.Position Translate(this Position value) => (Shared.Position)Enum.Parse(typeof(Shared.Position), value.ToString());
+        public static Shared.Position Translate(this Position value) =>
+            (Shared.Position)Enum.Parse(typeof(Shared.Position), value.ToString());
+        public static Shared.ProjectStatus Translate(this ProjectStatus value) =>
+            (Shared.ProjectStatus)Enum.Parse(typeof(Shared.ProjectStatus), value.ToString());
+        public static Shared.ActionType Translate(this ActionType value) =>
+            (Shared.ActionType)Enum.Parse(typeof(Shared.ActionType), value.ToString());
     }
 }
