@@ -1,6 +1,5 @@
 ﻿@page "/kpi"
 @using Google.Protobuf.Collections;
-@using PresalesMonitor.Entities.Enums;
 @using PresalesMonitor.Shared;
 @using PresalesMonitor.Client.Web.Helpers;
 @using Google.Protobuf.WellKnownTypes;
@@ -82,7 +81,7 @@
                     <td>@(item.index + 1)</td>
                     <td>@invoice.Counterpart</td>
                     <td>@invoice.Number</td>
-                    <td>@invoice.Date.ToDateTime().ToLocalTime()</td>
+                    <td>@invoice.Date.ToDateTime().ToPresaleTime()</td>
                     <td style="text-align: right">@Helpers.ToCurrencyString(invoice.Amount)</td>
                     <td style="text-align: right">@Helpers.ToCurrencyString(invoice.Cost)</td>
                     <td style="text-align: right">@Helpers.ToCurrencyString(invoice.SalesAmount)</td>
@@ -151,11 +150,13 @@
     private string SetColor(PresalesMonitor.Shared.Invoice invoice) =>
         invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
     private string Format(PresalesMonitor.Shared.Project project) =>
-        $"{project.Number} [{Helpers.ToEnumString((ProjectStatus)project.Status)}], \"{project.Name}\"";
+        $"{project.Number} [{project.Status}" +
+        $"{Helpers.ToDateString(project.ClosedAt, ": ")}" +
+        $"], \"{project.Name}\"";
     private string Format(PresalesMonitor.Shared.Action action) =>
-        $"{action.ProjectNumber} [{Helpers.ToEnumString((ActionType)action.Type)}]," +
-        $"{(action.Date.ToDateTime() == DateTime.MinValue ? "" : $" {action.Date.ToDateTime().ToLocalTime()}")} " +
-        $"({action.Timespend.ToTimeSpan().TotalMinutes}), \"{action.Description}\"";
+        $"{action.ProjectNumber} [{action.Type}" +
+        $"{Helpers.ToDateString(action.Date, ": ")}" +
+        $" ({action.Timespend.ToTimeSpan().TotalMinutes})], \"{action.Description}\"";
     private void DownloadFile()
     {
         if (kpi == null) return;

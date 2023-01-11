@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
 using PresalesMonitor.Shared;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
+using System;
 
 namespace PresalesMonitor.Client.Web
 {
