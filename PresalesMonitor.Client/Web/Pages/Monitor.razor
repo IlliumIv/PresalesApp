@@ -5,6 +5,7 @@
 @using Google.Protobuf.WellKnownTypes;
 @using Department = PresalesMonitor.Shared.Department;
 @using Position = PresalesMonitor.Shared.Position;
+@using System.Threading;
 @inject Presales.PresalesClient PresalesClient
 
 <PageTitle>Presales Monitor</PageTitle>
@@ -147,8 +148,8 @@ else
 
     private string Format(Project project) =>
         $"{project.Number}, {project.Name}, " +
-        $"{(project.ApprovalByTechDirectorAt.ToDateTime() == DateTime.MinValue ? project.ApprovalBySalesDirectorAt.ToDateTime().ToLocalTime() : project.ApprovalByTechDirectorAt.ToDateTime().ToLocalTime())}" +
-        $"{(project.PresaleStartAt.ToDateTime() != DateTime.MinValue ? $" - {project.PresaleStartAt.ToDateTime().ToLocalTime()}" : "")}" +
+        $"{Helpers.ToOneDateString(project.ApprovalByTechDirectorAt, project.ApprovalBySalesDirectorAt)}" +
+        $"{Helpers.ToDateString(project.PresaleStartAt, " - ")}" +
         $"{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
     public void Dispose() => periodicTimer?.Dispose();
     private async void RunTimer()

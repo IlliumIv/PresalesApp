@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Publish\**" />
+    <Content Remove="Publish\**" />
+    <EmbeddedResource Remove="Publish\**" />
+    <None Remove="Publish\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="PresalesMonitor.Server.7z" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.50.0" />
     <PackageReference Include="Grpc.AspNetCore.Web" Version="2.50.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.10" />
@@ -14,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PresalesMonitor.Client\Web\PresalesMonitor.Client.Web.csproj" />
+    <ProjectReference Include="..\PresalesMonitor.Entities\PresalesMonitor.Entities.csproj" />
     <ProjectReference Include="..\PresalesMonitor.Shared\PresalesMonitor.Shared.csproj" />
   </ItemGroup>
 
