@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PresalesMonitor.Entities\PresalesMonitor.Entities.csproj" />
+    <ProjectReference Include="..\PresalesMonitor.Parser\PresalesMonitor.Parser.csproj" />
     <ProjectReference Include="..\PresalesMonitor.Settings\PresalesMonitor.Settings.csproj" />
   </ItemGroup>
 
