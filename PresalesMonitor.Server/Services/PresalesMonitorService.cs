@@ -57,13 +57,13 @@ namespace PresalesMonitor.Server.Services
             var to = request.Period.To.ToDateTime();
 
 #pragma warning disable CS8604 // Possible null reference argument.
-            presale = db.Presales?
+            _ = db.Presales?
                 .Where(p => p.Name == request.PresaleName)?
                 .Where(p => p != null && p.Invoices != null)?
                 .Include(p => p.Invoices
                     .Where(i => i.Date >= from
                                 || i.LastPayAt >= from
-                                || i.LastShipmentAt >= from))?.ThenInclude(i => i.Project)?.ThenInclude(p => p.Actions)
+                                || i.LastShipmentAt >= from))?.ThenInclude(i => i.Project)
                 .Include(p => p.Invoices
                     .Where(i => i.Date >= from
                                 || i.LastPayAt >= from
@@ -71,11 +71,8 @@ namespace PresalesMonitor.Server.Services
                 .FirstOrDefault();
 #pragma warning restore CS8604 // Possible null reference argument.
 
-            if (presale?.Projects == null)
-                return Task.FromResult(new KpiResponse());
-
             HashSet<Entities.Project> projects = new();
-            RecurseLoad(presale.Projects.ToList(), db, ref projects);
+            RecurseLoad(presale.Projects?.ToList(), db, ref projects);
 
             HashSet<Entities.Invoice>? invoices = new();
             presale.SumProfit(from, to, ref invoices);
@@ -192,7 +189,6 @@ namespace PresalesMonitor.Server.Services
             #region Метрики пресейла
             foreach (var presale in presales)
             {
-                if (presale.Position == Position.Director) continue;
                 if (onlyActive && !presale.IsActive) continue;
                 var isRuEngineer = presale.Department == Department.Russian
                                 && presale.Position == Position.Engineer;
@@ -486,11 +482,6 @@ namespace PresalesMonitor.Server.Services
                 else projectsViewed.Add(project);
 
                 var some = db.Actions?.Where(a => a.Project.Number == project.Number)?.ToList();
-
-                if (project.Number == "ЦБ-00067220")
-                {
-                    Console.WriteLine($"Catch! {some?.Count}");
-                }
 
                 var prj = db.Projects?.Where(p => p.Number == project.Number)?.Include(p => p.MainProject).FirstOrDefault();
                 if (prj?.MainProject?.Number != null)
