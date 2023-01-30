@@ -13,19 +13,19 @@
 <h1>Presales Monitor</h1>
 
 <p>
-    <input type="date" max="@Helpers.ToMinMaxFormatString(to)" value="@Helpers.ToMinMaxFormatString(from)" @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text" />
+    <input title="Начало периода" type="date" max="@Helpers.ToMinMaxFormatString(to)" value="@Helpers.ToMinMaxFormatString(from)" @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text" />
     <label>&nbsp;-&nbsp;</label>
-    <input type="date" min="@Helpers.ToMinMaxFormatString(from)" value="@Helpers.ToMinMaxFormatString(to)" @onchange="((ChangeEventArgs e) => OnToChanged(e?.Value))" class="input-group-text" />
-    <label>Направление:</label>
-    <select value="@department" @onchange="((ChangeEventArgs e) => OnDepartmentChanged(e?.Value))" class="form-select">
+    <input title="Конец периода" type="date" min="@Helpers.ToMinMaxFormatString(from)" value="@Helpers.ToMinMaxFormatString(to)" @onchange="((ChangeEventArgs e) => OnToChanged(e?.Value))" class="input-group-text" />
+    <select title="Направление" value="@department" @onchange="((ChangeEventArgs e) => OnDepartmentChanged(e?.Value))" class="form-select">
         @foreach (Department dep in (Department[])System.Enum.GetValues(typeof(Department)))
             { <option value="@dep">@dep.GetName()</option> }
     </select>
-    <label>Должность:</label>
-    <select value="@position" @onchange="((ChangeEventArgs e) => OnPositionChanged(e?.Value))" class="form-select">
+    <select title="Должность" value="@position" @onchange="((ChangeEventArgs e) => OnPositionChanged(e?.Value))" class="form-select">
         @foreach (Position pos in (Position[])System.Enum.GetValues(typeof(Position)))
             { <option value="@pos">@pos.GetName()</option> }
     </select>
+    <label for="onlyActive">Только действующие:</label>
+    <input type="checkbox" id="onlyActive" value="@_onlyActive" @onchange="((ChangeEventArgs e) => OnStatusChanged(e?.Value))" checked/>
 </p>
 
 @if (overview == null)
@@ -70,7 +70,7 @@ else
                     <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
                     <td title="@avgttwTitle">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
                     <td title="@avgttrTitle">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
-                    <td title="@avgrTitle">@Math.Round(presale.Statistics.AvgRank, 1)</td>
+                    <td title="@avgrTitle">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
                     <td title="@spendSumTitle">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
                     <td title="@spendAvgTitle">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
                     <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
@@ -131,6 +131,7 @@ else
     private Department department = Department.Any;
     private Position position = Position.Any;
     private Overview? overview;
+    private bool _onlyActive = true;
     private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
     #region Descriptions
     private readonly string inWorkTitle = "В работе (есть действия за последние 30 дней)";
@@ -161,7 +162,7 @@ else
     {
         overview = await PresalesClient.GetOverviewAsync(new OverviewRequest
             {
-                OnlyActive = true,
+                OnlyActive = _onlyActive,
                 Department = department,
                 Position = position,
                 Period = new Period
@@ -194,5 +195,15 @@ else
         System.Enum.TryParse<Position>(obj?.ToString(), out position);
         await UpdateData();
     }
+    private async void OnStatusChanged(object? obj)
+    {
+        _onlyActive = obj == null ? _onlyActive : (bool)obj;
+        await UpdateData();
+    }
     protected override async Task OnInitializedAsync() => await UpdateData();
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine(_onlyActive);
+        return base.OnAfterRenderAsync(firstRender);
+    }
 }

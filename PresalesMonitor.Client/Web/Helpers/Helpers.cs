@@ -28,7 +28,7 @@ namespace PresalesMonitor.Client.Web.Helpers
             1 => char.ToUpper(value[0]).ToString(),
             _ => char.ToUpper(value[0]) + value[1..]
         };
-        public static string ToEmptyIfZeroString(int value) => value switch
+        public static string ToEmptyIfZeroString(double value) => value switch
         {
             0 => "",
             _ => value.ToString()
