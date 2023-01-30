@@ -8,7 +8,6 @@ namespace PresalesMonitor
 {
     public class Parser
     {
-        private static DateTime lastError = DateTime.MinValue;
         private static readonly FileInfo _errorLog = new("Error.log");
         private static readonly FileInfo _workLog = new("Parser.log");
         private static bool _debug = false;
@@ -19,31 +18,30 @@ namespace PresalesMonitor
         {
             DateTimeZoneHandling = DateTimeZoneHandling.Utc
         };
-        /*
         public static void Run()
         {
-            if ((DateTime.Now - lastError) < TimeSpan.FromMinutes(10)) { Task.Delay(600000); }
             Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
             if (r == null) return;
             var appSettings = (Settings.Application)r;
 
-            _lastProjectsUpdate = appSettings.PreviosUpdate;
-            _lastInvoicesUpdate = appSettings.PreviosUpdate;
+            _lastProjectsUpdate = appSettings.ProjectsUpdatedAt;
+            _lastInvoicesUpdate = appSettings.InvoicesUpdatedAt;
             _debug = appSettings.Debug;
 
-            GetUpdate(appSettings.PreviosUpdate);
-            appSettings.PreviosUpdate = new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt);
+            GetUpdate(new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt));
+            appSettings.ProjectsUpdatedAt = _lastProjectsUpdate;
+            appSettings.InvoicesUpdatedAt = _lastInvoicesUpdate;
             appSettings.CurrentConfiguration.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection(appSettings.SectionInformation.Name);
         }
-        //*/
         private static void GetUpdate(DateTime prevUpdate)
         {
             try
             {
                 var currentUpdate = (DateTime.Now - prevUpdate).TotalDays > 1 ? prevUpdate.AddDays(1) : DateTime.Now;
-                
-                if (TryGetData(_lastProjectsUpdate, currentUpdate, out List<Project> projects))
+
+                // В 1С включен механизм фоновой записи, запрашиваем данные с задержкой, чтобы не промахнуться.
+                if (TryGetData(_lastProjectsUpdate.AddMinutes(-2), currentUpdate.AddMinutes(-2), out List<Project> projects))
                 {
                     foreach (var project in projects)
                     {
@@ -121,7 +119,6 @@ namespace PresalesMonitor
                 Console.WriteLine(e.ToString());
                 using var sw = File.AppendText(_errorLog.FullName);
                 sw.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] {e}\n");
-                lastError = DateTime.Now;
             }
         }
         private static bool TryGetData<T>(DateTime startTime, DateTime endTime, out List<T> result)
