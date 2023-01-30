@@ -1,15 +1,33 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PresalesMonitor.Entities;
 using System.Configuration;
 
 namespace PresalesMonitor
 {
-    public static class Synchronizer
+    public class Synchronizer
     {
-        // public static readonly FileInfo _workLog = new("Parser.log");
+        public static readonly FileInfo _workLog = new("Parser.log");
         // public static readonly FileInfo _errorLog = new("Error.log");
         // await File.AppendAllTextAsync(_errorLog.FullName, $"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] {e}\n\n");
+
+        static void Main(string[] args)
+        {
+            using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder
+                .SetMinimumLevel(LogLevel.Debug)
+                .AddFilter("Microsoft", LogLevel.Warning)
+                .AddFilter("System", LogLevel.Warning)
+                .AddFilter("LoggingConsoleApp.Program", LogLevel.Debug)
+                
+                );
+
+            ILogger logger = loggerFactory.CreateLogger<Synchronizer>();
+            logger.LogInformation("Example log message");
+
+            Console.WriteLine("Synchronizer started");
+        }
+
         public static async void Start(TimeSpan delay)
         {
             await RunUpdates();
