@@ -67,7 +67,7 @@ namespace PresalesMonitor
                 $"\"Пресейл\":\"{project.Presale?.Name}\"," +
                 $"\"ОсновнойПроект\":\"{project.MainProject?.Name}\"";
 
-            return log ;
+            return log;
         }
 
         private static async Task<string> ProceedInvoice(Invoice invoice)
