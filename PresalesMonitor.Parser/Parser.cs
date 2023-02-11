@@ -61,11 +61,11 @@ namespace PresalesMonitor
                                 $"Потенциал:{pr.PotentialAmount}," +
                                 $"Статус:{pr.Status}," +
                                 $"ПричинаПроигрыша:{pr.LossReason}," +
-                                $"ПлановаяДатаОкончанияТек:{pr.PotentialWinAt}," +
+                                $"ПлановаяДатаОкончанияТек:{pr.PotentialWinAt.AddHours(5)}," +
                                 $"ДатаОкончания:{pr.ClosedAt}," +
-                                $"ДатаСогласованияРТС:{pr.ApprovalByTechDirectorAt}," +
-                                $"ДатаСогласованияРОП:{pr.ApprovalBySalesDirectorAt}," +
-                                $"ДатаНачалаРаботыПресейла:{pr.PresaleStartAt}," +
+                                $"ДатаСогласованияРТС:{pr.ApprovalByTechDirectorAt.AddHours(5)}," +
+                                $"ДатаСогласованияРОП:{pr.ApprovalBySalesDirectorAt.AddHours(5)}," +
+                                $"ДатаНачалаРаботыПресейла:{pr.PresaleStartAt.AddHours(5)}," +
                                 $"ДействияПресейла:{pr.Actions?.Count}," +
                                 $"Пресейл:{pr.Presale?.Name}," +
                                 $"ОсновнойПроект:{pr.MainProject?.Name}");
@@ -98,16 +98,16 @@ namespace PresalesMonitor
                             if (inv.ProfitPeriods!= null)
                             {
                                 foreach (var p in inv.ProfitPeriods)
-                                    profitPeriods += $"\"{p.StartTime}\":\"{p.Amount}\",";
+                                    profitPeriods += $"\"{p.StartTime.AddHours(5)}\":\"{p.Amount}\",";
                             }
 
                             sw.WriteLine($"\"Номер\":\"{inv.Number}\"," +
-                                $"\"Дата\":\"{inv.Date}\"," +
+                                $"\"Дата\":\"{inv.Date.AddHours(5)}\"," +
                                 $"\"Контрагент\":\"{inv.Counterpart}\"," +
                                 $"\"Проект\":\"{inv.Project?.Number}\"," +
                                 $"\"СуммаРуб\":\"{inv.Amount}\"," +
-                                $"\"ДатаПоследнейОплаты\":\"{inv.LastPayAt}\"," +
-                                $"\"ДатаПоследнейОтгрузки\":\"{inv.LastShipmentAt}\"," +
+                                $"\"ДатаПоследнейОплаты\":\"{inv.LastPayAt.AddHours(5)}\"," +
+                                $"\"ДатаПоследнейОтгрузки\":\"{inv.LastShipmentAt.AddHours(5)}\"," +
                                 $"\"Пресейл\":\"{inv.Presale?.Name}\"," +
                                 $"\"Суммарная прибыль за периоды\":[{profitPeriods}]"
                                 );

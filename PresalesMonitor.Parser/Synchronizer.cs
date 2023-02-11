@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PresalesMonitor.Entities;
-using System.Configuration;
+using Serilog;
+using System.Drawing;
 
 namespace PresalesMonitor
 {
@@ -14,20 +15,32 @@ namespace PresalesMonitor
 
         static void Main(string[] args)
         {
-            using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder
-                .SetMinimumLevel(LogLevel.Debug)
-                .AddFilter("Microsoft", LogLevel.Warning)
-                .AddFilter("System", LogLevel.Warning)
-                .AddFilter("LoggingConsoleApp.Program", LogLevel.Debug)
-                
-                );
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile($"appsettings.json")
+                .Build();
 
-            ILogger logger = loggerFactory.CreateLogger<Synchronizer>();
-            logger.LogInformation("Example log message");
+            var logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
 
-            Console.WriteLine("Synchronizer started");
+            /*
+            var ex = new NullReferenceException();
+            Console.WriteLine(ex.Message);
+            Console.WriteLine(ex.StackTrace);
+
+            logger.Verbose("Verbose");
+            logger.Debug("LogDebug");
+            logger.Information(ex, "LogInformation");
+            logger.Warning("LogWarning");
+            logger.Error("LogError");
+            logger.Fatal("LogCritical");
+
+            //*/
+
+            Console.ReadLine();
         }
-
+        /*
         public static async void Start(TimeSpan delay)
         {
             await RunUpdates();
@@ -105,7 +118,7 @@ namespace PresalesMonitor
                 await File.AppendAllTextAsync(_workLog.FullName, $"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] Request: {message.RequestUri}\n\n");
                 var httpResponse = await httpClient.SendAsync(message);
                 if (httpResponse.IsSuccessStatusCode)
-                    //*/
+                    //*---/
                 if (true)
                 {
                     // var @string = await httpResponse.Content.ReadAsStringAsync();
@@ -130,6 +143,7 @@ namespace PresalesMonitor
             }
             else throw new ConfigurationErrorsException();
         }
+                //*/
     }
     internal static class OneAssMock
     {
