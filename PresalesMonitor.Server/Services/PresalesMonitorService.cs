@@ -16,6 +16,7 @@ namespace PresalesMonitor.Server.Services
 {
     public class PresalesMonitorService : Presales.PresalesBase
     {
+        private readonly decimal plan = 4321059;
         private string cachedTop = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
         private ImageResponse _cashedImageGirl = new()
         {
@@ -109,16 +110,16 @@ namespace PresalesMonitor.Server.Services
                     Profit = DecimalValue.FromDecimal(profit * (decimal)percent),
                 };
 
-                foreach (var inv in projectsIgnored)
+                foreach (var inv in projectsIgnored.OrderBy(p => p.Number))
                     invoiceReply.ProjectsIgnored.Add(inv.Translate());
 
-                foreach (var inv in projectsFound)
+                foreach (var inv in projectsFound.OrderBy(p => p.Number))
                     invoiceReply.ProjectsFound.Add(inv.Translate());
 
-                foreach (var action in actionsIgnored)
+                foreach (var action in actionsIgnored.OrderBy(a => a.Project.Number).ThenBy(a => a.Number))
                     invoiceReply.ActionsIgnored.Add(action.Translate());
 
-                foreach (var action in actionsTallied)
+                foreach (var action in actionsTallied.OrderBy(a => a.Project.Number).ThenBy(a => a.Number))
                     invoiceReply.ActionsTallied.Add(action.Translate());
 
                 reply.Invoices.Add(invoiceReply);
@@ -405,8 +406,6 @@ namespace PresalesMonitor.Server.Services
             var position = request?.Position ?? Shared.Position.Any;
             var department = request?.Department ?? Shared.Department.Any;
             var onlyActive = request?.OnlyActive ?? false;
-
-            decimal plan = 4977898;
 
             using var db = new DbController.Context();
             var presales = db.Presales?
