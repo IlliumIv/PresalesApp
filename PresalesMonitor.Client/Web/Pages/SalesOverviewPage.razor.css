@@ -1,0 +1,147 @@
+﻿.overview {
+    display: grid;
+    font-size: 1.5em;
+    font-family: "Fjalla One rev=1";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    grid-template-rows: 1fr 6fr;
+    grid-gap: 6%;
+    z-index: -1;
+}
+
+.chart {
+    display: flex;
+}
+
+.charts {
+    width: 60%;
+    margin-top: 75px;
+}
+
+.buble {
+    position: absolute;
+    left: -10%;
+    width: 60%;
+}
+
+.top {
+    width: 40%;
+    margin: 50px 0 0 0;
+}
+
+.top table {
+    width: 100%;
+    font-size: 1.5em;
+}
+
+.top table tr:nth-child(1) {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+
+.top table tr:nth-child(2) {
+    font-size: 1.1em;
+}
+
+.top table tr td:nth-child(1) {
+    width: 4%;
+    padding-right: 5px;
+}
+
+.top table tr td:nth-child(1) div {
+    height: 10px
+}
+
+.legend {
+    display: flex;
+    font-size: 0.8em;
+}
+
+fieldset {
+    padding: 3px 6px;
+    border: 1px solid #000;
+    margin: 0 10px;
+    width: 25%;
+}
+
+legend {
+    float: none;
+    width: auto;
+    padding: inherit;
+    margin: 0;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.salesTarget p,
+.actualProfit p,
+.previousActualProfit p,
+.increase p,
+.percent p {
+    margin: 0;
+    text-align: center;
+    font-size: 1.7em;
+}
+
+.percent {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    left: -10%;
+}
+
+.percent p {
+    margin: auto
+}
+
+.leaderboard {
+    width: 150%;
+    margin-left: -52%;
+    border: none;
+    border-top: 1px solid #000;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+}
+
+.leaderboard legend {
+    margin-left: 10%;
+}
+
+.params, .params div {
+    height: 50px;
+    padding: 5px;
+}
+
+.params div {
+    background: white;
+    border: 1px solid;
+}
+
+.hide, .error_hide {
+    display: none;
+}
+
+.params:hover .hide {
+    display: block;
+}
+
+.rotatePin {
+    transform: rotate(0.15turn);
+}
+
+.error {
+    background: red;
+    font-weight: bold;
+    color: white;
+    border-radius: 5px;
+    padding: 5px;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-top: 10px;
+}
+
+.error p {
+    margin: 0;
+}

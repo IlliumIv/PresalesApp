@@ -12,14 +12,18 @@ service Presales {
 	rpc GetKpi(KpiRequest) returns (KpiResponse);
 	rpc GetImage(ImageRequest) returns (ImageResponse);
 	rpc GetMonthProfitOverview(OverviewRequest) returns (MonthProfitOverview);
-	rpc GetSalesOverview(google.protobuf.Empty) returns (SalesOverview);
+	rpc GetSalesOverview(SalesOverviewRequest) returns (SalesOverview);
 }
 
+message SalesOverviewRequest {
+	Period previous = 1;
+	Period current = 2;
+}
 message SalesOverview {
-	custom_types.DecimalValue profit = 1;
-	custom_types.DecimalValue plan_small = 2;
-	custom_types.DecimalValue plan_full = 3;
-	repeated Manager top = 4;
+	custom_types.DecimalValue previous_actual_profit = 1;
+	custom_types.DecimalValue current_actual_profit = 2;
+	custom_types.DecimalValue current_sales_target = 3;
+	repeated Manager current_top_sales_managers = 4;
 }
 message Manager {
 	string name = 1;
