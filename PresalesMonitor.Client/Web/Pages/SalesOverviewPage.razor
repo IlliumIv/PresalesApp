@@ -1,0 +1,273 @@
+﻿@page "/sales-overview"
+@using ChartJs.Blazor.PieChart;
+@using Google.Protobuf.WellKnownTypes;
+@using PresalesMonitor.Shared;
+@using PresalesMonitor.Client.Web.Helpers;
+@using System.Threading;
+@inject Presales.PresalesClient PresalesClient
+@implements IDisposable
+@layout SalesOverviewLayout
+@inject IJSRuntime js
+
+@*<style>body {overflow: hidden;}</style>*@
+
+<PageTitle>Sales Overview</PageTitle>
+
+@if (overview == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="overview">
+        <div class="legend">
+            <fieldset class="salesTarget">
+                <legend>План @Format(From) - @Format(To)</legend>
+                <p>@Helpers.ToCurrencyString(overview.CurrentSalesTarget)</p>
+            </fieldset>
+            <fieldset class="actualProfit">
+                <legend>Факт @Format(From) - @Format(To)</legend>
+                <p>@Helpers.ToCurrencyString(overview.CurrentActualProfit)</p>
+            </fieldset>
+            <fieldset class="previousActualProfit">
+                <legend>Факт @Format(Prev_From) - @Format(Prev_To)</legend>
+                <p>@Helpers.ToCurrencyString(overview.PreviousActualProfit)</p>
+            </fieldset>
+            <fieldset class="increase">
+                <legend>Прирост</legend>
+                <p>@Helpers.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true)</p>
+            </fieldset>
+        </div>
+        <div class="chart">
+            <div class="charts">
+                <div class="buble">
+                    <Chart Config="_pie"></Chart>
+                </div>
+                <div class="percent" style="height: @_attr_height; width: @_attr_width">
+                    <p>@Helpers.ToPercentString(overview.CurrentSalesTarget != 0 ? decimal.ToDouble(overview.CurrentActualProfit / overview.CurrentSalesTarget) : 0)</p>
+                </div>
+            </div>
+            <div class="top">
+                <fieldset class="leaderboard">
+                    <legend>Лидеры продаж</legend>
+                    <table>
+                        @foreach (var item in overview.CurrentTopSalesManagers.Select((manager, index) => new { index, manager }))
+                        {
+                            var manager = item.manager;
+                            <tr>
+                                <td><div style="background:@datasetColors[item.index]">&nbsp;</div></td>
+                                <td>@(item.index + 1). </td>
+                                <td>@manager.Name</td>
+                                <td>@Helpers.ToCurrencyString(manager.Profit)</td>
+                            </tr>
+                        }
+                    </table>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div class="params">
+        <div class="@_class_hide">
+            <label>Предыдущий период:</label>
+            <input title="Начало предыдущего периода" type="date" max="@Helpers.ToMinMaxFormatString(Prev_To)" value="@Helpers.ToMinMaxFormatString(Prev_From)" @onchange="((ChangeEventArgs e) => OnPrevFromChanged(e?.Value))" class="input-group-text" />
+            <label>&nbsp;-&nbsp;</label>
+            <input title="Конец предыдущего периода" type="date" min="@Helpers.ToMinMaxFormatString(Prev_From)" value="@Helpers.ToMinMaxFormatString(Prev_To)" @onchange="((ChangeEventArgs e) => OnPrevToChanged(e?.Value))" class="input-group-text" />
+            <label>Текущий период:</label>
+            <input title="Начало текущего периода" type="date" max="@Helpers.ToMinMaxFormatString(To)" value="@Helpers.ToMinMaxFormatString(From)" @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text" />
+            <label>&nbsp;-&nbsp;</label>
+            <input title="Конец текущего периода" type="date" min="@Helpers.ToMinMaxFormatString(From)" value="@Helpers.ToMinMaxFormatString(To)" @onchange="((ChangeEventArgs e) => OnToChanged(e?.Value))" class="input-group-text" />
+            <button class="btn btn-primary" title="@_title_pin" @onclick="PinParams">
+                <span class="oi oi-pin @_class_rotatePin"></span>
+            </button>
+            <button class="btn btn-primary" title="Обновить данные" @onclick="UpdateCharts">
+                <span class="oi oi-reload"></span>
+            </button>
+        </div>
+    </div>
+    <div class="error @_class_error_hide">
+        <p>@_text_error</p>
+    </div>
+}
+
+@code {
+    private string _title_pin = "Закрепить";
+    private string _class_hide = "hide";
+    private string _class_error_hide = "error_hide";
+    private string _class_rotatePin = "rotatePin";
+    private string _text_error = "";
+    private SalesOverview? overview;
+    private static List<string> datasetColors = new() { };
+    private static string _attr_height = "";
+    private static string _attr_width = "";
+
+    private static DateOnly FirstDay = new DateOnly(DateTime.Now.Year, (DateTime.Now.Month - 1) / 3 + 1, 1);
+    private DateOnly From = FirstDay;
+    private DateOnly To = FirstDay.AddMonths(3).AddDays(-1);
+    private DateOnly Prev_From = FirstDay.AddYears(-1);
+    private DateOnly Prev_To = FirstDay.AddYears(-1).AddMonths(3).AddDays(-1);
+
+    // private ImageResponse? _img;
+    // private PieConfig _pieSmall = new PieConfig();
+    private PieConfig _pie = new PieConfig();
+
+    private string Format(DateOnly date) => $"{date:dd.MM.yyyy}";
+
+    private void PinParams()
+    {
+        if (_class_hide.Length > 0)
+        {
+            _class_hide = "";
+            _title_pin = "Открепить";
+            _class_rotatePin = "";
+        }
+        else
+        {
+            _class_hide = "hide";
+            _title_pin = "Закрепить";
+            _class_rotatePin = "rotatePin";
+        }
+    }
+
+    private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
+
+    private async Task UpdateData() => overview = await PresalesClient.GetSalesOverviewAsync(new SalesOverviewRequest
+        {
+            Previous = new Period
+            {
+                From = Timestamp.FromDateTime(Prev_From.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
+                To = Timestamp.FromDateTime(Prev_To.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
+            },
+            Current = new Period
+            {
+                From = Timestamp.FromDateTime(From.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
+                To = Timestamp.FromDateTime(To.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
+            }
+        });
+
+    // private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = "happy new year", Orientation = ImageOrientation.Landscape });
+
+    protected override void OnInitialized() => RunTimer();
+    public void Dispose() => periodicTimer?.Dispose();
+
+    private async void RunTimer()
+    {
+        var options = new PieOptions
+            {
+                Responsive = true,
+                Title = new OptionsTitle { Display = false },
+                Legend = new Legend { Display = false },
+                Tooltips = new Tooltips { Enabled = false },
+                CutoutPercentage = 60,
+                Animation = new ArcAnimation
+                {
+                    AnimateScale = true,
+                    AnimateRotate = true
+                }
+            };
+
+        // _pieSmall.Options = options;
+        _pie.Options = options;
+
+        await UpdateCharts();
+
+        while (await periodicTimer.WaitForNextTickAsync())
+        {
+            await UpdateCharts();
+        }
+    }
+    private async Task UpdateCharts()
+    {
+        _text_error = "";
+        _class_error_hide = "error_hide";
+
+        if (Prev_From > Prev_To)
+        {
+            _class_error_hide = "";
+            _text_error = "Начало предыдущего периода должно быть меньше окончания!";
+            StateHasChanged();
+            return;
+        }
+
+        if (From > To)
+        {
+            _class_error_hide = "";
+            _text_error = "Начало текущего периода должно быть меньше окончания!";
+            StateHasChanged();
+            return;
+        }
+
+        await UpdateData();
+        // await UpdateImage();
+        if (overview == null) return;
+
+        _pie.Data.Datasets.Clear();
+        // _pieSmall.Data.Datasets.Clear();
+
+        var rnd = new Random();
+
+        var ds = new PieDataset<decimal>(new decimal[] { });
+
+        foreach (var manager in overview.CurrentTopSalesManagers)
+        {
+            datasetColors.Add(ColorUtil.ColorString(Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), 1));
+            ds.Add(manager.Profit);
+        }
+
+        var sum = overview.CurrentTopSalesManagers.Sum(m => m.Profit);
+
+        if (overview.CurrentActualProfit > sum)
+        {
+            datasetColors.Add(ColorUtil.ColorString(Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), 1));
+            ds.Add(overview.CurrentActualProfit - sum);
+        }
+
+        if (overview.CurrentSalesTarget > overview.CurrentActualProfit)
+        {
+            datasetColors.Add(ColorUtil.ColorString(240, 240, 240, 0));
+            ds.Add(overview.CurrentSalesTarget - overview.CurrentActualProfit);
+        }
+
+        ds.BackgroundColor = datasetColors.ToArray();
+        ds.BorderWidth = 1;
+        ds.BorderAlign = BorderAlign.Center;
+        ds.BorderColor = ColorUtil.ColorString(0, 0, 0, 1);
+        _pie.Data.Datasets.Add(ds);
+
+        StateHasChanged();
+
+        _attr_height = $"{await js.InvokeAsync<int>("getHeight")}px";
+        _attr_width = $"{await js.InvokeAsync<int>("getWidth")}px";
+
+        StateHasChanged();
+    }
+
+    private async void OnPrevFromChanged(object? obj)
+    {
+        DateOnly.TryParse(obj?.ToString(), out Prev_From);
+        // await UpdateData();
+        // await Task.Delay(0);
+        await UpdateCharts();
+    }
+    private async void OnPrevToChanged(object? obj)
+    {
+        DateOnly.TryParse(obj?.ToString(), out Prev_To);
+        // await UpdateData();
+        // await Task.Delay(0);
+        await UpdateCharts();
+    }
+
+    private async void OnFromChanged(object? obj)
+    {
+        DateOnly.TryParse(obj?.ToString(), out From);
+        // await UpdateData();
+        // await Task.Delay(0);
+        await UpdateCharts();
+    }
+    private async void OnToChanged(object? obj)
+    {
+        DateOnly.TryParse(obj?.ToString(), out To);
+        // await UpdateData();
+        // await Task.Delay(0);
+        await UpdateCharts();
+    }
+}

@@ -17,7 +17,7 @@ namespace PresalesMonitor.Server.Services
     public class PresalesMonitorService : Presales.PresalesBase
     {
         private readonly decimal plan = 4321059;
-        private string cachedTop = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
+        private string cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
         private ImageResponse _cashedImageGirl = new()
         {
             Raw = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3",
@@ -448,26 +448,34 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(reply);
         }
-        public override Task<SalesOverview> GetSalesOverview(Empty request, ServerCallContext context)
+        public override Task<SalesOverview> GetSalesOverview(SalesOverviewRequest request, ServerCallContext context)
         {
+            var prevStartTime = request?.Previous?.From?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
+            var prevEndTime = request?.Previous?.To?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
+            var startTime = request?.Current?.From?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
+            var endTime = request?.Current?.To?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
+
             var httpClient = new HttpClient() { BaseAddress = new Uri("http://127.0.0.1") };
-            var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"trade/hs/API/GetTradeData");
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"trade/hs/API/GetTradeData?" +
+                $"begin={prevStartTime:yyyy-MM-ddTHH:mm:ss}" +
+                $"&end={prevEndTime:yyyy-MM-ddTHH:mm:ss}" +
+                $"&begin2={startTime:yyyy-MM-ddTHH:mm:ss}" +
+                $"&end2={endTime:yyyy-MM-ddTHH:mm:ss}");
             httpRequest.Headers.Add("Authorization", "Basic 0J/QvtC70Y/QutC+0LLQmDpraDk5OFh0Rg==");
             var httpResponse = httpClient.SendAsync(httpRequest).Result;
             var result = httpResponse.Content.ReadAsStringAsync().Result;
+            if (!httpResponse.IsSuccessStatusCode) result = cachedOverview;
+            cachedOverview = result;
 
-            if (!httpResponse.IsSuccessStatusCode) result = cachedTop;
-            cachedTop = result;
-
-            var response = JsonConvert.DeserializeObject<dynamic>(result);
+            var response = JsonConvert.DeserializeObject<dynamic>(cachedOverview);
             var reply = new SalesOverview();
 
             foreach (var manager in response.Топ)
-                reply.Top.Add(new Manager { Name = string.Join(" ", ((string)manager.Имя).Split().Take(2)), Profit = (decimal)manager.Сумма });
+                reply.CurrentTopSalesManagers.Add(new Manager { Name = string.Join(" ", ((string)manager.Имя).Split().Take(2)), Profit = (decimal)manager.Сумма });
 
-            reply.Profit = (decimal)response.Всего;
-            reply.PlanFull = 440000000;
-            reply.PlanSmall = 420000000;
+            reply.PreviousActualProfit = response.Факт1 is null ? 0 : (decimal)response.Факт1;
+            reply.CurrentActualProfit = response.Факт2 is null ? 0 : (decimal)response.Факт2;
+            reply.CurrentSalesTarget = response.План2 is null ? 0 : (decimal)response.План2;
 
             return Task.FromResult(reply);
         }
