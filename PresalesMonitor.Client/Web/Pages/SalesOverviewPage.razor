@@ -256,31 +256,27 @@ else
 
     private async void OnPrevFromChanged(object? obj)
     {
-        DateOnly.TryParse(obj?.ToString(), out Prev_From);
-        // await UpdateData();
-        // await Task.Delay(0);
+        try { Prev_From = DateOnly.Parse(obj?.ToString()); }
+        catch { return; }
         await UpdateCharts();
     }
     private async void OnPrevToChanged(object? obj)
     {
-        DateOnly.TryParse(obj?.ToString(), out Prev_To);
-        // await UpdateData();
-        // await Task.Delay(0);
+        try { Prev_To = DateOnly.Parse(obj?.ToString()); }
+        catch { return; }
         await UpdateCharts();
     }
 
     private async void OnFromChanged(object? obj)
     {
-        DateOnly.TryParse(obj?.ToString(), out From);
-        // await UpdateData();
-        // await Task.Delay(0);
+        try { From = DateOnly.Parse(obj?.ToString()); }
+        catch { return; }
         await UpdateCharts();
     }
     private async void OnToChanged(object? obj)
     {
-        DateOnly.TryParse(obj?.ToString(), out To);
-        // await UpdateData();
-        // await Task.Delay(0);
+        try { To = DateOnly.Parse(obj?.ToString()); }
+        catch { return; }
         await UpdateCharts();
     }
 }
