@@ -101,7 +101,6 @@ legend {
     margin-left: -52%;
     border: none;
     border-top: 1px solid #000;
-    border-right: 1px solid #000;
     border-bottom: 1px solid #000;
 }
 
@@ -117,6 +116,7 @@ legend {
 .params div {
     background: white;
     border: 1px solid;
+    box-shadow: 5px 5px 5px 0px rgb(0 0 0 / 20%);
 }
 
 .hide, .error_hide {
@@ -140,6 +140,7 @@ legend {
     margin-right: 5px;
     margin-left: 5px;
     margin-top: 10px;
+    box-shadow: 5px 5px 5px 0px rgb(255 0 0 / 20%);
 }
 
 .error p {
