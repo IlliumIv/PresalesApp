@@ -72,7 +72,7 @@ fieldset {
     align-items: center;
 }
 
-fieldset .p, .percent p {
+fieldset p, .percent p {
     margin: auto;
     font-size: 1.7em;
 }
