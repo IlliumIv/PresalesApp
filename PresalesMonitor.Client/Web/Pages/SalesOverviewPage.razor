@@ -130,19 +130,32 @@ else
 
     private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
 
-    private async Task UpdateData() => overview = await PresalesClient.GetSalesOverviewAsync(new SalesOverviewRequest
+    private async Task UpdateData()
+    {
+        try
         {
-            Previous = new Period
-            {
-                From = Timestamp.FromDateTime(Prev_From.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
-                To = Timestamp.FromDateTime(Prev_To.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
-            },
-            Current = new Period
-            {
-                From = Timestamp.FromDateTime(From.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
-                To = Timestamp.FromDateTime(To.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
-            }
-        });
+            overview = await PresalesClient.GetSalesOverviewAsync(new SalesOverviewRequest
+                {
+                    Previous = new Period
+                    {
+                        From = Timestamp.FromDateTime(Prev_From.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
+                        To = Timestamp.FromDateTime(Prev_To.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
+                    },
+                    Current = new Period
+                    {
+                        From = Timestamp.FromDateTime(From.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
+                        To = Timestamp.FromDateTime(To.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
+                    }
+                });
+        }
+        catch
+        {
+            _class_error_hide = "";
+            _text_error = "Произошла ошибка при получении ответа от сервера! Попробуйте обновить страницу.";
+            StateHasChanged();
+            return;
+        }
+    }
 
     // private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = "happy new year", Orientation = ImageOrientation.Landscape });
 
