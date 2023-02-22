@@ -20,6 +20,7 @@
 
 .charts {
     width: 60%;
+    z-index: -1;
 }
 
 .top {
