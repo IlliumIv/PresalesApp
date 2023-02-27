@@ -35,26 +35,26 @@ else
     <table class="table">
         <thead class="pmthead">
             <tr>
-                <th rowspan="2" style="width:13%">Пресейл</th>
+                <th rowspan="2" style="width:11%">Пресейл</th>
+                <th colspan="9">@Helpers.ToUpperFirstLetterString(Helpers.CurMonthName)</th>
                 <th rowspan="2" style="width:5%" title="@inWorkTitle">InWork</th>
-                <th colspan="4">@Helpers.ToUpperFirstLetterString(Helpers.CurMonthName)</th>
                 <th rowspan="2" style="width:5%" title="@abndTitle">Abnd</th>
                 <th rowspan="2" style="width:6%" title="@avgttwTitle">AvgTTW</th>
-                <th rowspan="2" style="width:6%" title="@avgttrTitle">AvgTTR</th>
                 <th rowspan="2" style="width:5%" title="@avgrTitle">AvgR</th>
-                <th colspan="2" title="Потрачено времени на проекты, @Helpers.CurMonthName">Spend</th>
-                <th rowspan="2" style="width:13%">Чистые за месяц</th>
-                <th colspan="2">Требуется распределить</th>
+                <th colspan="2">Дефицит</th>
             </tr>
             <tr>
                 <th style="width:5%" title="@assignTitle">Assign</th>
                 <th style="width:5%" title="@wonTitle">Won</th>
                 <th style="width:5%" title="@lossTitle">Loss</th>
                 <th style="width:5%" title="@convrTitle">Convr</th>
-                <th style="width:4%" title="За месяц в часах">Sum</th>
-                <th style="width:4%" title="В среднем в часах">Avg</th>
+                <th style="width:11%">Потенциал</th>
+                <th style="width:10%">Чистые</th>
+                <th style="width:6%" title="@avgttrTitle">AvgTTR</th>
+                <th style="width:4%" title="@spendSumTitle">Sum</th>
+                <th style="width:4%" title="@spendAvgTitle">Avg</th>
                 <th style="width:3%">шт.</th>
-                <th style="width:16%">руб.</th>
+                <th style="width:10%">руб.</th>
             </tr>
         </thead>
         <tbody class="pmtbody">
@@ -62,36 +62,38 @@ else
             {
                 <tr>
                     <td>@presale.Name</td>
-                    <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
                     <td title="@assignTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
                     <td title="@wonTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
                     <td title="@lossTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
                     <td title="@convrTitle">@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
-                    <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
-                    <td title="@avgttwTitle">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential)</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
                     <td title="@avgttrTitle">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
-                    <td title="@avgrTitle">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
                     <td title="@spendSumTitle">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
                     <td title="@spendAvgTitle">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
+                    <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
+                    <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
+                    <td title="@avgttwTitle">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                    <td title="@avgrTitle">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
                     <td>@Helpers.ToEmptyIfZeroString(presale.DeficitProjects)</td>
                     <td>@Helpers.ToCurrencyString(presale.DeficitPotential)</td>
                 </tr>
             }
             <tr>
                 <td>Всего</td>
-                <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
                 <td title="@assignTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Assign)</td>
                 <td title="@wonTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
                 <td title="@lossTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
                 <td title="@convrTitle">@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
-                <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Abnd)</td>
-                <td title="@avgttwTitle">@Helpers.ToDaysString(overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential)</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
                 <td title="@avgttrTitle">@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
-                <td title="@avgrTitle">@Math.Round(overview.Statistics.AvgRank, 1)</td>
                 <td title="@spendSumTitle">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
                 <td title="@spendAvgTitle">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
+                <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
+                <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Abnd)</td>
+                <td title="@avgttwTitle">@Helpers.ToDaysString(overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                <td title="@avgrTitle">@Math.Round(overview.Statistics.AvgRank, 1)</td>
             </tr>
         </tbody>
     </table>
