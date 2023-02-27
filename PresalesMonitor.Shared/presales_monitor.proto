@@ -126,6 +126,7 @@ message Statistic {
 	google.protobuf.Duration avg_spend = 10;
 	google.protobuf.Duration sum_spend = 11;
 	custom_types.DecimalValue profit = 12;
+	custom_types.DecimalValue potential = 13;
 }
 message Project {
 	string number = 1;
