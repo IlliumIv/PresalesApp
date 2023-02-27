@@ -201,41 +201,46 @@ namespace PresalesMonitor.Server.Services
                     Name = presale.Name,
                     Statistics = new Statistic()
                     {
+                        #region Показатели этого периода
                         #region В работе
                         InWork = presale.CountProjectsInWork(from, to),
                         #endregion
-                        #region Назначено в этом месяце
+                        #region Назначено
                         Assign = assign,
                         #endregion
-                        #region Выиграно в этом месяце
+                        #region Выиграно
                         Won = won,
                         #endregion
-                        #region Проиграно в этом месяце
+                        #region Проиграно
                         Loss = presale.ClosedByStatus(ProjectStatus.Loss, from, to),
                         #endregion
                         #region Конверсия
                         Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
                         #endregion
-                        #region Среднее время жизни проекта до выигрыша
-                        AvgTimeToWin = Duration.FromTimeSpan((TimeSpan)presale.AverageTimeToWin()),
-                        #endregion
                         #region Среднее время реакции
-                        AvgTimeToReaction = Duration.FromTimeSpan((TimeSpan)presale.AverageTimeToReaction(from, to)),
+                        AvgTimeToReaction = Duration.FromTimeSpan(presale.AverageTimeToReaction(from, to)),
                         #endregion
-                        #region Суммарное потраченное время на проекты в этом месяце
-                        SumSpend = Duration.FromTimeSpan((TimeSpan)presale.SumTimeSpend(from, to)),
+                        #region Суммарное потраченное время на проекты
+                        SumSpend = Duration.FromTimeSpan(presale.SumTimeSpend(from, to)),
                         #endregion
-                        #region Cреднее время потраченное на проект в этом месяце
-                        AvgSpend = Duration.FromTimeSpan((TimeSpan)presale.AverageTimeSpend(from, to)),
+                        #region Cреднее время потраченное на проект
+                        AvgSpend = Duration.FromTimeSpan(presale.AverageTimeSpend(from, to)),
+                        #endregion
+                        #region Чистые
+                        Profit = presale.SumProfit(from, to),
+                        #endregion
+                        #region Потенциал
+                        Potential = presale.SumPotential(from, to),
+                        #endregion
+                        #endregion
+                        #region Среднее время жизни проекта до выигрыша
+                        AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
                         #endregion
                         #region Средний ранг проектов
                         AvgRank = presale.AverageRang(),
                         #endregion
                         #region Количество "брошенных" проектов
-                        Abnd = presale.CountProjectsAbandoned(from, 30),
-                        #endregion
-                        #region Чистые за месяц
-                        Profit = DecimalValue.FromDecimal((decimal)presale.SumProfit(from, to)),
+                        Abnd = presale.CountProjectsAbandoned(DateTime.UtcNow, 30),
                         #endregion
                     },
                     #region Недостаток проектов
@@ -261,31 +266,25 @@ namespace PresalesMonitor.Server.Services
 
             reply.Statistics = new Statistic()
             {
+                #region Показатели этого периода
                 #region В работе
                 InWork = presales.Where(p => p.Position == Position.Engineer
                                           || p.Position == Position.Account)
                     .Sum(p => p.CountProjectsInWork(from, to)),
                 #endregion
-                #region Назначено в этом месяце
+                #region Назначено
                 Assign = assign,
                 #endregion
-                #region Выиграно в этом месяце
+                #region Выиграно
                 Won = won,
                 #endregion
-                #region Проиграно в этом месяце
+                #region Проиграно
                 Loss = presales.Where(p => p.Position == Position.Engineer
                                         || p.Position == Position.Account)
                     .Sum(p => p.ClosedByStatus(ProjectStatus.Loss, from, to)),
                 #endregion
                 #region Конверсия
                 Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
-                #endregion
-                #region Среднее время жизни проекта до выигрыша
-                AvgTimeToWin = Duration.FromTimeSpan(TimeSpan.FromDays(presales?
-                    .Where(p => p.Position == Position.Engineer
-                             || p.Position == Position.Account)?
-                    .DefaultIfEmpty()
-                    .Average(p => p?.AverageTimeToWin().TotalDays ?? 0) ?? 0)),
                 #endregion
                 #region Среднее время реакции
                 AvgTimeToReaction = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?
@@ -294,15 +293,31 @@ namespace PresalesMonitor.Server.Services
                     .DefaultIfEmpty()
                     .Average(p => p?.AverageTimeToReaction(from, to).TotalMinutes ?? 0) ?? 0)),
                 #endregion
-                #region Суммарное потраченное время на проекты в этом месяце
+                #region Суммарное потраченное время на проекты
                 SumSpend = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?.Where(p => p.Position == Position.Engineer
                                                                   || p.Position == Position.Account)
                         .Sum(p => p.SumTimeSpend(from, to).TotalMinutes) ?? 0)),
                 #endregion
-                #region Cреднее время потраченное на проект в этом месяце
+                #region Cреднее время потраченное на проект
                 AvgSpend = Duration.FromTimeSpan(TimeSpan.FromMinutes(presales?.Where(p => p.Position == Position.Engineer
                                                                      || p.Position == Position.Account)
                         .Sum(p => p.AverageTimeSpend(from, to).TotalMinutes) ?? 0)),
+                #endregion
+                #region Чистые
+                Profit = presales?.Where(p => p.Department != Department.None)
+                    .Sum(p => p.SumProfit(from, to)) ?? 0,
+                #endregion
+                #region Потенциал
+                Potential = presales?.Where(p => p.Department != Department.None)
+                    .Sum(p => p.SumPotential(from, to)) ?? 0,
+                #endregion
+                #endregion
+                #region Среднее время жизни проекта до выигрыша
+                AvgTimeToWin = Duration.FromTimeSpan(TimeSpan.FromDays(presales?
+                    .Where(p => p.Position == Position.Engineer
+                             || p.Position == Position.Account)?
+                    .DefaultIfEmpty()
+                    .Average(p => p?.AverageTimeToWin().TotalDays ?? 0) ?? 0)),
                 #endregion
                 #region Средний ранг проектов
                 AvgRank = presales?.Where(p => p.Position == Position.Engineer
@@ -313,11 +328,7 @@ namespace PresalesMonitor.Server.Services
                 #region Количество "брошенных" проектов
                 Abnd = presales?.Where(p => p.Position == Position.Engineer
                                              || p.Position == Position.Account)
-                    .Sum(p => p.CountProjectsAbandoned(from, 30)) ?? 0,
-                #endregion
-                #region Чистые за месяц
-                Profit = presales?.Where(p => p.Department != Department.None)
-                    .Sum(p => p.SumProfit(from, to)) ?? 0,
+                    .Sum(p => p.CountProjectsAbandoned(DateTime.UtcNow, 30)) ?? 0,
                 #endregion
             };
             #region Просроченные проекты
