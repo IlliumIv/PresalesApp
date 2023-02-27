@@ -135,19 +135,6 @@ else
                 Department = Department.Any,
                 Position = Position.Any
             });
-
-        if (overview == null || (decimal)overview.Profit == 0)
-            overview = await PresalesClient.GetMonthProfitOverviewAsync(new OverviewRequest
-                {
-                    Period = new Period
-                    {
-                        From = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, 1).ToUniversalTime()),
-                        To = Timestamp.FromDateTime(new DateTime(from.Year, from.AddMonths(-1).Month, from.AddDays(-1).Day).ToUniversalTime())
-                    },
-                    Department = Department.Russian,
-                    Position = Position.Any,
-                    OnlyActive = false
-                });
     }
     private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = query, Orientation = ImageOrientation.Portrait});
 
