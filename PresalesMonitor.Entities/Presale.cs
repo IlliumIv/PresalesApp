@@ -115,9 +115,9 @@ namespace PresalesMonitor.Entities
         }
         public TimeSpan AverageTimeToWin() => AvgTTW(Projects);
         public TimeSpan AverageTimeToWin(DateTime from) => AvgTTW(Projects?.Where(p => p.ClosedAt >= from));
-        public TimeSpan AverageTimeToReaction() => AvgTTR(Projects);
-        public TimeSpan AverageTimeToReaction(DateTime from) => AvgTTR(Projects?.Where(p => p.PresaleStartAt >= from));
-        public TimeSpan AverageTimeToReaction(DateTime from, DateTime to) => AvgTTR(Projects?.Where(p => p.PresaleStartAt >= from && p.PresaleStartAt <= to));
+        public TimeSpan AverageTimeToReaction() => AvgTTR(Projects?.Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue));
+        public TimeSpan AverageTimeToReaction(DateTime from) => AvgTTR(Projects?.Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue && p.PresaleStartAt >= from));
+        public TimeSpan AverageTimeToReaction(DateTime from, DateTime to) => AvgTTR(Projects?.Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue && p.PresaleStartAt >= from && p.PresaleStartAt <= to));
         public TimeSpan SumTimeSpend() => SumTS(Projects, DateTime.MinValue, DateTime.MaxValue);
         public TimeSpan SumTimeSpend(DateTime from) => SumTS(Projects, from, DateTime.MaxValue);
         public TimeSpan SumTimeSpend(DateTime from, DateTime to) => SumTS(Projects, from, to);
@@ -140,15 +140,12 @@ namespace PresalesMonitor.Entities
                 .Where(p => p.PresaleStartAt != DateTime.MinValue)?
                 .DefaultIfEmpty()
                 .Average(p => p is null ? 0 : CalculateWorkingMinutes
-                (p.ApprovalByTechDirectorAt,
-                new List<DateTime?>() {
-                    (p.Actions?.FirstOrDefault(a => a.Number == 1)?.Date ?? DateTime.Now)
-                        .AddMinutes(p.Actions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
-                    p.PresaleStartAt
-                }.Min(dt => dt)));
+                (p.ApprovalByTechDirectorAt, SelectTiming(p.Actions?.FirstOrDefault(a => a.Number == 1)?.Date
+                    .AddMinutes(p.Actions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0), p.PresaleStartAt)));
 
             return minutes == null ? TimeSpan.Zero : TimeSpan.FromMinutes((double)minutes);
         }
+        private static DateTime SelectTiming(DateTime? actionDate, DateTime presaleStartAt) => actionDate != null && actionDate != DateTime.MinValue && actionDate < presaleStartAt ? (DateTime)actionDate : presaleStartAt;
         private static TimeSpan SumTS(IEnumerable<Project>? projects, DateTime from, DateTime to)
         {
             var minutes = projects?
