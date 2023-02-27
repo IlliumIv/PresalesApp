@@ -18,6 +18,14 @@
             link.click();
             document.body.removeChild(link);
         }
+
+        function getHeight() {
+            return document.getElementsByClassName("chartjs-render-monitor")[0].clientHeight;
+        }
+
+        function getWidth() {
+            return document.getElementsByClassName("chartjs-render-monitor")[0].clientWidth;
+        }
     </script>
 </head>
 

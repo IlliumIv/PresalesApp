@@ -13,7 +13,7 @@ namespace PresalesMonitor.Client.Web.Helpers
     {
         public static string CurMonthName => $"{DateTime.Now:MMMM}";
         public static string ToMinMaxFormatString(DateOnly? value) => $"{value:yyyy-MM-dd}";
-        public static string ToCurrencyString(decimal value) => $"{(value > 0 ? value : ""):C}";
+        public static string ToCurrencyString(decimal value, bool allowNegatives = false) => $"{(allowNegatives ? value : value > 0 ? value : ""):C}";
         public static string ToPercentString(double value, int digits = 0) => $"{(value == 0 ? "" : value.ToString($"P{digits}"))}";
         public static string ToDaysString(TimeSpan avgTTW) => $"{(avgTTW == TimeSpan.Zero ? "" : avgTTW.TotalDays):f0}";
         public static string ToMinutesString(TimeSpan avgTTR) => $"{(avgTTR == TimeSpan.Zero ? "" : avgTTR.TotalMinutes):f0}";
