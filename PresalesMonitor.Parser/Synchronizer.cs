@@ -10,36 +10,48 @@ namespace PresalesMonitor
     public class Synchronizer
     {
         public static readonly FileInfo _workLog = new("Parser.log");
-        // public static readonly FileInfo _errorLog = new("Error.log");
+        public static readonly FileInfo _errorLog = new("Error.log");
         // await File.AppendAllTextAsync(_errorLog.FullName, $"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] {e}\n\n");
 
         static void Main(string[] args)
         {
+
+
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile($"appsettings.json")
+                .AddJsonFile($"appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
+            var outputTemplate = "[{Timestamp:dd.MM.yyyy HH:mm:ss.fff}] [{Level:u3}] {Message}{NewLine}\t{Exception}{NewLine}";
+
             var logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(configuration)
+                // https://github.com/serilog/serilog/wiki/Enrichment
+                .Enrich.FromLogContext()
+                // .Enrich.WithThreadId() // Serilog.Enrichers.Thread
+                // .Enrich.WithProcessId() // Serilog.Enrichers.Process
+                // .Enrich.WithMachineName() // Serilog.Enrichers.Environment 
+                .Destructure.ToMaximumDepth(4)
+                .Destructure.ToMaximumStringLength(100)
+                .Destructure.ToMaximumCollectionCount(10)
+                .MinimumLevel.Verbose()
+                .WriteTo.Async(a => a.Console(Serilog.Events.LogEventLevel.Verbose, outputTemplate))
+                .WriteTo.Async(a => a.File($"Logs/{_workLog}", Serilog.Events.LogEventLevel.Information, outputTemplate))
+                .WriteTo.Async(a => a.File($"Logs/{_errorLog}", Serilog.Events.LogEventLevel.Error, outputTemplate))
+                // .ReadFrom.Configuration(configuration)
                 .CreateLogger();
 
-            /*
-            var ex = new NullReferenceException();
-            Console.WriteLine(ex.Message);
-            Console.WriteLine(ex.StackTrace);
-
+            
             logger.Verbose("Verbose");
             logger.Debug("LogDebug");
-            logger.Information(ex, "LogInformation");
+            logger.Information("LogInformation");
             logger.Warning("LogWarning");
             logger.Error("LogError");
             logger.Fatal("LogCritical");
-
             //*/
 
             Console.ReadLine();
         }
+
         /*
         public static async void Start(TimeSpan delay)
         {
@@ -54,6 +66,8 @@ namespace PresalesMonitor
                 out ConfigurationSection? r) && r != null)
             {
                 Settings.Application appSettings = (Settings.Application)r;
+
+
 
                 var projUpdate = RunPeriodicalProjectsUpdate();
                 var invUpdate = RunPeriodicalInvoicesUpdate();
@@ -70,6 +84,7 @@ namespace PresalesMonitor
                 out ConfigurationSection? r) && r != null)
             {
                 Settings.Application appSettings = (Settings.Application)r;
+                Settings.
                 var to = (DateTime.Now - appSettings.ProjectsUpdatedAt).TotalDays > 1
                     ? appSettings.ProjectsUpdatedAt.AddDays(1)
                     : DateTime.Now;
