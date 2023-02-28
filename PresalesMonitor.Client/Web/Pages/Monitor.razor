@@ -179,12 +179,14 @@ else
     protected override void OnInitialized() => RunTimer();
     private async void OnFromChanged(object? obj)
     {
-        DateOnly.TryParse(obj?.ToString(), out from);
+        try { from = DateOnly.Parse(obj?.ToString()); }
+        catch { return; }
         await UpdateData();
     }
     private async void OnToChanged(object? obj)
     {
-        DateOnly.TryParse(obj?.ToString(), out to);
+        try { to = DateOnly.Parse(obj?.ToString()); }
+        catch { return; }
         await UpdateData();
     }
     private async void OnDepartmentChanged(object? obj)
