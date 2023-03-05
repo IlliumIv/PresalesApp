@@ -4,9 +4,18 @@ using Newtonsoft.Json.Linq;
 using PresalesMonitor.Entities;
 using Serilog;
 using System.Drawing;
+using Serilog.Templates;
+using Serilog.Sinks.SystemConsole.Themes;
+using Serilog.Templates.Themes;
 
 namespace PresalesMonitor
 {
+    public static class Extensions
+    {
+        public static void Error(this ILogger logger, Exception ex) => logger.Error(ex, "");
+        public static void Fatal(this ILogger logger, Exception ex) => logger.Fatal(ex, "");
+    }
+
     public class Synchronizer
     {
         public static readonly FileInfo _workLog = new("Parser.log");
@@ -22,7 +31,7 @@ namespace PresalesMonitor
                 .AddJsonFile($"appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
-            var outputTemplate = "[{Timestamp:dd.MM.yyyy HH:mm:ss.fff}] [{Level:u3}] {Message}{NewLine}\t{Exception}{NewLine}";
+            var template = "[{@t:dd.MM.yyyy HH:mm:ss.fff}] [{@l:u3}] {#if @m <> ''}{@m}\n{#end}{@x}\n";
 
             var logger = new LoggerConfiguration()
                 // https://github.com/serilog/serilog/wiki/Enrichment
@@ -34,19 +43,37 @@ namespace PresalesMonitor
                 .Destructure.ToMaximumStringLength(100)
                 .Destructure.ToMaximumCollectionCount(10)
                 .MinimumLevel.Verbose()
-                .WriteTo.Async(a => a.Console(Serilog.Events.LogEventLevel.Verbose, outputTemplate))
-                .WriteTo.Async(a => a.File($"Logs/{_workLog}", Serilog.Events.LogEventLevel.Information, outputTemplate))
-                .WriteTo.Async(a => a.File($"Logs/{_errorLog}", Serilog.Events.LogEventLevel.Error, outputTemplate))
+                .WriteTo.Async(a => a.Console(
+                    formatter: new ExpressionTemplate(template, theme: TemplateTheme.Code),
+                    restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose))
+                .WriteTo.Async(a => a.File(
+                    formatter: new ExpressionTemplate(template),
+                    restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information,
+                    path: $"Logs/{_workLog}"))
+                .WriteTo.Async(a => a.File(
+                    formatter: new ExpressionTemplate(template),
+                    restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error,
+                    path: $"Logs/{_errorLog}"))
                 // .ReadFrom.Configuration(configuration)
-                .CreateLogger();
+                .CreateLogger().ForContext<Synchronizer>();
 
-            
-            logger.Verbose("Verbose");
-            logger.Debug("LogDebug");
-            logger.Information("LogInformation");
-            logger.Warning("LogWarning");
-            logger.Error("LogError");
-            logger.Fatal("LogCritical");
+            try
+            {
+                Exception e = new();
+                e = null;
+                // Console.WriteLine(e.StackTrace);
+            }
+            catch (Exception ex)
+            {
+                logger.Verbose("Verbose");
+                logger.Debug("LogDebug");
+                logger.Information("LogInformation");
+                logger.Warning("LogWarning");
+                logger.Error(ex);
+                logger.Error(ex, "LogError");
+                logger.Fatal(ex);
+                logger.Fatal(ex, "LogFatal");
+            }
             //*/
 
             Console.ReadLine();
