@@ -18,7 +18,7 @@ namespace PresalesMonitor
         {
             DateTimeZoneHandling = DateTimeZoneHandling.Utc
         };
-        public static void Run()
+        public static void Run(int delay)
         {
             Settings.TryGetSection<Settings.Application>(out ConfigurationSection? r);
             if (r == null) return;
@@ -28,13 +28,25 @@ namespace PresalesMonitor
             _lastInvoicesUpdate = appSettings.InvoicesUpdatedAt;
             _debug = appSettings.Debug;
 
-            GetUpdate(new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt));
+            var isSuccesfull = GetUpdate(new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt));
             appSettings.ProjectsUpdatedAt = _lastProjectsUpdate;
             appSettings.InvoicesUpdatedAt = _lastInvoicesUpdate;
             appSettings.CurrentConfiguration.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection(appSettings.SectionInformation.Name);
+
+            Console.WriteLine($"Последнее обновление проектов: {_lastProjectsUpdate.AddMinutes(-2):dd.MM.yyyy HH:mm:ss.fff}");
+            Console.WriteLine($"Последнее обновление счетов: {_lastInvoicesUpdate.AddHours(-1.5):dd.MM.yyyy HH:mm:ss.fff}");
+
+            if (!isSuccesfull || (DateTime.Now - new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt)
+                < TimeSpan.FromMilliseconds(delay)))
+            {
+                Console.WriteLine($"Последнее обновление завершилось ошибкой или данные уже актуальны, запущен таймаут...");
+                delay = 600000;
+            }
+
+            Task.Delay(delay).Wait();
         }
-        private static void GetUpdate(DateTime prevUpdate)
+        private static bool GetUpdate(DateTime prevUpdate)
         {
             try
             {
@@ -113,12 +125,14 @@ namespace PresalesMonitor
                     }
                     _lastInvoicesUpdate = currentUpdate;
                 }
+                return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
                 using var sw = File.AppendText(_errorLog.FullName);
                 sw.WriteLine($"[{DateTime.Now:dd.MM.yyyy HH:mm:ss.fff}] {e}\n");
+                return false;
             }
         }
         private static bool TryGetData<T>(DateTime startTime, DateTime endTime, out List<T> result)
