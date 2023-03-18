@@ -16,6 +16,7 @@
     <input title="Начало периода" type="date" max="@Helpers.ToMinMaxFormatString(to)" value="@Helpers.ToMinMaxFormatString(from)" @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text" />
     <label>&nbsp;-&nbsp;</label>
     <input title="Конец периода" type="date" min="@Helpers.ToMinMaxFormatString(from)" value="@Helpers.ToMinMaxFormatString(to)" @onchange="((ChangeEventArgs e) => OnToChanged(e?.Value))" class="input-group-text" />
+    <input title="Учитывать счета в основных проектах" type="checkbox" id="lookAtMains" value="@lookAtMains" @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))" unchecked class="inline-check" />
     <select title="Направление" value="@department" @onchange="((ChangeEventArgs e) => OnDepartmentChanged(e?.Value))" class="form-select">
         @foreach (Department dep in (Department[])System.Enum.GetValues(typeof(Department)))
             { <option value="@dep">@dep.GetName()</option> }
@@ -41,6 +42,7 @@ else {
     private DateOnly to = new DateOnly(lastDay.Year, lastDay.Month, lastDay.Day);
     private Department department = Department.Any;
     private Position position = Position.Any;
+    private bool lookAtMains = false;
 
     private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() { { "disabled", "disabled" } };
 
@@ -52,6 +54,7 @@ else {
         {
             projects = await PresalesClient.GetUnpaidProjectsAsync(new OverviewRequest
                 {
+                    OnlyActive = lookAtMains,
                     Department = department,
                     Position = position,
                     Period = new Period
@@ -91,6 +94,11 @@ else {
     private async void OnPositionChanged(object? obj)
     {
         System.Enum.TryParse<Position>(obj?.ToString(), out position);
+        await UpdateData();
+    }
+    private async void OnModeChanged(object? obj)
+    {
+        lookAtMains = obj == null ? lookAtMains : (bool)obj;
         await UpdateData();
     }
 }
