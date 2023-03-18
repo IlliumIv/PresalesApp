@@ -35,18 +35,18 @@ else
         <thead class="pmthead">
             <tr>
                 <th rowspan="2" style="width:11%">Пресейл</th>
-                <th colspan="9">@Helpers.ToUpperFirstLetterString(Helpers.CurMonthName)</th>
-                <th rowspan="2" style="width:5%" title="@inWorkTitle">InWork</th>
+                <th colspan="10">@Helpers.ToUpperFirstLetterString(Period)</th>
                 <th rowspan="2" style="width:5%" title="@abndTitle">Abnd</th>
                 <th rowspan="2" style="width:6%" title="@avgttwTitle">AvgTTW</th>
                 <th rowspan="2" style="width:5%" title="@avgrTitle">AvgR</th>
                 <th colspan="2">Дефицит</th>
             </tr>
             <tr>
+                <th style="width:5%" title="@inWorkTitle">InWork</th>
                 <th style="width:5%" title="@assignTitle">Assign</th>
                 <th style="width:5%" title="@wonTitle">Won</th>
-                <th style="width:5%" title="@lossTitle">Loss</th>
                 <th style="width:5%" title="@convrTitle">Convr</th>
+                <th style="width:5%" title="@lossTitle">Loss</th>
                 <th style="width:11%">Потенциал</th>
                 <th style="width:10%">Чистые</th>
                 <th style="width:6%" title="@avgttrTitle">AvgTTR</th>
@@ -61,16 +61,16 @@ else
             {
                 <tr>
                     <td>@presale.Name</td>
+                    <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
                     <td title="@assignTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
                     <td title="@wonTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
-                    <td title="@lossTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
                     <td title="@convrTitle">@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
+                    <td title="@lossTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
                     <td>@Helpers.ToCurrencyString(presale.Statistics.Potential)</td>
                     <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
                     <td title="@avgttrTitle">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
                     <td title="@spendSumTitle">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
                     <td title="@spendAvgTitle">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
-                    <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
                     <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
                     <td title="@avgttwTitle">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
                     <td title="@avgrTitle">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
@@ -80,16 +80,16 @@ else
             }
             <tr>
                 <td>Всего</td>
+                <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
                 <td title="@assignTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Assign)</td>
                 <td title="@wonTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
-                <td title="@lossTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
                 <td title="@convrTitle">@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
+                <td title="@lossTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
                 <td>@Helpers.ToCurrencyString(overview.Statistics.Potential)</td>
                 <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
                 <td title="@avgttrTitle">@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
                 <td title="@spendSumTitle">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
                 <td title="@spendAvgTitle">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
-                <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
                 <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Abnd)</td>
                 <td title="@avgttwTitle">@Helpers.ToDaysString(overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
                 <td title="@avgrTitle">@Math.Round(overview.Statistics.AvgRank, 1)</td>
@@ -135,7 +135,7 @@ else
     private bool _onlyActive = true;
     private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
     #region Descriptions
-    private readonly string inWorkTitle = "В работе (есть действия за последние 30 дней)";
+    private string inWorkTitle => $"В работе (есть действия за {Period})";
     private readonly string assignTitle = "Назначено";
     private readonly string wonTitle = "Выиграно";
     private readonly string lossTitle = "Проиграно";
@@ -146,6 +146,7 @@ else
     private readonly string avgrTitle = "Средний ранг проектов";
     private readonly string spendSumTitle = "Потрачено времени на проекты, суммарно в часах";
     private readonly string spendAvgTitle = "Потрачено времени на проекты, в среднем в часах";
+    private string Period => from >= firstDay && to <= firstDay.AddMonths(1).AddDays(-1) ? Helpers.CurMonthName : "выбранный период";
     #endregion
 
     private string Format(Project project) =>
