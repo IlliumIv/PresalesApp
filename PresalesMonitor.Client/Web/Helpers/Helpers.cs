@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Action = PresalesMonitor.Shared.Action;
 
 namespace PresalesMonitor.Client.Web.Helpers
 {
@@ -40,7 +41,7 @@ namespace PresalesMonitor.Client.Web.Helpers
                 filename,
                 Convert.ToBase64String(data));
         }
-        public async static void DownloadFile(Kpi kpi, IJSRuntime js, string presaleName, int month, int year)
+        public async static Task Download(this Kpi? kpi, IJSRuntime js, string presaleName, int month, int year)
         {
             if (kpi == null) return;
 
@@ -67,6 +68,27 @@ namespace PresalesMonitor.Client.Web.Helpers
             text = encoder.GetString(result);
             await SaveAs(js, $"Отчёт KPI за {ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(month))} {year}, {presaleName}.csv", Encoding.UTF8.GetBytes(text));
         }
+        public async static Task Download(this UnpaidProjects? projects, IJSRuntime js)
+        {
+            if (projects == null) return;
+
+            string text = $"Номер;Название;Пресейл;Статус;Согласовано РОП;Согласовано РП;Взято в работу;Закрыто;Привязанных счетов\n";
+            foreach(var project in projects.Projects)
+            {
+                text += $"{project.Number};{project.Name};{project.PresaleName};{project.Status};" +
+                    $"{project.ApprovalBySalesDirectorAt.ToDateTime().ToPresaleTime()};" +
+                    $"{project.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()};" +
+                    $"{project.PresaleStartAt.ToDateTime().ToPresaleTime()};" +
+                    $"{project.ClosedAt.ToDateTime().ToPresaleTime()};" +
+                    $"{project.Invoices.Count}\n";
+            }
+
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            byte[] result = Encoding.UTF8.GetPreamble().Concat(bytes).ToArray();
+            UTF8Encoding encoder = new(true);
+            text = encoder.GetString(result);
+            await SaveAs(js, $"Неоплаченные проекты на {DateTime.Now}.csv", Encoding.UTF8.GetBytes(text));
+        }
         public static string GetName(this Department department) => department switch
         {
             Department.None => "Без направления",
@@ -85,6 +107,20 @@ namespace PresalesMonitor.Client.Web.Helpers
             _ => throw new NotImplementedException()
         };
         // TODO: Реализовать поддержку рабочего времени пресейла.
-        public static DateTime ToPresaleTime(this DateTime dateTime) => dateTime.ToLocalTime();
+        public static DateTime ToPresaleTime(this DateTime dateTime)
+        {
+            if (dateTime == DateTime.MinValue) return DateTime.MinValue;
+            return dateTime.ToLocalTime();
+        }
+        public static string Format(this Action action) =>
+            $"{action.ProjectNumber} [{action.Type}" +
+            $"{Helpers.ToDateString(action.Date, ": ")}" +
+            $" ({action.Timespend.ToTimeSpan().TotalMinutes})], \"{action.Description}\"";
+        public static string Format(this Project project) =>
+            $"{project.Number} [{project.Status}" +
+            $"{Helpers.ToDateString(project.ClosedAt, ": ")}" +
+            $"], \"{project.Name}\"";
+        public static string SetColor(Invoice invoice) =>
+            invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
     }
 }

@@ -36,7 +36,7 @@ namespace PresalesMonitor
         public sealed class Database : ConfigurationSection
         {
             [ConfigurationProperty("url",
-                DefaultValue = "localhost",
+                DefaultValue = "192.168.200.51",
                 IsRequired = true)]
             public string Url
             {

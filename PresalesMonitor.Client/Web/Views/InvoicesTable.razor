@@ -1,0 +1,38 @@
+﻿@using PresalesMonitor.Shared;
+@using PresalesMonitor.Client.Web.Helpers;
+
+<table class="table">
+    <thead>
+        <tr>
+            <th style="width: 2%">№</th>
+            <th style="width: 32%">Контрагент</th>
+            <th style="width: 5%">Номер</th>
+            <th style="width: 15%">Дата</th>
+            <th style="width: 11%; text-align: right">Сумма по счёту</th>
+            <th style="width: 10%; text-align: right">Себестоимость</th>
+            <th style="width: 10%; text-align: right">Прибыль</th>
+            <th style="width: 5%; text-align: right">Процент</th>
+            <th style="width: 10%; text-align: right">Премия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Invoices.Select((invoice, index) => new { index, invoice }))
+        {
+            <InvoiceView Invoice="item.invoice" Index="item.index" isVerboseView="true"></InvoiceView>
+        }
+        <tr style="text-align: right">
+            <td colspan="3">Оплачено времени: @Helpers.ToMinutesString(TimeSpan.FromMinutes(Invoices.Sum(i => i.ActionsTallied.Sum(a => a.Timespend.ToTimeSpan().TotalMinutes))))</td>
+            <td>Всего:</td>
+            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.Amount))</td>
+            <td></td>
+            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.SalesAmount))</td>
+            <td></td>
+            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.Profit))</td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public IEnumerable<Invoice> Invoices { get; set; }
+}

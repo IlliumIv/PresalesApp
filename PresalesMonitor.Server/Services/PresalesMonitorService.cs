@@ -11,6 +11,7 @@ using Position = PresalesMonitor.Entities.Enums.Position;
 using ProjectStatus = PresalesMonitor.Entities.Enums.ProjectStatus;
 using ActionType = PresalesMonitor.Entities.Enums.ActionType;
 using Enum = System.Enum;
+using Microsoft.Extensions.Hosting;
 
 namespace PresalesMonitor.Server.Services
 {
@@ -98,17 +99,12 @@ namespace PresalesMonitor.Server.Services
 
                 var profit = invoice.GetProfit(from, to);
 
-                var invoiceReply = new Shared.Invoice
-                {
-                    Counterpart = invoice.Counterpart,
-                    Number = invoice.Number,
-                    Date = Timestamp.FromDateTime(invoice.Date),
-                    Amount = DecimalValue.FromDecimal(invoice.Amount),
-                    Cost = DecimalValue.FromDecimal(invoice.Amount - profit),
-                    SalesAmount = DecimalValue.FromDecimal(profit),
-                    Percent = percent,
-                    Profit = DecimalValue.FromDecimal(profit * (decimal)percent),
-                };
+                var invoiceReply = invoice.Translate();
+
+                invoiceReply.Cost = DecimalValue.FromDecimal(invoice.Amount - profit);
+                invoiceReply.SalesAmount = DecimalValue.FromDecimal(profit);
+                invoiceReply.Percent = percent;
+                invoiceReply.Profit = DecimalValue.FromDecimal(profit * (decimal)percent);
 
                 foreach (var inv in projectsIgnored.OrderBy(p => p.Number))
                     invoiceReply.ProjectsIgnored.Add(inv.Translate());
@@ -490,6 +486,43 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(reply);
         }
+        public override Task<UnpaidProjects> GetUnpaidProjects(OverviewRequest request, ServerCallContext context)
+        {
+            var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
+            var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
+
+            var position = request?.Position ?? Shared.Position.Any;
+            var department = request?.Department ?? Shared.Department.Any;
+            // var onlyActive = request?.OnlyActive ?? false;
+
+            using var db = new DbController.Context();
+
+            var presales = db.Presales
+                .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
+                                || (position != Shared.Position.Any && p.Position == position.Translate()))
+                            && ((department == Shared.Department.Any && p.Department != Department.None)
+                                || (department != Shared.Department.Any && p.Department == department.Translate())))
+
+                // Все неоплаченные проекты (для проекта нет ни одного счёта, в котором есть отгрузка хотя бы в одном любом месяце)
+                .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
+                                                    && p.ClosedAt >= from && p.ClosedAt <= to
+                                                    && !p.Invoices.Any(i => i.ProfitPeriods.Any())))
+
+                // Все оплаченные проекты (для проекта есть хотя бы один счёт, в котором есть отгрузка хотя бы в одном любом месяце)
+                // .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
+                //                                     && p.ClosedAt >= from && p.ClosedAt <= to
+                //                                     && p.Invoices.Any(i => i.ProfitPeriods.Any()))).ThenInclude(p => p.Invoices).ThenInclude(i => i.ProfitPeriods)
+
+                .ToList();
+
+            var reply = new UnpaidProjects();
+
+            foreach(var presale in presales)
+                foreach (var project in presale.Projects.OrderBy(p => p.ClosedAt).ThenBy(p => p.Number))
+                    reply.Projects.Add(project.Translate());
+
+            return Task.FromResult(reply);
+        }
         private void RecurseLoad(List<Entities.Project>? projects, DbController.Context db, ref HashSet<Entities.Project> projectsViewed)
         {
             if (projects == null || projects.Count == 0) return;
@@ -512,17 +545,40 @@ namespace PresalesMonitor.Server.Services
     }
     public static class Extensions
     {
-        public static Shared.Project Translate(this Entities.Project project) => new()
+        public static Shared.Project Translate(this Entities.Project project)
         {
-            Number = project.Number,
-            Name = project.Name ?? "",
-            ApprovalByTechDirectorAt = Timestamp.FromDateTime(project.ApprovalByTechDirectorAt.ToUniversalTime()),
-            ApprovalBySalesDirectorAt = Timestamp.FromDateTime(project.ApprovalBySalesDirectorAt.ToUniversalTime()),
-            PresaleStartAt = Timestamp.FromDateTime(project.PresaleStartAt.ToUniversalTime()),
-            ClosedAt = Timestamp.FromDateTime(project.ClosedAt.ToUniversalTime()),
-            PresaleName = project.Presale?.Name ?? "",
-            Status = project.Status.Translate()
-        };
+            var proj = new Shared.Project()
+            {
+                Number = project.Number,
+                Name = project.Name ?? "",
+                ApprovalByTechDirectorAt = Timestamp.FromDateTime(project.ApprovalByTechDirectorAt.ToUniversalTime()),
+                ApprovalBySalesDirectorAt = Timestamp.FromDateTime(project.ApprovalBySalesDirectorAt.ToUniversalTime()),
+                PresaleStartAt = Timestamp.FromDateTime(project.PresaleStartAt.ToUniversalTime()),
+                ClosedAt = Timestamp.FromDateTime(project.ClosedAt.ToUniversalTime()),
+                PresaleName = project.Presale?.Name ?? "",
+                Status = project.Status.Translate(),
+            };
+
+            if (project.Invoices != null && project.Invoices.Any()) foreach(var invoice in project.Invoices) proj.Invoices.Add(invoice.Translate());
+            return proj;
+        }
+
+        public static Shared.Invoice Translate(this Entities.Invoice invoice)
+        {
+            var inv = new Shared.Invoice
+            {
+                Counterpart = invoice.Counterpart,
+                Number = invoice.Number,
+                Date = Timestamp.FromDateTime(invoice.Date.ToUniversalTime()),
+                LastPayAt = Timestamp.FromDateTime(invoice.LastPayAt.ToUniversalTime()),
+                LastShipmentAt = Timestamp.FromDateTime(invoice.LastShipmentAt.ToUniversalTime()),
+                Amount = invoice.Amount,
+                Profit = invoice.GetProfit(),
+            };
+
+            return inv;
+        }
+
         public static Shared.Action Translate(this PresaleAction action) => new()
         {
             ProjectNumber = action.Project?.Number ?? "",
