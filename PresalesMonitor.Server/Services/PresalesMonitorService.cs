@@ -493,28 +493,38 @@ namespace PresalesMonitor.Server.Services
 
             var position = request?.Position ?? Shared.Position.Any;
             var department = request?.Department ?? Shared.Department.Any;
-            // var onlyActive = request?.OnlyActive ?? false;
+            var lookAtMains = request?.OnlyActive ?? false;
 
             using var db = new DbController.Context();
 
-            var presales = db.Presales
-                .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
-                                || (position != Shared.Position.Any && p.Position == position.Translate()))
-                            && ((department == Shared.Department.Any && p.Department != Department.None)
-                                || (department != Shared.Department.Any && p.Department == department.Translate())))
+            List<Entities.Presale>? presales;
 
-                // Все неоплаченные проекты (для проекта нет ни одного счёта, в котором есть отгрузка хотя бы в одном любом месяце)
-                .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
-                                                    && p.ClosedAt >= from && p.ClosedAt <= to
-                                                    && !p.Invoices.Any(i => i.ProfitPeriods.Any())))
+            if (lookAtMains)
+                presales = db.Presales
+                    .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
+                                    || (position != Shared.Position.Any && p.Position == position.Translate()))
+                                && ((department == Shared.Department.Any && p.Department != Department.None)
+                                    || (department != Shared.Department.Any && p.Department == department.Translate())))
+                    .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
+                                                        && p.ClosedAt >= from && p.ClosedAt <= to
+                                                        && !p.Invoices.Any(i => i.ProfitPeriods.Any())
+                                                        && !p.MainProject.Invoices.Any(i => i.ProfitPeriods.Any())
+                    )).ToList();
+            else
+                presales = db.Presales
+                    .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
+                                    || (position != Shared.Position.Any && p.Position == position.Translate()))
+                                && ((department == Shared.Department.Any && p.Department != Department.None)
+                                    || (department != Shared.Department.Any && p.Department == department.Translate())))
+                    .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
+                                                        && p.ClosedAt >= from && p.ClosedAt <= to
+                                                        && !p.Invoices.Any(i => i.ProfitPeriods.Any())
+                    )).ToList();
 
-                // Все оплаченные проекты (для проекта есть хотя бы один счёт, в котором есть отгрузка хотя бы в одном любом месяце)
-                // .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
-                //                                     && p.ClosedAt >= from && p.ClosedAt <= to
-                //                                     && p.Invoices.Any(i => i.ProfitPeriods.Any()))).ThenInclude(p => p.Invoices).ThenInclude(i => i.ProfitPeriods)
-
-                .ToList();
-
+            // Все оплаченные проекты (для проекта есть хотя бы один счёт, в котором есть отгрузка хотя бы в одном любом месяце)
+            // .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
+            //                                     && p.ClosedAt >= from && p.ClosedAt <= to
+            //                                     && p.Invoices.Any(i => i.ProfitPeriods.Any()))).ThenInclude(p => p.Invoices).ThenInclude(i => i.ProfitPeriods)
             var reply = new UnpaidProjects();
 
             foreach(var presale in presales)
