@@ -1,5 +1,6 @@
 ﻿@page "/kpi"
 @using Google.Protobuf.Collections;
+@using PresalesMonitor.Client.Web.Views
 @using PresalesMonitor.Shared;
 @using PresalesMonitor.Client.Web.Helpers;
 @using Google.Protobuf.WellKnownTypes;
@@ -31,7 +32,7 @@
             @for (int y = 2015; y <= DateTime.Now.Year; y++)
                 { <option value="@y">@y</option> }
         </select>
-        <button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadFile">Скачать отчёт</button>
+        <button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadReport">Скачать отчёт</button>
     }
 </p>
 <p role="status">@status</p>
@@ -59,82 +60,7 @@
                 </ol>
             </p>
     </details>
-    <table class="table">
-        <thead>
-            <tr>
-                <th style="width: 2%">№</th>
-                <th style="width: 32%">Контрагент</th>
-                <th style="width: 5%">Номер</th>
-                <th style="width: 15%">Дата</th>
-                <th style="width: 11%; text-align: right">Сумма по счёту</th>
-                <th style="width: 10%; text-align: right">Себестоимость</th>
-                <th style="width: 10%; text-align: right">Прибыль</th>
-                <th style="width: 5%; text-align: right">Процент</th>
-                <th style="width: 10%; text-align: right">Премия</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in kpi.Invoices.Select((invoice, index) => new { index, invoice }))
-            {
-                var invoice = item.invoice;
-                <tr style="color: @SetColor(invoice)">
-                    <td>@(item.index + 1)</td>
-                    <td>@invoice.Counterpart</td>
-                    <td>@invoice.Number</td>
-                    <td>@invoice.Date.ToDateTime().ToPresaleTime()</td>
-                    <td style="text-align: right">@Helpers.ToCurrencyString(invoice.Amount)</td>
-                    <td style="text-align: right">@Helpers.ToCurrencyString(invoice.Cost)</td>
-                    <td style="text-align: right">@Helpers.ToCurrencyString(invoice.SalesAmount)</td>
-                    <td style="text-align: right">@Helpers.ToPercentString(invoice.Percent, 1)</td>
-                    <td style="text-align: right">@Helpers.ToCurrencyString(invoice.Profit)</td>
-                </tr>
-                <tr><td colspan="9">
-                    @if (invoice.ProjectsFound.Count > 0)
-                    {
-                        <details class="pmspoiler">
-                                <summary>Найдено проектов при подсчёте рангов: @invoice.ProjectsFound.Count</summary>
-                                @foreach (var project in invoice.ProjectsFound)
-                                    { <p>@Format(project)</p> }
-                        </details>
-                    }
-                    @if (invoice.ProjectsIgnored.Count > 0)
-                    {
-                        <details class="pmspoiler">
-                                <summary style="color:red">Проигнорировано проектов при подсчёте рангов: @invoice.ProjectsIgnored.Count</summary>
-                                @foreach (var project in invoice.ProjectsIgnored)
-                                    { <p>@Format(project)</p> }
-                        </details>
-                    }
-                    @if (invoice.ActionsTallied.Count > 0)
-                    {
-                        <details class="pmspoiler">
-                                <summary>Действий учтено при подсчёте рангов: @invoice.ActionsTallied.Count</summary>
-                                @foreach (var action in invoice.ActionsTallied)
-                                    { <p>@Format(action)</p> }
-                        </details>
-                    }
-                    @if (invoice.ActionsIgnored.Count > 0)
-                    {
-                        <details class="pmspoiler">
-                                <summary style="color:red">Действий проигнорировано при подсчёте рангов: @invoice.ActionsIgnored.Count</summary>
-                                @foreach (var action in invoice.ActionsIgnored)
-                                    { <p>@Format(action)</p> }
-                        </details>
-                    }
-                    </td></tr>
-                <tr>&nbsp</tr>
-            }
-            <tr style="text-align: right">
-                <td colspan="3">Оплачено времени: @Helpers.ToMinutesString(TimeSpan.FromMinutes(kpi.Invoices.Sum(i => i.ActionsTallied.Sum(a => a.Timespend.ToTimeSpan().TotalMinutes))))</td>
-                <td>Всего:</td>
-                <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.Amount))</td>
-                <td></td>
-                <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.SalesAmount))</td>
-                <td></td>
-                <td>@Helpers.ToCurrencyString(kpi.Invoices.Sum(i => i.Profit))</td>
-            </tr>
-        </tbody>
-    </table>
+    <InvoicesTable Invoices="kpi.Invoices"></InvoicesTable>
 }
 
 @code {
@@ -147,21 +73,7 @@
     private static DateOnly firstDay = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
     private string status = string.Empty;
 
-    private string SetColor(PresalesMonitor.Shared.Invoice invoice) =>
-        invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
-    private string Format(PresalesMonitor.Shared.Project project) =>
-        $"{project.Number} [{project.Status}" +
-        $"{Helpers.ToDateString(project.ClosedAt, ": ")}" +
-        $"], \"{project.Name}\"";
-    private string Format(PresalesMonitor.Shared.Action action) =>
-        $"{action.ProjectNumber} [{action.Type}" +
-        $"{Helpers.ToDateString(action.Date, ": ")}" +
-        $" ({action.Timespend.ToTimeSpan().TotalMinutes})], \"{action.Description}\"";
-    private void DownloadFile()
-    {
-        if (kpi == null) return;
-        Helpers.DownloadFile(kpi, js, selectedName, selectedMonth, selectedYear);
-    }
+    private async Task DownloadReport() => await kpi.Download(js, selectedName, selectedMonth, selectedYear);
     private async Task GenerateReport()
     {
         kpi = null;
