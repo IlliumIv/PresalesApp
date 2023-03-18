@@ -37,11 +37,13 @@ namespace PresalesMonitor
             Console.WriteLine($"Последнее обновление проектов: {_lastProjectsUpdate.AddMinutes(-2):dd.MM.yyyy HH:mm:ss.fff}");
             Console.WriteLine($"Последнее обновление счетов: {_lastInvoicesUpdate.AddHours(-1.5):dd.MM.yyyy HH:mm:ss.fff}");
 
-            if (!isSuccesfull || (DateTime.Now - new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt)
-                < TimeSpan.FromMilliseconds(delay)))
+            var isActualDataReceived = DateTime.Now - new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt)
+                    < TimeSpan.FromMilliseconds(delay);
+
+            if (isSuccesfull && !isActualDataReceived)
             {
-                Console.WriteLine($"Последнее обновление завершилось ошибкой или данные уже актуальны, запущен таймаут...");
-                delay = 600000;
+                Console.WriteLine($"Обновление успешно, но данные не актуальны, запрашиваю следующую порцию данных...");
+                delay = 0;
             }
 
             Task.Delay(delay).Wait();
