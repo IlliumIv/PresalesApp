@@ -24,8 +24,7 @@
         @foreach (Position pos in (Position[])System.Enum.GetValues(typeof(Position)))
             { <option value="@pos">@pos.GetName()</option> }
     </select>
-    <label for="onlyActive">Только действующие:</label>
-    <input type="checkbox" id="onlyActive" value="@_onlyActive" @onchange="((ChangeEventArgs e) => OnStatusChanged(e?.Value))" checked/>
+    <input title="Только действующие" type="checkbox" id="onlyActive" value="@_onlyActive" @onchange="((ChangeEventArgs e) => OnStatusChanged(e?.Value))" checked class="inline-check" />
 </p>
 
 @if (overview == null)
