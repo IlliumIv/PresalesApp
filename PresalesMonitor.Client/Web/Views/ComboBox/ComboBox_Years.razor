@@ -1,0 +1,21 @@
+﻿@using System.Globalization;
+@using PresalesMonitor.Client.Web.Helpers;
+
+<select id="year" value="@year" @onchange="((ChangeEventArgs e) => OnYearChanged(e?.Value))" class="form-select">
+    @for (int y = 2015; y <= DateTime.Now.Year; y++)
+    {
+        <option value="@y">@y</option>
+    }
+</select>
+
+@code {
+    private int year = DateTime.Now.Year;
+    private void OnYearChanged(object? obj)
+    {
+        if (int.TryParse(obj?.ToString(), out year))
+            OnSelectCallback.InvokeAsync(year);
+    }
+
+    [Parameter]
+    public EventCallback<int> OnSelectCallback { get; set; }
+}
