@@ -11,7 +11,9 @@
 <PageTitle>Unpaid</PageTitle>
 
 <h1>Unpaid</h1>
-
+<p>
+    Все проекты, закрытые за период, к которым не привязано ни одного отгруженного счёта.
+</p>
 <p>
     <input title="Начало периода" type="date" max="@Helpers.ToMinMaxFormatString(to)" value="@Helpers.ToMinMaxFormatString(from)" @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text" />
     <label>&nbsp;-&nbsp;</label>
