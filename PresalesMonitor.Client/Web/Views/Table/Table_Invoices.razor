@@ -18,7 +18,7 @@
     <tbody>
         @foreach (var item in Invoices.Select((invoice, index) => new { index, invoice }))
         {
-            <InvoiceView Invoice="item.invoice" Index="item.index" isVerboseView="true"></InvoiceView>
+            <View_Invoice Invoice="item.invoice" Index="item.index" isVerboseView="true"></View_Invoice>
         }
         <tr style="text-align: right">
             <td colspan="3">Оплачено времени: @Helpers.ToMinutesString(TimeSpan.FromMinutes(Invoices.Sum(i => i.ActionsTallied.Sum(a => a.Timespend.ToTimeSpan().TotalMinutes))))</td>
@@ -33,6 +33,8 @@
 </table>
 
 @code {
-    [Parameter]
+#pragma warning disable CS8618 // Specified EditorRequired and marked compiler option warning RZ2012 as error
+
+    [Parameter, EditorRequired]
     public IEnumerable<Invoice> Invoices { get; set; }
 }

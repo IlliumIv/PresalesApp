@@ -6,13 +6,14 @@
 @using Department = PresalesMonitor.Shared.Department;
 @using Position = PresalesMonitor.Shared.Position;
 @using System.Threading;
+@using Period = PresalesMonitor.Client.Web.Helpers.Period;
 @inject Presales.PresalesClient PresalesClient
 @implements IDisposable
 @layout DashboardLayout
 
 <PageTitle>Dashboard</PageTitle>
 
-@if (overview == null || _img == null)
+@if (overview == null || img == null)
     { <p><em>Loading...</em></p> }
 else
 {
@@ -32,18 +33,18 @@ else
                 }
             </div>
             <div class="pie">
-                <Chart Config="_pieConfig"></Chart>
+                <Chart Config="pie_config"></Chart>
             </div>
             <div class="delta-container timer-container">
-                <div class="timer">@timeLeft</div>
+                <div class="timer">@time_left</div>
                 @if ((decimal)overview.DeltaDay > 0)
                     { <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay)</div> }
             </div>
         </div>
         <div class="img-container">
-            <img src="@_img.Regular" alt="@_img.AltDescription" />
+            <img src="@img.Regular" alt="@img.AltDescription" />
             <div>
-                <p>Photo by <a href="@_img.AuthorUrl">@_img.AuthorName</a> on <a href="@_img.SourceUrl">@_img.SourceName</a></p>
+                <p>Photo by <a href="@img.AuthorUrl">@img.AuthorName</a> on <a href="@img.SourceUrl">@img.SourceName</a></p>
                 <input @bind="@query" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
             </div>
         </div>
@@ -53,14 +54,19 @@ else
 }
 
 @code {
-    private TimeSpan timeLeft = new (0, 10, 0);
+    private TimeSpan time_left = new (0, 10, 0);
     private MonthProfitOverview? overview;
-    private PieConfig _pieConfig = new PieConfig();
-    private ImageResponse? _img;
+    private PieConfig pie_config = new PieConfig();
+    private ImageResponse? img;
     private string query = "girl";
-    private PeriodicTimer periodicTimer = new(TimeSpan.FromSeconds(1));
-    private DateTime from = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0);
-    private DateTime to = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
+    private PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
+
+    private Period period = new Period
+        {
+            From = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1),
+            To = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+        };
+
     private string[] colors = new[]
         {
             ColorUtil.ColorHexString(5, 47, 97),
@@ -74,15 +80,15 @@ else
             ColorUtil.ColorHexString(3, 28, 58),
     };
 
-    public void Dispose() => periodicTimer?.Dispose();
+    public void Dispose() => periodic_timer?.Dispose();
     private void UpdateChart()
     {
         if (overview == null) return;
         var dataset = new PieDataset<decimal>();
         List<string> datasetColors = new();
         List<string> datasetLabels = new();
-        _pieConfig.Data.Labels.Clear();
-        _pieConfig.Data.Datasets.Clear();
+        pie_config.Data.Labels.Clear();
+        pie_config.Data.Datasets.Clear();
 
         foreach (var item in overview.Presales.Select((presale, index) => new { index, presale }))
         {
@@ -90,53 +96,49 @@ else
             {
                 dataset.Add(item.presale.Statistics.Profit);
                 datasetColors.Add(colors[item.index]);
-                _pieConfig.Data.Labels.Add($"{item.presale.Name}: {Helpers.ToCurrencyString(item.presale.Statistics.Profit)}");
+                pie_config.Data.Labels.Add($"{item.presale.Name}: {Helpers.ToCurrencyString(item.presale.Statistics.Profit)}");
             };
         };
         if ((decimal)overview.Left > 0)
         {
             dataset.Add((decimal)overview.Left);
-            _pieConfig.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)overview.Left)}");
+            pie_config.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)overview.Left)}");
             datasetColors.Add(ColorUtil.ColorHexString(240, 240, 240));
         }
 
         dataset.BackgroundColor = datasetColors.ToArray();
-        _pieConfig.Data.Datasets.Add(dataset);
+        pie_config.Data.Datasets.Add(dataset);
     }
     private async void RunTimer()
     {
         int count = 0;
         var second = new TimeSpan(0, 0, 1);
-        while (await periodicTimer.WaitForNextTickAsync())
+        while (await periodic_timer.WaitForNextTickAsync())
         {
-            timeLeft = timeLeft.Subtract(second);
+            time_left = time_left.Subtract(second);
             if (count > 600)
             {
                 count = 0;
-                to = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
-                await UpdateData(from, to);
+                period.To = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+                await UpdateData(period);
                 await UpdateImage();
                 UpdateChart();
-                timeLeft = new(0, 10, 0);
+                time_left = new(0, 10, 0);
             }
             count++;
             StateHasChanged();
         }
     }
-    private async Task UpdateData(DateTime from, DateTime to)
+    private async Task UpdateData(Period period)
     {
         overview = await PresalesClient.GetMonthProfitOverviewAsync(new OverviewRequest
             {
-                Period = new Period
-                {
-                    From = Timestamp.FromDateTime(from.ToUniversalTime()),
-                    To = Timestamp.FromDateTime(to.ToUniversalTime())
-                },
+                Period = period.Translate(),
                 Department = Department.Any,
                 Position = Position.Any
             });
     }
-    private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = query, Orientation = ImageOrientation.Portrait});
+    private async Task UpdateImage() => img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = query, Orientation = ImageOrientation.Portrait});
 
     protected override void OnInitialized() => RunTimer();
     public async void OnManuallyImageUpdate(KeyboardEventArgs e)
@@ -146,10 +148,10 @@ else
     }
     protected override async Task OnInitializedAsync()
     {
-        await UpdateData(from, to);
+        await UpdateData(period);
         await UpdateImage();
 
-        _pieConfig.Options = new PieOptions
+        pie_config.Options = new PieOptions
             {
                 Responsive = true,
                 Title = new OptionsTitle { Display = false },
