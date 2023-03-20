@@ -62,7 +62,9 @@
 <tr>&nbsp</tr>
 
 @code {
-    [Parameter]
+#pragma warning disable CS8618 // Specified EditorRequired and marked compiler option warning RZ2012 as error
+
+    [Parameter, EditorRequired]
     public Invoice Invoice { get; set; }
 
     [Parameter]

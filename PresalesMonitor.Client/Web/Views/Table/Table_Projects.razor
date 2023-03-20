@@ -19,7 +19,7 @@
                 <td>@project.Number</td>
                 <td>@project.Name</td>
                 <td>@project.PresaleName</td>
-                <td>@project.Status</td>
+                <td>@project.Status.GetName()</td>
                 <td>@project.ClosedAt.ToDateTime().ToPresaleTime()</td>
                 <td>@project.Invoices.Count</td>
             </tr>
@@ -28,6 +28,8 @@
 </table>
 
 @code {
-    [Parameter]
+#pragma warning disable CS8618 // Specified EditorRequired and marked compiler option warning RZ2012 as error
+
+    [Parameter, EditorRequired]
     public IEnumerable<Project> Projects { get; set; }
 }

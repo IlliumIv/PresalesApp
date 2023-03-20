@@ -106,6 +106,14 @@ namespace PresalesMonitor.Client.Web.Helpers
             Position.Any => "Любая заданная",
             _ => throw new NotImplementedException()
         };
+        public static string GetName(this ProjectStatus status) => status switch
+        {
+            ProjectStatus.Unknown => "Неизвестно",
+            ProjectStatus.WorkInProgress => "В работе",
+            ProjectStatus.Won => "Выигран",
+            ProjectStatus.Loss => "Проигран",
+            _ => throw new NotImplementedException()
+        };
         // TODO: Реализовать поддержку рабочего времени пресейла.
         public static DateTime ToPresaleTime(this DateTime dateTime)
         {
@@ -122,5 +130,15 @@ namespace PresalesMonitor.Client.Web.Helpers
             $"], \"{project.Name}\"";
         public static string SetColor(Invoice invoice) =>
             invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
+    }
+    public class Period
+    {
+        public DateOnly From { get; set; }
+        public DateOnly To { get; set; }
+        public PresalesMonitor.Shared.Period Translate() => new()
+        {
+            From = Timestamp.FromDateTime(From.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
+            To = Timestamp.FromDateTime(To.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
+        };
     }
 }

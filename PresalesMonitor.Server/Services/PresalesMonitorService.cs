@@ -486,25 +486,20 @@ namespace PresalesMonitor.Server.Services
 
             return Task.FromResult(reply);
         }
-        public override Task<UnpaidProjects> GetUnpaidProjects(OverviewRequest request, ServerCallContext context)
+        public override Task<UnpaidProjects> GetUnpaidProjects(UnpaidRequest request, ServerCallContext context)
         {
             var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
             var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
-
-            var position = request?.Position ?? Shared.Position.Any;
-            var department = request?.Department ?? Shared.Department.Any;
-            var lookAtMains = request?.OnlyActive ?? false;
+            var is_main_project_include = request?.IsMainProjectInclude ?? false;
+            var presale_name = request?.PresaleName ?? string.Empty;
 
             using var db = new DbController.Context();
 
             List<Entities.Presale>? presales;
 
-            if (lookAtMains)
+            if (is_main_project_include)
                 presales = db.Presales
-                    .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
-                                    || (position != Shared.Position.Any && p.Position == position.Translate()))
-                                && ((department == Shared.Department.Any && p.Department != Department.None)
-                                    || (department != Shared.Department.Any && p.Department == department.Translate())))
+                    .Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true)
                     .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
                                                         && p.ClosedAt >= from && p.ClosedAt <= to
                                                         && !p.Invoices.Any(i => i.ProfitPeriods.Any())
@@ -512,10 +507,7 @@ namespace PresalesMonitor.Server.Services
                     )).ToList();
             else
                 presales = db.Presales
-                    .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
-                                    || (position != Shared.Position.Any && p.Position == position.Translate()))
-                                && ((department == Shared.Department.Any && p.Department != Department.None)
-                                    || (department != Shared.Department.Any && p.Department == department.Translate())))
+                    .Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true)
                     .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
                                                         && p.ClosedAt >= from && p.ClosedAt <= to
                                                         && !p.Invoices.Any(i => i.ProfitPeriods.Any())

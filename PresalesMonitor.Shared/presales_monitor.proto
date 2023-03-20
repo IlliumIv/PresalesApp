@@ -13,9 +13,14 @@ service Presales {
 	rpc GetImage(ImageRequest) returns (ImageResponse);
 	rpc GetMonthProfitOverview(OverviewRequest) returns (MonthProfitOverview);
 	rpc GetSalesOverview(SalesOverviewRequest) returns (SalesOverview);
-	rpc GetUnpaidProjects(OverviewRequest) returns (UnpaidProjects);
+	rpc GetUnpaidProjects(UnpaidRequest) returns (UnpaidProjects);
 }
 
+message UnpaidRequest{
+	string presale_name = 1;
+	Period period = 2;
+	bool is_main_project_include = 3;
+}
 message UnpaidProjects {
 	repeated Project projects = 1;
 }

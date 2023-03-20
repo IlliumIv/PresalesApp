@@ -1,11 +1,11 @@
 ﻿@page "/kpi"
-@using Google.Protobuf.Collections;
-@using PresalesMonitor.Client.Web.Views
 @using PresalesMonitor.Shared;
-@using PresalesMonitor.Client.Web.Helpers;
 @using Google.Protobuf.WellKnownTypes;
-@using System.Runtime.Serialization;
-@using System.Globalization;
+@using PresalesMonitor.Client.Web.Views;
+@using PresalesMonitor.Client.Web.Views.Table;
+@using PresalesMonitor.Client.Web.Views.ComboBox;
+@using PresalesMonitor.Client.Web.Helpers;
+@using Period = PresalesMonitor.Client.Web.Helpers.Period;
 @inject Presales.PresalesClient PresalesClient
 @inject IJSRuntime js
 
@@ -14,28 +14,19 @@
 <h1>KPI</h1>
 
 <p>
-    @if (presales == null)
-        { <em>Loading...</em> }
-    else
-    {
-        <label>Пресейл:</label>
-        <select value="@selectedName" @onchange="((ChangeEventArgs e) => OnPresaleChanged(e?.Value))" class="form-select">
-            <option selected=""></option>
-            @foreach (var name in presales.Names)
-                { <option value="@name">@name</option> }
-        </select>
-        <select id="month" value="@selectedMonth" @onchange="((ChangeEventArgs e) => OnMonthChanged(e?.Value))" class="form-select">
-            @for (int m = 1; m <= 12; m++)
-                { <option value="@m">@Helpers.ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(m))</option> }
-        </select>
-        <select id="year" value="@selectedYear" @onchange="((ChangeEventArgs e) => OnYearChanged(e?.Value))" class="form-select">
-            @for (int y = 2015; y <= DateTime.Now.Year; y++)
-                { <option value="@y">@y</option> }
-        </select>
-        <button @attributes="downloadBtnAttrs" class="btn btn-primary" @onclick="DownloadReport">Скачать отчёт</button>
-    }
+    <ComboBox_PresalesNames
+        OnSelectCallback="(async (string name) => {presale_name = name; await GenerateReport();})">
+    </ComboBox_PresalesNames>
+    <ComboBox_Months
+        OnSelectCallback="(async (int month) => {this.month = month; await GenerateReport();})">
+    </ComboBox_Months>
+    <ComboBox_Years
+        OnSelectCallback="(async (int year) => {this.year = year; await GenerateReport();})">
+    </ComboBox_Years>
+    <button @attributes="btn_download_attr" class="btn btn-primary"
+        @onclick="DownloadReport">Скачать отчёт</button>
 </p>
-<p role="status">@status</p>
+<p role="status">@msg_info</p>
 @if (kpi is not null)
 {
     <details class="pmspoiler">
@@ -60,48 +51,45 @@
                 </ol>
             </p>
     </details>
-    <InvoicesTable Invoices="kpi.Invoices"></InvoicesTable>
+    <Table_Invoices Invoices="kpi.Invoices"></Table_Invoices>
 }
 
 @code {
-    private int selectedMonth = DateTime.Now.Month;
-    private int selectedYear = DateTime.Now.Year;
-    private string selectedName = string.Empty;
-    private NamesResponse? presales;
-    private Kpi? kpi;
-    private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() {{ "disabled", "disabled" }};
-    private static DateOnly firstDay = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
-    private string status = string.Empty;
+    private int month = DateTime.Now.Month;
+    private int year = DateTime.Now.Year;
+    private string presale_name = string.Empty;
 
-    private async Task DownloadReport() => await kpi.Download(js, selectedName, selectedMonth, selectedYear);
+    private Kpi? kpi;
+    private Dictionary<string, object> btn_download_attr { get; set; } = new() {{ "disabled", "disabled" }};
+    private string msg_info = string.Empty;
+
+    private async Task DownloadReport() => await kpi.Download(js, presale_name, month, year);
     private async Task GenerateReport()
     {
         kpi = null;
-        downloadBtnAttrs = new() {{ "disabled", "disabled" }};
+        btn_download_attr = new() {{ "disabled", "disabled" }};
 
-        if (string.IsNullOrEmpty(selectedName)) status = "Выберите пресейла.";
+        if (string.IsNullOrEmpty(presale_name)) msg_info = "Выберите пресейла.";
 
-        var from = new DateTime(selectedYear, selectedMonth, 1);
-        var to = from.AddMonths(1).AddSeconds(-1);
-
+        var from = new DateOnly(year, month, 1);
         var response = await PresalesClient.GetKpiAsync(new KpiRequest
             {
-                PresaleName = selectedName,
+                PresaleName = presale_name,
                 Period = new Period
                 {
-                    From = Timestamp.FromDateTime(from.ToUniversalTime()),
-                    To = Timestamp.FromDateTime(to.ToUniversalTime())
-                }
+                    From = from,
+                    To = from.AddMonths(1).AddDays(-1)
+                }.Translate()
             }
         );
 
         if (response.ResponseCase == KpiResponse.ResponseOneofCase.Kpi)
         {
             kpi = response.Kpi;
-            downloadBtnAttrs = new();
+            btn_download_attr = new();
         }
 
-        status = response.ResponseCase switch
+        msg_info = response.ResponseCase switch
         {
             KpiResponse.ResponseOneofCase.Error => response.Error.Message,
             KpiResponse.ResponseOneofCase.Kpi => "Отчёт сгенерирован!",
@@ -109,22 +97,5 @@
             _ => "Неизвестный ответ сервера."
         };
         StateHasChanged();
-    }
-
-    protected override async Task OnInitializedAsync() { presales = await PresalesClient.GetNamesAsync(new Empty()); }
-    private async void OnPresaleChanged(object? obj)
-    {
-        selectedName = obj?.ToString() ?? string.Empty;
-        await GenerateReport();
-    }
-    private async void OnYearChanged(object? obj)
-    {
-        int.TryParse(obj?.ToString(), out selectedYear);
-        await GenerateReport();
-    }
-    private async void OnMonthChanged(object? obj)
-    {
-        int.TryParse(obj?.ToString(), out selectedMonth);
-        await GenerateReport();
     }
 }
