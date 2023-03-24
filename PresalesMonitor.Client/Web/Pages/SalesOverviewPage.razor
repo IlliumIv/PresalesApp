@@ -25,19 +25,19 @@ else
         <div class="legend">
             <fieldset class="salesTarget">
                 <legend>План @Format(current.From) - @Format(current.To)</legend>
-                <p>@Helpers.ToCurrencyString(overview.CurrentSalesTarget)</p>
+                <p>@Helpers.ToCurrencyString(overview.CurrentSalesTarget, "ru-RU")</p>
             </fieldset>
             <fieldset class="actualProfit">
                 <legend>Факт @Format(current.From) - @Format(current.To)</legend>
-                <p>@Helpers.ToCurrencyString(overview.CurrentActualProfit)</p>
+                <p>@Helpers.ToCurrencyString(overview.CurrentActualProfit, "ru-RU")</p>
             </fieldset>
             <fieldset class="previousActualProfit">
                 <legend>Факт @Format(previous.From) - @Format(previous.To)</legend>
-                <p>@Helpers.ToCurrencyString(overview.PreviousActualProfit)</p>
+                <p>@Helpers.ToCurrencyString(overview.PreviousActualProfit, "ru-RU")</p>
             </fieldset>
             <fieldset class="increase">
                 <legend>Динамика</legend>
-                <p>@Helpers.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true)</p>
+                <p>@Helpers.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true, "ru-RU")</p>
             </fieldset>
         </div>
         <div class="chart">
@@ -60,7 +60,7 @@ else
                                 <td><div style="background:@dataset_сolors[item.index]">&nbsp;</div></td>
                                 <td>@(item.index + 1). </td>
                                 <td>@manager.Name</td>
-                                <td>@Helpers.ToCurrencyString(manager.Profit)</td>
+                                <td>@Helpers.ToCurrencyString(manager.Profit, "ru-RU")</td>
                             </tr>
                         }
                     </table>

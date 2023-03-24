@@ -158,6 +158,7 @@ message Action {
 	ActionType type = 4;
 	google.protobuf.Duration timespend = 5;
 	string description = 6;
+	bool sales_funnel = 7;
 }
 enum ProjectStatus {
 	PROJECT_STATUS_UNKNOWN = 0;

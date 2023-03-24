@@ -23,11 +23,11 @@
         <tr style="text-align: right">
             <td colspan="3">Оплачено времени: @Helpers.ToMinutesString(TimeSpan.FromMinutes(Invoices.Sum(i => i.ActionsTallied.Sum(a => a.Timespend.ToTimeSpan().TotalMinutes))))</td>
             <td>Всего:</td>
-            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.Amount))</td>
+            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.Amount), "ru-RU")</td>
             <td></td>
-            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.SalesAmount))</td>
+            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.SalesAmount), "ru-RU")</td>
             <td></td>
-            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.Profit))</td>
+            <td>@Helpers.ToCurrencyString(Invoices.Sum(i => i.Profit), "ru-RU")</td>
         </tr>
     </tbody>
 </table>

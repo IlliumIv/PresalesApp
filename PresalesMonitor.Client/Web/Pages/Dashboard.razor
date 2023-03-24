@@ -10,6 +10,7 @@
 @inject Presales.PresalesClient PresalesClient
 @implements IDisposable
 @layout DashboardLayout
+@inject IJSRuntime js
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -27,7 +28,7 @@ else
                         <div>
                             <div style="background: @colors[item.index]"></div>
                             <p>@item.presale.Name:</p>
-                            <p>@Helpers.ToCurrencyString(item.presale.Statistics.Profit)</p>
+                            <p>@Helpers.ToCurrencyString(item.presale.Statistics.Profit, "ru-RU")</p>
                         </div>
                     }
                 }
@@ -38,7 +39,9 @@ else
             <div class="delta-container timer-container">
                 <div class="timer">@time_left</div>
                 @if ((decimal)overview.DeltaDay > 0)
-                    { <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay)</div> }
+                {
+                    <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay, "ru-RU")</div>
+                }
             </div>
         </div>
         <div class="img-container">
@@ -50,7 +53,7 @@ else
         </div>
     </div>
     <div class="percent">@Helpers.ToPercentString((double)(overview.Profit/overview.Plan), 1)</div>
-    <div class="left">@Helpers.ToCurrencyString((decimal)overview.Left)</div>
+    <div class="left">@Helpers.ToCurrencyString((decimal)overview.Left, "ru-RU")</div>
 }
 
 @code {
@@ -96,13 +99,13 @@ else
             {
                 dataset.Add(item.presale.Statistics.Profit);
                 datasetColors.Add(colors[item.index]);
-                pie_config.Data.Labels.Add($"{item.presale.Name}: {Helpers.ToCurrencyString(item.presale.Statistics.Profit)}");
+                pie_config.Data.Labels.Add($"{item.presale.Name}: {Helpers.ToCurrencyString(item.presale.Statistics.Profit, "ru-RU")}");
             };
         };
         if ((decimal)overview.Left > 0)
         {
             dataset.Add((decimal)overview.Left);
-            pie_config.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)overview.Left)}");
+            pie_config.Data.Labels.Add($"Осталось: {Helpers.ToCurrencyString((decimal)overview.Left, "ru-RU")}");
             datasetColors.Add(ColorUtil.ColorHexString(240, 240, 240));
         }
 
