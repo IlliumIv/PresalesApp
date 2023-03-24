@@ -588,7 +588,8 @@ namespace PresalesMonitor.Server.Services
             Date = Timestamp.FromDateTime(action.Date.ToUniversalTime()),
             Type = action.Type.Translate(),
             Timespend = Duration.FromTimeSpan(TimeSpan.FromMinutes(action.TimeSpend)),
-            Description = action.Description
+            Description = action.Description,
+            SalesFunnel = action.SalesFunnel
         };
         public static Department Translate(this Shared.Department value)
         {
