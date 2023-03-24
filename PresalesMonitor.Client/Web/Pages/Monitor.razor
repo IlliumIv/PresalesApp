@@ -38,7 +38,7 @@ else
         <thead class="pmthead">
             <tr>
                 <th rowspan="2" style="width:11%">Пресейл</th>
-                <th colspan="10">@Helpers.ToUpperFirstLetterString(periodName)</th>
+                <th colspan="10">@Helpers.ToUpperFirstLetterString(period_name)</th>
                 <th rowspan="2" style="width:5%" title="@title_abandoned">Abnd</th>
                 <th rowspan="2" style="width:6%" title="@title_avg_time_to_win">AvgTTW</th>
                 <th rowspan="2" style="width:5%" title="@title_avg_rank">AvgR</th>
@@ -69,8 +69,8 @@ else
                     <td title="@title_won">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
                     <td title="@title_conversion">@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
                     <td title="@title_loss">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential)</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential, "ru-RU")</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit, "ru-RU")</td>
                     <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
                     <td title="@title_time_spend">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
                     <td title="@title_avt_time_spend">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
@@ -78,7 +78,7 @@ else
                     <td title="@title_avg_time_to_win">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
                     <td title="@title_avg_rank">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
                     <td>@Helpers.ToEmptyIfZeroString(presale.DeficitProjects)</td>
-                    <td>@Helpers.ToCurrencyString(presale.DeficitPotential)</td>
+                    <td>@Helpers.ToCurrencyString(presale.DeficitPotential, "ru-RU")</td>
                 </tr>
             }
             <tr>
@@ -88,8 +88,8 @@ else
                 <td title="@title_won">@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
                 <td title="@title_conversion">@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
                 <td title="@title_loss">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential)</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential, "ru-RU")</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit, "ru-RU")</td>
                 <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
                 <td title="@title_time_spend">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
                 <td title="@title_avt_time_spend">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
@@ -142,7 +142,7 @@ else
     private bool only_active = true;
     private PeriodicTimer periodic_timer = new(TimeSpan.FromMinutes(10));
     #region Descriptions
-    private string title_in_work => $"В работе (есть действия за {periodName})";
+    private string title_in_work => $"В работе (есть действия за {period_name})";
     private readonly string title_assign = "Назначено";
     private readonly string title_won = "Выиграно";
     private readonly string title_loss = "Проиграно";
@@ -153,7 +153,7 @@ else
     private readonly string title_avg_rank = "Средний ранг проектов";
     private readonly string title_time_spend = "Потрачено времени на проекты, суммарно в часах";
     private readonly string title_avt_time_spend = "Потрачено времени на проекты, в среднем в часах";
-    private string periodName => period.From >= first_day && period.To <= first_day.AddMonths(1).AddDays(-1) ? Helpers.CurMonthName : "выбранный период";
+    private string period_name => period.From >= first_day && period.To <= first_day.AddMonths(1).AddDays(-1) ? Helpers.CurMonthName : "выбранный период";
     #endregion
 
     private string Format(Project project) =>
@@ -188,9 +188,4 @@ else
         await UpdateData();
     }
     protected override async Task OnInitializedAsync() => await UpdateData();
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        Console.WriteLine(only_active);
-        return base.OnAfterRenderAsync(firstRender);
-    }
 }

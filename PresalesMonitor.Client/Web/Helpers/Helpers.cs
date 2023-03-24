@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Microsoft.JSInterop;
+using Newtonsoft.Json.Linq;
 using PresalesMonitor.Shared;
 using System;
 using System.Globalization;
@@ -14,11 +15,15 @@ namespace PresalesMonitor.Client.Web.Helpers
     {
         public static string CurMonthName => $"{DateTime.Now:MMMM}";
         public static string ToMinMaxFormatString(DateOnly? value) => $"{value:yyyy-MM-dd}";
-        public static string ToCurrencyString(decimal value, bool allowNegatives = false) => $"{(allowNegatives ? value : value > 0 ? value : ""):C}";
-        public static string ToPercentString(double value, int digits = 0) => $"{(value == 0 ? "" : value.ToString($"P{digits}"))}";
-        public static string ToDaysString(TimeSpan avgTTW) => $"{(avgTTW == TimeSpan.Zero ? "" : avgTTW.TotalDays):f0}";
-        public static string ToMinutesString(TimeSpan avgTTR) => $"{(avgTTR == TimeSpan.Zero ? "" : avgTTR.TotalMinutes):f0}";
-        public static string ToHoursString(TimeSpan timeSpend) => $"{(timeSpend == TimeSpan.Zero ? "" : timeSpend.TotalHours):f1}";
+        public static string ToCurrencyString(decimal value, string cultureName) => ToCurrencyString(value, false, cultureName);
+        public static string ToCurrencyString(decimal value, bool allowNegatives = false, string? cultureName = null) =>
+            string.Format(new CultureInfo(cultureName ?? CultureInfo.CurrentCulture.Name),
+                "{0:C}", allowNegatives ? value : value > 0 ? value : "");
+        public static string ToPercentString(double value, int digits = 0) =>
+            value == 0 ? "" : string.Format($"{{0:P{digits}}}", value);
+        public static string ToDaysString(TimeSpan avgTTW) => avgTTW == TimeSpan.Zero ? "" : $"{avgTTW.TotalDays:f0}";
+        public static string ToMinutesString(TimeSpan avgTTR) => avgTTR == TimeSpan.Zero ? "" : $"{avgTTR.TotalMinutes:f0}";
+        public static string ToHoursString(TimeSpan timeSpend) => timeSpend == TimeSpan.Zero ? "" : $"{timeSpend.TotalHours:f1}";
         public static string ToDateString(Timestamp timestamp, string separator) =>
             timestamp.ToDateTime() == DateTime.MinValue ? "" : $"{separator}{timestamp.ToDateTime().ToPresaleTime()}";
         public static string ToOneDateString(Timestamp a, Timestamp b) =>
@@ -75,7 +80,7 @@ namespace PresalesMonitor.Client.Web.Helpers
             string text = $"Номер;Название;Пресейл;Статус;Согласовано РОП;Согласовано РП;Взято в работу;Закрыто;Привязанных счетов\n";
             foreach(var project in projects.Projects)
             {
-                text += $"{project.Number};{project.Name};{project.PresaleName};{project.Status};" +
+                text += $"{project.Number};{project.Name};{project.PresaleName};{project.Status.GetName()};" +
                     $"{project.ApprovalBySalesDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.PresaleStartAt.ToDateTime().ToPresaleTime()};" +
@@ -122,11 +127,12 @@ namespace PresalesMonitor.Client.Web.Helpers
         }
         public static string Format(this Action action) =>
             $"{action.ProjectNumber} [{action.Type}" +
-            $"{Helpers.ToDateString(action.Date, ": ")}" +
-            $" ({action.Timespend.ToTimeSpan().TotalMinutes})], \"{action.Description}\"";
+            $"{ToDateString(action.Date, ": ")}" +
+            $" ({action.Timespend.ToTimeSpan().TotalMinutes})], \"{action.Description}\"" +
+            (action.SalesFunnel ? " (Действие в рамках воронки)." : ".");
         public static string Format(this Project project) =>
-            $"{project.Number} [{project.Status}" +
-            $"{Helpers.ToDateString(project.ClosedAt, ": ")}" +
+            $"{project.Number} [{project.Status.GetName()}" +
+            $"{ToDateString(project.ClosedAt, ": ")}" +
             $"], \"{project.Name}\"";
         public static string SetColor(Invoice invoice) =>
             invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";

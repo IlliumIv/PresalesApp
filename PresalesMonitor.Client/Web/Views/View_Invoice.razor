@@ -6,11 +6,11 @@
     <td>@Invoice.Counterpart</td>
     <td>@Invoice.Number</td>
     <td>@Invoice.Date.ToDateTime().ToPresaleTime()</td>
-    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Amount)</td>
-    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Cost)</td>
-    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.SalesAmount)</td>
+    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Amount, "ru-RU")</td>
+    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Cost, "ru-RU")</td>
+    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.SalesAmount, "ru-RU")</td>
     <td style="text-align: right">@Helpers.ToPercentString(Invoice.Percent, 1)</td>
-    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Profit)</td>
+    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Profit, "ru-RU")</td>
 </tr>
 @if(isVerboseView)
 {
@@ -22,7 +22,7 @@
                     <summary>Найдено проектов при подсчёте рангов: @Invoice.ProjectsFound.Count</summary>
                     @foreach (var project in Invoice.ProjectsFound)
                     {
-                        <p>@project.Format()</p>
+                        <p style="margin-bottom: 0">@project.Format()</p>
                     }
                 </details>
             }
@@ -32,7 +32,7 @@
                     <summary style="color:red">Проигнорировано проектов при подсчёте рангов: @Invoice.ProjectsIgnored.Count</summary>
                     @foreach (var project in Invoice.ProjectsIgnored)
                     {
-                        <p>@project.Format()</p>
+                        <p style="margin-bottom: 0">@project.Format()</p>
                     }
                 </details>
             }
@@ -42,7 +42,7 @@
                     <summary>Действий учтено при подсчёте рангов: @Invoice.ActionsTallied.Count</summary>
                     @foreach (var action in Invoice.ActionsTallied)
                     {
-                        <p>@action.Format()</p>
+                        <p style="margin-bottom: 0">@action.Format()</p>
                     }
                 </details>
             }
@@ -52,7 +52,7 @@
                     <summary style="color:red">Действий проигнорировано при подсчёте рангов: @Invoice.ActionsIgnored.Count</summary>
                     @foreach (var action in Invoice.ActionsIgnored)
                     {
-                        <p>@action.Format()</p>
+                        <p style="margin-bottom: 0">@action.Format()</p>
                     }
                 </details>
             }
