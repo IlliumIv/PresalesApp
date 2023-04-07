@@ -47,7 +47,7 @@ else
         <div class="img-container">
             <img src="@img.Regular" alt="@img.AltDescription" />
             <div>
-                <p>Photo by <a href="@img.AuthorUrl">@img.AuthorName</a> on <a href="@img.SourceUrl">@img.SourceName</a></p>
+                <p>Photo by <a href="@img.AuthorUrl" target="_blank">@img.AuthorName</a> on <a href="@img.SourceUrl" target="_blank">@img.SourceName</a></p>
                 <input @bind="@query" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
             </div>
         </div>
