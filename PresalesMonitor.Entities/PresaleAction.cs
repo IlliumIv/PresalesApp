@@ -17,6 +17,8 @@ namespace PresalesMonitor.Entities
         public ActionType Type { get; set; }
         [JsonProperty("ВремяВыполнения")]
         public int TimeSpend { get; set; }
+        [JsonProperty("Воронка")]
+        public bool SalesFunnel { get; set; } = false;
         [JsonProperty("Описание")]
         public string Description { get; set; } = string.Empty;
         public int ProjectId { get; set; }
@@ -51,6 +53,7 @@ namespace PresalesMonitor.Entities
                 || Date != action.Date
                 || Type != action.Type
                 || TimeSpend != action.TimeSpend
+                || SalesFunnel != action.SalesFunnel
                 || Description != action.Description) return false;
             return true;
         }

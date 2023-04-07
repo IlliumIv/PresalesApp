@@ -47,8 +47,7 @@ namespace PresalesMonitor.Entities
         {
             var from = ApprovalByTechDirectorAt;
             var to = new List<DateTime?>() {
-                        (Actions?.FirstOrDefault(a => a.Number == 1)?.Date ?? DateTime.Now)
-                            .AddMinutes(-Actions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0),
+                        (Actions?.FirstOrDefault(a => a.Number == 1)?.Date ?? DateTime.Now),
                         PresaleStartAt }.Min(dt => dt);
             return Presale.CalculateWorkingMinutes(from, to) > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
         }
