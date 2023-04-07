@@ -36,7 +36,7 @@ namespace PresalesMonitor
         public sealed class Database : ConfigurationSection
         {
             [ConfigurationProperty("url",
-                DefaultValue = "localhost",
+                DefaultValue = "127.0.0.1",
                 IsRequired = true)]
             public string Url
             {
@@ -56,7 +56,7 @@ namespace PresalesMonitor
             }
 
             [ConfigurationProperty("databaseName",
-                DefaultValue = "presalesDb",
+                DefaultValue = "***REMOVED***",
                 IsRequired = true)]
             public string DatabaseName
             {
@@ -65,7 +65,7 @@ namespace PresalesMonitor
             }
 
             [ConfigurationProperty("username",
-                DefaultValue = "presales",
+                DefaultValue = "***REMOVED***",
                 IsRequired = true)]
             public string Username
             {
@@ -74,7 +74,7 @@ namespace PresalesMonitor
             }
 
             [ConfigurationProperty("password",
-                DefaultValue = "12345",
+                DefaultValue = "***REMOVED***",
                 IsRequired = true)]
             public string Password
             {

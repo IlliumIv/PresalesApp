@@ -26,25 +26,12 @@ namespace PresalesMonitor.Console
             // db.Create();
 
             if (!Settings.ConfigurationFileIsExists()) Settings.CreateConfigurationFile();
+            int delay = args.Length > 0 && int.TryParse(args[0], out delay) ? delay : 600000;
 
             while (true)
             {
-                Parser.Run();
-                Settings.TryGetSection<Settings.Application>(out ConfigurationSection r);
-                var _lastProjectsUpdate = ((Settings.Application)r).ProjectsUpdatedAt;
-                var _lastInvoicesUpdate = ((Settings.Application)r).InvoicesUpdatedAt;
-                ShowData(_lastProjectsUpdate, _lastInvoicesUpdate);
-                int delay = 600000;
-                if (DateTime.Now - new List<DateTime>() { _lastProjectsUpdate, _lastInvoicesUpdate }.Min(dt => dt) 
-                    > TimeSpan.FromMilliseconds(delay)) delay = 0;
-                Task.Delay(delay).Wait();
+                Parser.Run(delay);
             };
-        }
-
-        public static void ShowData(DateTime ProjectsUpdatedAt, DateTime InvoicesUpdatedAt)
-        {
-            System.Console.WriteLine($"Последнее обновление проектов: {ProjectsUpdatedAt.AddMinutes(-2):dd.MM.yyyy HH:mm:ss.fff}");
-            System.Console.WriteLine($"Последнее обновление счетов: {InvoicesUpdatedAt.AddHours(-1.5):dd.MM.yyyy HH:mm:ss.fff}");
         }
     }
 }

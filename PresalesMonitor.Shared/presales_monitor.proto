@@ -13,6 +13,16 @@ service Presales {
 	rpc GetImage(ImageRequest) returns (ImageResponse);
 	rpc GetMonthProfitOverview(OverviewRequest) returns (MonthProfitOverview);
 	rpc GetSalesOverview(SalesOverviewRequest) returns (SalesOverview);
+	rpc GetUnpaidProjects(UnpaidRequest) returns (UnpaidProjects);
+}
+
+message UnpaidRequest{
+	string presale_name = 1;
+	Period period = 2;
+	bool is_main_project_include = 3;
+}
+message UnpaidProjects {
+	repeated Project projects = 1;
 }
 
 message SalesOverviewRequest {
@@ -82,6 +92,8 @@ message Invoice {
 	repeated Project projects_ignored = 10;
 	repeated Action actions_tallied = 11;
 	repeated Action actions_ignored = 12;
+	google.protobuf.Timestamp last_pay_at = 13;
+	google.protobuf.Timestamp last_shipment_at = 14;
 }
 message NamesResponse {
 	repeated string names = 1;
@@ -137,6 +149,7 @@ message Project {
 	string presale_name = 6;
 	ProjectStatus status = 7;
 	google.protobuf.Timestamp closed_at = 8;
+	repeated Invoice invoices = 9;
 }
 message Action {
 	string project_number = 1;
@@ -145,6 +158,7 @@ message Action {
 	ActionType type = 4;
 	google.protobuf.Duration timespend = 5;
 	string description = 6;
+	bool sales_funnel = 7;
 }
 enum ProjectStatus {
 	PROJECT_STATUS_UNKNOWN = 0;

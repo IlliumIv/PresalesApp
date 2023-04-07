@@ -33,6 +33,7 @@ namespace PresalesMonitor.Entities
         public int? PresaleId { get; set; }
         public int? ProjectId { get; set; }
         public Invoice(string number) => Number = number;
+        public decimal GetProfit() => ProfitPeriods?.Sum(p => p.Amount) ?? 0;
         public decimal GetProfit(DateTime from, DateTime to)
         {
             var firstDay = new DateTime(from.Year, from.Month, 1);

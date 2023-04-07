@@ -1,0 +1,21 @@
+﻿@using System.Globalization;
+@using PresalesMonitor.Client.Web.Helpers;
+
+<select id="month" value="@month" @onchange="((ChangeEventArgs e) => OnMonthChanged(e?.Value))" class="form-select">
+    @for (int m = 1; m <= 12; m++)
+    {
+        <option value="@m">@Helpers.ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(m))</option>
+    }
+</select>
+
+@code {
+    private int month = DateTime.Now.Month;
+    private void OnMonthChanged(object? obj)
+    {
+        if (int.TryParse(obj?.ToString(), out month))
+            OnSelectCallback.InvokeAsync(month);
+    }
+
+    [Parameter]
+    public EventCallback<int> OnSelectCallback { get; set; }
+}
