@@ -1,4 +1,6 @@
 ﻿@page "/monitor"
+@using PresalesMonitor.Client.Web.Views;
+@using PresalesMonitor.Client.Web.Views.ComboBox;
 @using PresalesMonitor.Shared;
 @using PresalesMonitor.Client.Web.Helpers;
 @using Google.Protobuf.Collections;
@@ -6,6 +8,7 @@
 @using Department = PresalesMonitor.Shared.Department;
 @using Position = PresalesMonitor.Shared.Position;
 @using System.Threading;
+@using Period = PresalesMonitor.Client.Web.Helpers.Period;
 @inject Presales.PresalesClient PresalesClient
 
 <PageTitle>Presales Monitor</PageTitle>
@@ -13,19 +16,18 @@
 <h1>Presales Monitor</h1>
 
 <p>
-    <input title="Начало периода" type="date" max="@Helpers.ToMinMaxFormatString(to)" value="@Helpers.ToMinMaxFormatString(from)" @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text" />
-    <label>&nbsp;-&nbsp;</label>
-    <input title="Конец периода" type="date" min="@Helpers.ToMinMaxFormatString(from)" value="@Helpers.ToMinMaxFormatString(to)" @onchange="((ChangeEventArgs e) => OnToChanged(e?.Value))" class="input-group-text" />
-    <select title="Направление" value="@department" @onchange="((ChangeEventArgs e) => OnDepartmentChanged(e?.Value))" class="form-select">
-        @foreach (Department dep in (Department[])System.Enum.GetValues(typeof(Department)))
-            { <option value="@dep">@dep.GetName()</option> }
-    </select>
-    <select title="Должность" value="@position" @onchange="((ChangeEventArgs e) => OnPositionChanged(e?.Value))" class="form-select">
-        @foreach (Position pos in (Position[])System.Enum.GetValues(typeof(Position)))
-            { <option value="@pos">@pos.GetName()</option> }
-    </select>
-    <label for="onlyActive">Только действующие:</label>
-    <input type="checkbox" id="onlyActive" value="@_onlyActive" @onchange="((ChangeEventArgs e) => OnStatusChanged(e?.Value))" checked/>
+    <DateOnly_Period Period="period"
+        OnPeriodChangedCallback="(async (Period period) => {this.period = period; await UpdateData();})">
+    </DateOnly_Period>
+    <ComboBox_Departments
+        OnSelectCallback="(async (Department department) => {this.department = department; await UpdateData();})">
+    </ComboBox_Departments>
+    <ComboBox_Positions
+        OnSelectCallback="(async (Position position) => {this.position = position; await UpdateData();})">
+    </ComboBox_Positions>
+    <input title="Только действующие" type="checkbox" id="onlyActive" value="@only_active"
+        @onchange="((ChangeEventArgs e) => OnStatusChanged(e?.Value))"
+        checked class="inline-check" style="cursor: help;" />
 </p>
 
 @if (overview == null)
@@ -36,23 +38,23 @@ else
         <thead class="pmthead">
             <tr>
                 <th rowspan="2" style="width:11%">Пресейл</th>
-                <th colspan="9">@Helpers.ToUpperFirstLetterString(Helpers.CurMonthName)</th>
-                <th rowspan="2" style="width:5%" title="@inWorkTitle">InWork</th>
-                <th rowspan="2" style="width:5%" title="@abndTitle">Abnd</th>
-                <th rowspan="2" style="width:6%" title="@avgttwTitle">AvgTTW</th>
-                <th rowspan="2" style="width:5%" title="@avgrTitle">AvgR</th>
+                <th colspan="10">@Helpers.ToUpperFirstLetterString(period_name)</th>
+                <th rowspan="2" style="width:5%" title="@title_abandoned">Abnd</th>
+                <th rowspan="2" style="width:6%" title="@title_avg_time_to_win">AvgTTW</th>
+                <th rowspan="2" style="width:5%" title="@title_avg_rank">AvgR</th>
                 <th colspan="2">Дефицит</th>
             </tr>
             <tr>
-                <th style="width:5%" title="@assignTitle">Assign</th>
-                <th style="width:5%" title="@wonTitle">Won</th>
-                <th style="width:5%" title="@lossTitle">Loss</th>
-                <th style="width:5%" title="@convrTitle">Convr</th>
+                <th style="width:5%" title="@title_in_work">InWork</th>
+                <th style="width:5%" title="@title_assign">Assign</th>
+                <th style="width:5%" title="@title_won">Won</th>
+                <th style="width:5%" title="@title_conversion">Convr</th>
+                <th style="width:5%" title="@title_loss">Loss</th>
                 <th style="width:11%">Потенциал</th>
                 <th style="width:10%">Чистые</th>
-                <th style="width:6%" title="@avgttrTitle">AvgTTR</th>
-                <th style="width:4%" title="@spendSumTitle">Sum</th>
-                <th style="width:4%" title="@spendAvgTitle">Avg</th>
+                <th style="width:6%" title="@title_avg_time_to_reaction">AvgTTR</th>
+                <th style="width:4%" title="@title_time_spend">Sum</th>
+                <th style="width:4%" title="@title_avt_time_spend">Avg</th>
                 <th style="width:3%">шт.</th>
                 <th style="width:10%">руб.</th>
             </tr>
@@ -62,38 +64,38 @@ else
             {
                 <tr>
                     <td>@presale.Name</td>
-                    <td title="@assignTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
-                    <td title="@wonTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
-                    <td title="@lossTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
-                    <td title="@convrTitle">@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential)</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
-                    <td title="@avgttrTitle">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
-                    <td title="@spendSumTitle">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
-                    <td title="@spendAvgTitle">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
-                    <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
-                    <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
-                    <td title="@avgttwTitle">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
-                    <td title="@avgrTitle">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
+                    <td title="@title_in_work">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
+                    <td title="@title_assign">@Helpers.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
+                    <td title="@title_won">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
+                    <td title="@title_conversion">@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
+                    <td title="@title_loss">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential, "ru-RU")</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit, "ru-RU")</td>
+                    <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                    <td title="@title_time_spend">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
+                    <td title="@title_avt_time_spend">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
+                    <td title="@title_abandoned">@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
+                    <td title="@title_avg_time_to_win">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                    <td title="@title_avg_rank">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
                     <td>@Helpers.ToEmptyIfZeroString(presale.DeficitProjects)</td>
-                    <td>@Helpers.ToCurrencyString(presale.DeficitPotential)</td>
+                    <td>@Helpers.ToCurrencyString(presale.DeficitPotential, "ru-RU")</td>
                 </tr>
             }
             <tr>
                 <td>Всего</td>
-                <td title="@assignTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Assign)</td>
-                <td title="@wonTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
-                <td title="@lossTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
-                <td title="@convrTitle">@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential)</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
-                <td title="@avgttrTitle">@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
-                <td title="@spendSumTitle">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
-                <td title="@spendAvgTitle">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
-                <td title="@inWorkTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
-                <td title="@abndTitle">@Helpers.ToEmptyIfZeroString(overview.Statistics.Abnd)</td>
-                <td title="@avgttwTitle">@Helpers.ToDaysString(overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
-                <td title="@avgrTitle">@Math.Round(overview.Statistics.AvgRank, 1)</td>
+                <td title="@title_in_work">@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
+                <td title="@title_assign">@Helpers.ToEmptyIfZeroString(overview.Statistics.Assign)</td>
+                <td title="@title_won">@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
+                <td title="@title_conversion">@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
+                <td title="@title_loss">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential, "ru-RU")</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit, "ru-RU")</td>
+                <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                <td title="@title_time_spend">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
+                <td title="@title_avt_time_spend">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
+                <td title="@title_abandoned">@Helpers.ToEmptyIfZeroString(overview.Statistics.Abnd)</td>
+                <td title="@title_avg_time_to_win">@Helpers.ToDaysString(overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                <td title="@title_avg_rank">@Math.Round(overview.Statistics.AvgRank, 1)</td>
             </tr>
         </tbody>
     </table>
@@ -127,26 +129,31 @@ else
 }
 
 @code {
-    private static DateOnly firstDay = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
-    private DateOnly from = firstDay;
-    private DateOnly to = firstDay.AddMonths(1).AddDays(-1);
+    private static readonly DateOnly first_day = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private Period period = new Period
+        {
+            From = first_day,
+            To = first_day.AddMonths(1).AddDays(-1)
+        };
+
     private Department department = Department.Any;
     private Position position = Position.Any;
     private Overview? overview;
-    private bool _onlyActive = true;
-    private PeriodicTimer periodicTimer = new(TimeSpan.FromMinutes(10));
+    private bool only_active = true;
+    private PeriodicTimer periodic_timer = new(TimeSpan.FromMinutes(10));
     #region Descriptions
-    private readonly string inWorkTitle = "В работе (есть действия за последние 30 дней)";
-    private readonly string assignTitle = "Назначено";
-    private readonly string wonTitle = "Выиграно";
-    private readonly string lossTitle = "Проиграно";
-    private readonly string convrTitle = "Конверсия";
-    private readonly string abndTitle = "Заброшено (нет действий за последние 30 дней)";
-    private readonly string avgttwTitle = "Среднее время жизни проекта до выигрыша в днях";
-    private readonly string avgttrTitle = "Среднее время реакции пресейла в минутах";
-    private readonly string avgrTitle = "Средний ранг проектов";
-    private readonly string spendSumTitle = "Потрачено времени на проекты, суммарно в часах";
-    private readonly string spendAvgTitle = "Потрачено времени на проекты, в среднем в часах";
+    private string title_in_work => $"В работе (есть действия за {period_name})";
+    private readonly string title_assign = "Назначено";
+    private readonly string title_won = "Выиграно";
+    private readonly string title_loss = "Проиграно";
+    private readonly string title_conversion = "Конверсия";
+    private readonly string title_abandoned = "Заброшено (нет действий за последние 30 дней)";
+    private readonly string title_avg_time_to_win = "Среднее время жизни проекта до выигрыша в днях";
+    private readonly string title_avg_time_to_reaction = "Среднее время реакции пресейла в минутах";
+    private readonly string title_avg_rank = "Средний ранг проектов";
+    private readonly string title_time_spend = "Потрачено времени на проекты, суммарно в часах";
+    private readonly string title_avt_time_spend = "Потрачено времени на проекты, в среднем в часах";
+    private string period_name => period.From >= first_day && period.To <= first_day.AddMonths(1).AddDays(-1) ? Helpers.CurMonthName : "выбранный период";
     #endregion
 
     private string Format(Project project) =>
@@ -154,58 +161,31 @@ else
         $"{Helpers.ToOneDateString(project.ApprovalByTechDirectorAt, project.ApprovalBySalesDirectorAt)}" +
         $"{Helpers.ToDateString(project.PresaleStartAt, " - ")}" +
         $"{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
-    public void Dispose() => periodicTimer?.Dispose();
+
+    public void Dispose() => periodic_timer?.Dispose();
     private async void RunTimer()
     {
-        while (await periodicTimer.WaitForNextTickAsync())
+        while (await periodic_timer.WaitForNextTickAsync())
             await UpdateData();
     }
     private async Task UpdateData()
     {
         overview = await PresalesClient.GetOverviewAsync(new OverviewRequest
             {
-                OnlyActive = _onlyActive,
+                OnlyActive = only_active,
                 Department = department,
                 Position = position,
-                Period = new Period
-                {
-                    From = Timestamp.FromDateTime(from.ToDateTime(new TimeOnly(0, 0, 0)).ToUniversalTime()),
-                    To = Timestamp.FromDateTime(to.ToDateTime(new TimeOnly(23, 59, 59)).ToUniversalTime())
-                }
+                Period = period.Translate()
             });
         StateHasChanged();
     }
 
     protected override void OnInitialized() => RunTimer();
-    private async void OnFromChanged(object? obj)
-    {
-        DateOnly.TryParse(obj?.ToString(), out from);
-        await UpdateData();
-    }
-    private async void OnToChanged(object? obj)
-    {
-        DateOnly.TryParse(obj?.ToString(), out to);
-        await UpdateData();
-    }
-    private async void OnDepartmentChanged(object? obj)
-    {
-        System.Enum.TryParse<Department>(obj?.ToString(), out department);
-        await UpdateData();
-    }
-    private async void OnPositionChanged(object? obj)
-    {
-        System.Enum.TryParse<Position>(obj?.ToString(), out position);
-        await UpdateData();
-    }
+
     private async void OnStatusChanged(object? obj)
     {
-        _onlyActive = obj == null ? _onlyActive : (bool)obj;
+        only_active = obj == null ? only_active : (bool)obj;
         await UpdateData();
     }
     protected override async Task OnInitializedAsync() => await UpdateData();
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        Console.WriteLine(_onlyActive);
-        return base.OnAfterRenderAsync(firstRender);
-    }
 }
