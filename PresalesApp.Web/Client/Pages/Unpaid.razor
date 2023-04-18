@@ -1,0 +1,79 @@
+﻿@page "/unpaid"
+@using PresalesApp.Web.Shared
+@using PresalesApp.Web.Client.Views
+@using PresalesApp.Web.Client.Views.Table
+@using PresalesApp.Web.Client.Views.ComboBox
+@using PresalesApp.Web.Client.Helpers
+@using Google.Protobuf.WellKnownTypes
+@using Period = PresalesApp.Web.Client.Helpers.Period
+@inject PresalesAppApi.PresalesAppApiClient Api
+@inject IJSRuntime js
+
+<PageTitle>Unpaid</PageTitle>
+
+<h1>Unpaid</h1>
+<p>
+    Все проекты, закрытые за период, к которым не привязано ни одного отгруженного счёта.
+</p>
+<p>
+    <ComboBox_PresalesNames
+        OnSelectCallback="(async (string name) => {presale_name = name; await UpdateData();})">
+    </ComboBox_PresalesNames>
+    <DateOnly_Period Period="period"
+        OnPeriodChangedCallback="(async (Period period) => { this.period = period; await UpdateData();})">
+    </DateOnly_Period>
+    <input title="Учитывать счета в основных проектах" type="checkbox"
+        id="lookAtMains" value="@is_main_project_include"
+        @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
+        unchecked class="inline-check" style="cursor: help;" />
+    <button @attributes="downloadBtnAttrs" class="btn btn-primary"
+        @onclick="DownloadFile">Скачать отчёт</button>
+</p>
+
+@if(projects == null) { <p><em>Loading...</em></p>
+}
+else {
+    <Table_Projects Projects="projects.Projects"></Table_Projects>
+}
+
+@code {
+    private UnpaidProjects? projects;
+    private string presale_name = string.Empty;
+    private bool is_main_project_include = false;
+
+    private static readonly DateOnly first_day = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private Period period = new Period
+        {
+            From = first_day,
+            To = first_day.AddMonths(1).AddDays(-1)
+        };
+
+    private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() { { "disabled", "disabled" } };
+
+    protected override async Task OnInitializedAsync() => await UpdateData();
+    private async Task UpdateData()
+    {
+        try
+        {
+            projects = await Api.GetUnpaidProjectsAsync(new UnpaidRequest()
+            {
+                IsMainProjectInclude = is_main_project_include,
+                PresaleName = presale_name,
+                Period = period.Translate()
+            });
+            downloadBtnAttrs = new();
+        }
+        catch
+        {
+            downloadBtnAttrs = new() { { "disabled", "disabled" } };
+        }
+        StateHasChanged();
+    }
+    private async Task DownloadFile() => await projects.Download(js);
+
+    private async void OnModeChanged(object? obj)
+    {
+        is_main_project_include = obj == null ? is_main_project_include : (bool)obj;
+        await UpdateData();
+    }
+}

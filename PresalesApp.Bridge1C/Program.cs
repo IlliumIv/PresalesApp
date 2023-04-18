@@ -1,13 +1,12 @@
-using PresalesApp.Bridge1C.Services;
-using Serilog;
-using Serilog.Templates.Themes;
-using Serilog.Templates;
 using Newtonsoft.Json;
-using PresalesMonitor.Database;
+using PresalesApp.Bridge1C.Controllers;
+using PresalesApp.Database;
+using PresalesApp.Database.Entities;
+using PresalesApp.Database.Entities.Updates;
+using Serilog;
+using Serilog.Templates;
+using Serilog.Templates.Themes;
 using System.Reflection;
-using PresalesMonitor.Database.Entities;
-using PresalesApp.Bridge1C.Workers;
-using PresalesMonitor.Database.Entities.Updates;
 
 namespace PresalesApp.Bridge1C
 {
@@ -27,7 +26,7 @@ namespace PresalesApp.Bridge1C
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId() // Serilog.Enrichers.Thread
                 .Enrich.WithProcessId() // Serilog.Enrichers.Process
-                // .Enrich.WithMachineName() // Serilog.Enrichers.Environment
+                                        // .Enrich.WithMachineName() // Serilog.Enrichers.Environment
                 .Destructure.ToMaximumDepth(4)
                 .Destructure.ToMaximumStringLength(100)
                 .Destructure.ToMaximumCollectionCount(10)
@@ -60,10 +59,10 @@ namespace PresalesApp.Bridge1C
             };
             #endregion
 
-            Controller.Start(Log.Logger);
-            UpdatePuller.Start<Project>(TimeSpan.Zero);
-            UpdatePuller.Start<CacheLog>(TimeSpan.FromSeconds(5));
-            UpdatePuller.Start<Invoice>(TimeSpan.FromSeconds(10));
+            DbController.Start(Log.Logger);
+            BridgeController.Start<Project>(TimeSpan.Zero);
+            BridgeController.Start<CacheLog>(TimeSpan.FromSeconds(5));
+            BridgeController.Start<Invoice>(TimeSpan.FromSeconds(10));
 
             #region Web App configuration and run
             var builder = WebApplication.CreateBuilder(args);
@@ -94,7 +93,7 @@ namespace PresalesApp.Bridge1C
             app.UseGrpcWeb();
 
             // Configure the HTTP request pipeline.
-            app.MapGrpcService<GreeterService>().EnableGrpcWeb()
+            app.MapGrpcService<ApiController>().EnableGrpcWeb()
                 .RequireCors("CORS Allow-All"); // HTTP 405
 
             app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");

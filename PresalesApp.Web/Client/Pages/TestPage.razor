@@ -1,0 +1,33 @@
+﻿@page "/testpage"
+@using PresalesApp.Bridge1C
+@inject PresalesAppBridge1CApi.PresalesAppBridge1CApiClient BridgeApi
+@inject IJSRuntime js
+
+<div>
+    <button class="btn btn-primary" @onclick="DoSomething">Say Hello</button>
+    @if (reply != null)
+    {
+        <p>@reply?.Message</p>
+    }
+
+    <div>
+        <canvas id="@canvas_id"></canvas>
+    </div>
+</div>
+
+@code {
+    private HelloReply? reply;
+    private readonly string canvas_id = "chart";
+
+    private async Task UpdateData()
+    {
+        reply = await BridgeApi.SayHelloAsync(
+            request: new HelloRequest() { Name = "Иван" });
+
+        await js.InvokeAsync<object>("GenerateExampleChart", canvas_id);
+        StateHasChanged();
+    }
+
+    private async void DoSomething() => await UpdateData();
+    
+}
