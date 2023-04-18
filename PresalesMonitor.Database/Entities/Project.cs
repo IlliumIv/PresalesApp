@@ -58,21 +58,7 @@ namespace PresalesMonitor.Database.Entities
 
         public Project(string number) => this.Number = number;
 
-        public override void Save()
-        {
-            var query = new Task(() =>
-            {
-                using var _dbContext = new ReadWriteContext();
-                if (!this.TryUpdate(_dbContext)) this.Add(_dbContext);
-                _dbContext.SaveChanges();
-                _dbContext.Dispose();
-            });
-
-            Queries.Enqueue(query);
-            query.Wait();
-        }
-
-        internal override Project Add(ReadWriteContext dbContext)
+        internal override Project GetOrAddIfNotExist(ReadWriteContext dbContext)
         {
             var project_in_db = dbContext.Projects.Where(p => p.Number == this.Number)
                 .Include(p => p.PresaleActions).SingleOrDefault();
@@ -86,10 +72,10 @@ namespace PresalesMonitor.Database.Entities
             else return project_in_db;
         }
 
-        internal override bool TryUpdate(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
         {
-            this.Presale = this.Presale?.Add(dbContext);
-            this.MainProject = this.MainProject?.Add(dbContext);
+            this.Presale = this.Presale?.GetOrAddIfNotExist(dbContext);
+            this.MainProject = this.MainProject?.GetOrAddIfNotExist(dbContext);
 
             var project_in_db = dbContext.Projects.Where(p => p.Number == this.Number)
                 .Include(p => p.PresaleActions).SingleOrDefault();
@@ -112,8 +98,7 @@ namespace PresalesMonitor.Database.Entities
             return project_in_db != null;
         }
 
-        public override string ToString() => "{" +
-            $"\"Код\":\"{this.Number}\"," +
+        public override string ToString() => $"{{\"Код\":\"{this.Number}\"," +
             $"\"Наименование\":\"{this.Name}\"," +
             $"\"Потенциал\":\"{this.PotentialAmount}\"," +
             $"\"Статус\":\"{this.Status}\"," +
@@ -125,8 +110,7 @@ namespace PresalesMonitor.Database.Entities
             $"\"ДатаНачалаРаботыПресейла\":\"{this.PresaleStartAt.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
             $"\"ДействияПресейла\":\"{this.PresaleActions?.Count ?? 0}\"," +
             $"\"Пресейл\":\"{this.Presale?.Name}\"," +
-            $"\"ОсновнойПроект\":\"{this.MainProject?.Number}\"" +
-            "}";
+            $"\"ОсновнойПроект\":\"{this.MainProject?.Number}\"}}";
 
         public bool IsOverdue(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {

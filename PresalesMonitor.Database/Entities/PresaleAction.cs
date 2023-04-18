@@ -53,27 +53,20 @@ namespace PresalesMonitor.Database.Entities
             };
         }
 
-        public override string ToString() => "{" +
-            $"\"НомерСтроки\":\"{this.Number}\"," +
+        public override string ToString() => $"{{\"НомерСтроки\":\"{this.Number}\"," +
             $"\"Дата\":\"{this.Date.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
             $"\"ТипЗадачи\":\"{this.Type}\"," +
             $"\"ВремяВыполнения\":\"{this.TimeSpend}\"," +
             $"\"Воронка\":\"{this.SalesFunnel}\"," +
             $"\"Описание\":\"{this.Description}\"," +
-            $"\"Проект\":\"{this.Project?.Number}\"," +
-            "}";
+            $"\"Проект\":\"{this.Project?.Number}\"}}";
 
-        public override void Save()
+        internal override bool TryUpdateIfExist(Controller.ReadWriteContext dbContext)
         {
             throw new NotImplementedException();
         }
 
-        internal override bool TryUpdate(Controller.ReadWriteContext dbContext)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override PresaleAction Add(Controller.ReadWriteContext dbContext)
+        internal override PresaleAction GetOrAddIfNotExist(Controller.ReadWriteContext dbContext)
         {
             throw new NotImplementedException();
         }

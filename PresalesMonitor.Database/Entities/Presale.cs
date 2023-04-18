@@ -21,21 +21,7 @@ namespace PresalesMonitor.Database.Entities
 
         public Presale(string name) => this.Name = name;
 
-        public override void Save()
-        {
-            var query = new Task(() =>
-            {
-                using var _dbContext = new ReadWriteContext();
-                if (!this.TryUpdate(_dbContext)) this.Add(_dbContext);
-                _dbContext.SaveChanges();
-                _dbContext.Dispose();
-            });
-
-            Queries.Enqueue(query);
-            query.Wait();
-        }
-
-        internal override bool TryUpdate(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
         {
             var presale_in_db = dbContext.Presales.Where(p => p.Name == this.Name).SingleOrDefault();
             if (presale_in_db != null)
@@ -48,7 +34,7 @@ namespace PresalesMonitor.Database.Entities
             return presale_in_db != null;
         }
 
-        internal override Presale Add(ReadWriteContext dbContext)
+        internal override Presale GetOrAddIfNotExist(ReadWriteContext dbContext)
         {
             var presale_in_db = dbContext.Presales.Where(p => p.Name == this.Name).SingleOrDefault();
             if (presale_in_db == null)
@@ -61,14 +47,12 @@ namespace PresalesMonitor.Database.Entities
             return presale_in_db;
         }
 
-        public override string ToString() => "{" +
-            $"\"Имя\":\"{this.Name}\"," +
+        public override string ToString() => $"{{\"Имя\":\"{this.Name}\"," +
             $"\"Направление\":\"{this.Department}\"," +
             $"\"Должность\":\"{this.Position}\"," +
             $"\"Действующий\":\"{this.IsActive}\"," +
             $"\"Проекты\":\"{this.Projects?.Count}\"," +
-            $"\"Счета\":\"{this.Invoices?.Count}\"," +
-            "}";
+            $"\"Счета\":\"{this.Invoices?.Count}\"}}";
 
         public int CountProjectsAssigned() => this.Projects?.Count ?? 0;
 
@@ -144,14 +128,10 @@ namespace PresalesMonitor.Database.Entities
             .Where(p => p.Status == status)
             .Sum(p => p.PotentialAmount) ?? 0;
 
-        public double AverageRang() => this.Projects?.Where(p => p.Name != string.Empty)?
-            .DefaultIfEmpty()
-            .Average(p => p?.Rank() ?? 0) ?? 0;
+        public double AverageRank() => this.Projects?.DefaultIfEmpty().Average(p => p?.Rank() ?? 0) ?? 0;
 
-        public double AverageRangByStatus(ProjectStatus status) => this.Projects?.Where(p => p.Name != string.Empty)?
-            .Where(p => p.Status == status)?
-            .DefaultIfEmpty()
-            .Average(p => p?.Rank() ?? 0) ?? 0;
+        public double AverageRankByStatus(ProjectStatus status) => this.Projects?.Where(p => p.Status == status)?
+            .DefaultIfEmpty().Average(p => p?.Rank() ?? 0) ?? 0;
 
         public decimal AveragePotentialByStatus(ProjectStatus status) => this.Projects?.Where(p => p.Status == status)?
             .DefaultIfEmpty()

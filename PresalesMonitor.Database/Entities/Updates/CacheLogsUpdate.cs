@@ -4,21 +4,7 @@ namespace PresalesMonitor.Database.Entities.Updates
 {
     public class CacheLogsUpdate : Update
     {
-        public override void Save()
-        {
-            var query = new Task(() =>
-            {
-                using var _dbContext = new ReadWriteContext();
-                if (!this.TryUpdate(_dbContext)) this.Add(_dbContext);
-                _dbContext.SaveChanges();
-                _dbContext.Dispose();
-            });
-
-            Queries.Enqueue(query);
-            query.Wait();
-        }
-
-        internal override bool TryUpdate(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
         {
             var update_in_db = dbContext.CacheLogsUpdates.SingleOrDefault();
             if (update_in_db != null)
@@ -31,7 +17,7 @@ namespace PresalesMonitor.Database.Entities.Updates
             return update_in_db != null;
         }
 
-        internal override CacheLogsUpdate Add(ReadWriteContext dbContext)
+        internal override CacheLogsUpdate GetOrAddIfNotExist(ReadWriteContext dbContext)
         {
             var update_in_db = dbContext.CacheLogsUpdates.SingleOrDefault();
             if (update_in_db == null)
@@ -43,11 +29,6 @@ namespace PresalesMonitor.Database.Entities.Updates
 
             return update_in_db;
         }
-
-        public override string ToString() =>"{" +
-            $"\"ДатаРасчета\":\"{this.Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
-            $"\"СинхронизированоПо\":\"{this.SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"" +
-            "}";
 
         public override CacheLogsUpdate GetPrevious()
         {
