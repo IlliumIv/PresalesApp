@@ -7,15 +7,27 @@ namespace PresalesMonitor.Database
     {
         public int Id { get; set; }
 
-        public abstract void Save();
+        public virtual void Save()
+        {
+            var query = new Task(() =>
+            {
+                using var _dbContext = new ReadWriteContext();
+                if (!this.TryUpdateIfExist(_dbContext)) this.GetOrAddIfNotExist(_dbContext);
+                _dbContext.SaveChanges();
+                _dbContext.Dispose();
+            });
 
-        internal abstract bool TryUpdate(ReadWriteContext dbContext);
+            Queries.Enqueue(query);
+            query.Wait();
+        }
 
-        internal abstract Entity Add(ReadWriteContext dbContext);
+        internal abstract bool TryUpdateIfExist(ReadWriteContext dbContext);
+
+        internal abstract Entity GetOrAddIfNotExist(ReadWriteContext dbContext);
 
         public abstract override string ToString();
 
-        public void ToLog(bool isNew) => new Task(() =>
+        public virtual void ToLog(bool isNew) => new Task(() =>
         {
             Log.Debug("{0}: {1}", isNew switch { true => "Add", false => "Update" }, this);
         }).Start();

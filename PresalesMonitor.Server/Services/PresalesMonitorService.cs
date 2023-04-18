@@ -154,16 +154,12 @@ namespace PresalesMonitor.Server.Services
                     && ((department == Shared.Department.Any && p.Department != Department.None)
                     || (department != Shared.Department.Any && p.Department == department.Translate())))
 #pragma warning disable CS8604 // Possible null reference argument.
-                .Include(p => p.Projects.Where(p => p.PresaleActions != null)).ThenInclude(p => p.PresaleActions)
+                .Include(p => p.Projects.Where(p => p != null)).ThenInclude(p => p.PresaleActions)
+                .Include(p => p.Invoices.Where(i => (i.Date >= from && i.Date <= to)
+                    || (i.LastPayAt >= from && i.LastPayAt <= to)
+                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))).ThenInclude(i => i.ProfitPeriods)
 #pragma warning restore CS8604 // Possible null reference argument.
                 .ToList();
-
-            _ = db.Invoices
-                .Where(i => (i.Date >= from && i.Date <= to)
-                    || (i.LastPayAt >= from && i.LastPayAt <= to)
-                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
-                .Include(i => i.Presale)
-                .Include(i => i.ProfitPeriods).ToList();
 
             List<Database.Entities.Project> projects = new();
             foreach (var presale in presales)
@@ -237,7 +233,7 @@ namespace PresalesMonitor.Server.Services
                         AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
                         #endregion
                         #region Средний ранг проектов
-                        AvgRank = presale.AverageRang(),
+                        AvgRank = presale.AverageRank(),
                         #endregion
                         #region Количество "брошенных" проектов
                         Abnd = presale.CountProjectsAbandoned(DateTime.UtcNow, 30),
@@ -323,7 +319,7 @@ namespace PresalesMonitor.Server.Services
                 AvgRank = presales?.Where(p => p.Position == Position.Engineer
                              || p.Position == Position.Account)?
                     .DefaultIfEmpty()
-                    .Average(p => p?.AverageRang() ?? 0) ?? 0,
+                    .Average(p => p?.AverageRank() ?? 0) ?? 0,
                 #endregion
                 #region Количество "брошенных" проектов
                 Abnd = presales?.Where(p => p.Position == Position.Engineer

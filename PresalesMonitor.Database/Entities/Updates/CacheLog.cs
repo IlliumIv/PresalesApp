@@ -29,21 +29,7 @@ namespace PresalesMonitor.Database.Entities.Updates
             this.PeriodEnd = synchronizedTo.ToUniversalTime();
         }
 
-        public override void Save()
-        {
-            var query = new Task(() =>
-            {
-                using var _dbContext = new ReadWriteContext();
-                if (!this.TryUpdate(_dbContext)) this.Add(_dbContext);
-                _dbContext.SaveChanges();
-                _dbContext.Dispose();
-            });
-
-            Queries.Enqueue(query);
-            query.Wait();
-        }
-
-        internal override bool TryUpdate(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
         {
             var cache_log_in_db = dbContext.CacheLogsHistory
                 .Where(i => i.PeriodBegin == this.PeriodBegin && i.PeriodEnd == this.PeriodEnd).SingleOrDefault();
@@ -57,7 +43,7 @@ namespace PresalesMonitor.Database.Entities.Updates
             return cache_log_in_db != null;
         }
 
-        internal override CacheLog Add(ReadWriteContext dbContext)
+        internal override CacheLog GetOrAddIfNotExist(ReadWriteContext dbContext)
         {
             var cache_log_in_db = dbContext.CacheLogsHistory
                 .Where(i => i.PeriodBegin == this.PeriodBegin && i.PeriodEnd == this.PeriodEnd).SingleOrDefault();
@@ -72,12 +58,11 @@ namespace PresalesMonitor.Database.Entities.Updates
             return cache_log_in_db;
         }
 
-        public override string ToString() => "{" +
-            $"\"НачалоПериода\":\"{this.PeriodBegin.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
+        public override string ToString() =>
+            $"{{\"НачалоПериода\":\"{this.PeriodBegin.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
             $"\"КонецПериода\":\"{this.PeriodEnd.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
             $"\"ДатаРасчета\":\"{this.Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
-            $"\"СинхронизированоПо\":\"{this.SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"" +
-            "}";
+            $"\"СинхронизированоПо\":\"{this.SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
 
         public override CacheLog GetPrevious()
         {

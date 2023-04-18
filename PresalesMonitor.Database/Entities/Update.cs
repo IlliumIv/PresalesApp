@@ -23,5 +23,9 @@ namespace PresalesMonitor.Database.Entities
         protected Update() { }
 
         public abstract Update GetPrevious();
+
+        public override string ToString() =>
+            $"{{\"ДатаРасчета\":\"{this.Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
+            $"\"СинхронизированоПо\":\"{this.SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
     }
 }
