@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
 using System;
+using PresalesApp.Bridge1C;
 
 namespace PresalesMonitor.Client.Web
 {
@@ -27,6 +28,14 @@ namespace PresalesMonitor.Client.Web
                 var baseUri = services.GetRequiredService<NavigationManager>().BaseUri;
                 var channel = GrpcChannel.ForAddress(baseUri, new GrpcChannelOptions { HttpClient = httpClient });
                 return new Presales.PresalesClient(channel);
+            });
+
+            builder.Services.AddSingleton(services =>
+            {
+                var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
+                // var baseUri = services.GetRequiredService<NavigationManager>().BaseUri;
+                var channel = GrpcChannel.ForAddress("https://localhost:33443", new GrpcChannelOptions { HttpClient = httpClient });
+                return new Greeter.GreeterClient(channel);
             });
 
             await builder.Build().RunAsync();
