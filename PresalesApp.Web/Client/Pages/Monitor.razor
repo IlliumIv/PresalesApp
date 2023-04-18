@@ -1,0 +1,191 @@
+﻿@page "/monitor"
+@using PresalesApp.Web.Client.Helpers
+@using PresalesApp.Web.Client.Views
+@using PresalesApp.Web.Client.Views.ComboBox
+@using PresalesApp.Web.Shared
+@using Google.Protobuf.Collections
+@using Google.Protobuf.WellKnownTypes
+@using Department = PresalesApp.Web.Shared.Department
+@using Position = PresalesApp.Web.Shared.Position
+@using System.Threading
+@using Period = PresalesApp.Web.Client.Helpers.Period
+@inject PresalesAppApi.PresalesAppApiClient Api
+
+<PageTitle>Presales Monitor</PageTitle>
+
+<h1>Presales Monitor</h1>
+
+<p>
+    <DateOnly_Period Period="period"
+        OnPeriodChangedCallback="(async (Period period) => {this.period = period; await UpdateData();})">
+    </DateOnly_Period>
+    <ComboBox_Departments
+        OnSelectCallback="(async (Department department) => {this.department = department; await UpdateData();})">
+    </ComboBox_Departments>
+    <ComboBox_Positions
+        OnSelectCallback="(async (Position position) => {this.position = position; await UpdateData();})">
+    </ComboBox_Positions>
+    <input title="Только действующие" type="checkbox" id="onlyActive" value="@only_active"
+        @onchange="((ChangeEventArgs e) => OnStatusChanged(e?.Value))"
+        checked class="inline-check inline-check-big" style="cursor: help;" />
+</p>
+
+@if (overview == null)
+    { <p><em>Loading...</em></p> }
+else
+{
+    <table class="table">
+        <thead class="pmthead">
+            <tr>
+                <th rowspan="2" style="width:11%">Пресейл</th>
+                <th colspan="10">@Helpers.ToUpperFirstLetterString(period_name)</th>
+                <th rowspan="2" style="width:5%" title="@title_abandoned">Abnd</th>
+                <th rowspan="2" style="width:6%" title="@title_avg_time_to_win">AvgTTW</th>
+                <th rowspan="2" style="width:5%" title="@title_avg_rank">AvgR</th>
+                <th colspan="2">Дефицит</th>
+            </tr>
+            <tr>
+                <th style="width:5%" title="@title_in_work">InWork</th>
+                <th style="width:5%" title="@title_assign">Assign</th>
+                <th style="width:5%" title="@title_won">Won</th>
+                <th style="width:5%" title="@title_conversion">Convr</th>
+                <th style="width:5%" title="@title_loss">Loss</th>
+                <th style="width:11%">Потенциал</th>
+                <th style="width:10%">Чистые</th>
+                <th style="width:6%" title="@title_avg_time_to_reaction">AvgTTR</th>
+                <th style="width:4%" title="@title_time_spend">Sum</th>
+                <th style="width:4%" title="@title_avt_time_spend">Avg</th>
+                <th style="width:3%">шт.</th>
+                <th style="width:10%">руб.</th>
+            </tr>
+        </thead>
+        <tbody class="pmtbody">
+            @foreach (var presale in overview.Presales)
+            {
+                <tr>
+                    <td>@presale.Name</td>
+                    <td title="@title_in_work">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
+                    <td title="@title_assign">@Helpers.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
+                    <td title="@title_won">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
+                    <td title="@title_conversion">@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
+                    <td title="@title_loss">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential, "ru-RU")</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit, "ru-RU")</td>
+                    <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                    <td title="@title_time_spend">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
+                    <td title="@title_avt_time_spend">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
+                    <td title="@title_abandoned">@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
+                    <td title="@title_avg_time_to_win">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                    <td title="@title_avg_rank">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
+                    <td>@Helpers.ToEmptyIfZeroString(presale.DeficitProjects)</td>
+                    <td>@Helpers.ToCurrencyString(presale.DeficitPotential, "ru-RU")</td>
+                </tr>
+            }
+            <tr>
+                <td>Всего</td>
+                <td title="@title_in_work">@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
+                <td title="@title_assign">@Helpers.ToEmptyIfZeroString(overview.Statistics.Assign)</td>
+                <td title="@title_won">@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
+                <td title="@title_conversion">@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
+                <td title="@title_loss">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential, "ru-RU")</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit, "ru-RU")</td>
+                <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                <td title="@title_time_spend">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
+                <td title="@title_avt_time_spend">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
+                <td title="@title_abandoned">@Helpers.ToEmptyIfZeroString(overview.Statistics.Abnd)</td>
+                <td title="@title_avg_time_to_win">@Helpers.ToDaysString(overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                <td title="@title_avg_rank">@Math.Round(overview.Statistics.AvgRank, 1)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    @if (overview.AvgDirectorTimeToReaction.Seconds > 0)
+        { <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helpers.ToMinutesString(overview.AvgDirectorTimeToReaction.ToTimeSpan())</p> }
+    @if (overview.Escalations.Count > 0)
+    {
+        <details class="pmspoiler">
+            <summary>Проекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): @overview.Escalations.Count</summary>
+            @foreach (var project in overview.Escalations)
+                { <p>@Format(project)</p> }
+        </details>
+    }
+    @if (overview.Forgotten.Count > 0)
+    {
+        <details class="pmspoiler">
+            <summary>Проекты без отметки начала работы пресейлом (забытые): @overview.Forgotten.Count</summary>
+            @foreach (var project in overview.Forgotten)
+                { <p>@Format(project)</p> }
+        </details>
+    }
+    @if (overview.New.Count > 0)
+    {
+        <details class="pmspoiler">
+            <summary>Новые проекты (ожидают распределения): @overview.New.Count</summary>
+            @foreach (var project in overview.New)
+                { <p>@Format(project)</p> }
+        </details>
+    }
+}
+
+@code {
+    private static readonly DateOnly first_day = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private Period period = new Period
+        {
+            From = first_day,
+            To = first_day.AddMonths(1).AddDays(-1)
+        };
+
+    private Department department = Department.Any;
+    private Position position = Position.Any;
+    private Overview? overview;
+    private bool only_active = true;
+    private PeriodicTimer periodic_timer = new(TimeSpan.FromMinutes(10));
+    #region Descriptions
+    private string title_in_work => $"В работе (есть действия за {period_name})";
+    private readonly string title_assign = "Назначено";
+    private readonly string title_won = "Выиграно";
+    private readonly string title_loss = "Проиграно";
+    private readonly string title_conversion = "Конверсия";
+    private readonly string title_abandoned = "Заброшено (нет действий за последние 30 дней)";
+    private readonly string title_avg_time_to_win = "Среднее время жизни проекта до выигрыша в днях";
+    private readonly string title_avg_time_to_reaction = "Среднее время реакции пресейла в минутах";
+    private readonly string title_avg_rank = "Средний ранг проектов";
+    private readonly string title_time_spend = "Потрачено времени на проекты, суммарно в часах";
+    private readonly string title_avt_time_spend = "Потрачено времени на проекты, в среднем в часах";
+    private string period_name => period.From >= first_day && period.To <= first_day.AddMonths(1).AddDays(-1) ? Helpers.CurMonthName : "выбранный период";
+    #endregion
+
+    private string Format(Project project) =>
+        $"{project.Number}, {project.Name}, " +
+        $"{Helpers.ToOneDateString(project.ApprovalByTechDirectorAt, project.ApprovalBySalesDirectorAt)}" +
+        $"{Helpers.ToDateString(project.PresaleStartAt, " - ")}" +
+        $"{(string.IsNullOrEmpty(project.PresaleName) ? "" : $", {project.PresaleName}")}";
+
+    public void Dispose() => periodic_timer?.Dispose();
+    private async void RunTimer()
+    {
+        while (await periodic_timer.WaitForNextTickAsync())
+            await UpdateData();
+    }
+    private async Task UpdateData()
+    {
+        overview = await Api.GetOverviewAsync(new OverviewRequest
+            {
+                OnlyActive = only_active,
+                Department = department,
+                Position = position,
+                Period = period.Translate()
+            });
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized() => RunTimer();
+
+    private async void OnStatusChanged(object? obj)
+    {
+        only_active = obj == null ? only_active : (bool)obj;
+        await UpdateData();
+    }
+    protected override async Task OnInitializedAsync() => await UpdateData();
+}
