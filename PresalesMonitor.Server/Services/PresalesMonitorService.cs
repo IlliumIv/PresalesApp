@@ -1,17 +1,17 @@
 ﻿using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
 using PresalesMonitor.Shared;
-using PresalesMonitor.Entities;
-using Microsoft.EntityFrameworkCore;
 using PresalesMonitor.Shared.CustomTypes;
 using System.Security.Authentication;
 using Newtonsoft.Json;
-using Department = PresalesMonitor.Entities.Enums.Department;
-using Position = PresalesMonitor.Entities.Enums.Position;
-using ProjectStatus = PresalesMonitor.Entities.Enums.ProjectStatus;
-using ActionType = PresalesMonitor.Entities.Enums.ActionType;
+using Department = PresalesMonitor.Database.Enums.Department;
+using Position = PresalesMonitor.Database.Enums.Position;
+using ProjectStatus = PresalesMonitor.Database.Enums.ProjectStatus;
+using ActionType = PresalesMonitor.Database.Enums.ActionType;
 using Enum = System.Enum;
-using Microsoft.Extensions.Hosting;
+using PresalesMonitor.Database.Entities;
+using PresalesMonitor.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace PresalesMonitor.Server.Services
 {
@@ -49,7 +49,7 @@ namespace PresalesMonitor.Server.Services
         };
         public override Task<KpiResponse> GetKpi(KpiRequest request, ServerCallContext context)
         {
-            using var db = new DbController.Context();
+            using var db = new Controller.ReadOnlyContext();
             var presale = db.Presales.SingleOrDefault(p => p.Name == request.PresaleName);
 
             if (presale == null)
@@ -73,11 +73,11 @@ namespace PresalesMonitor.Server.Services
                 .FirstOrDefault();
 #pragma warning restore CS8604 // Possible null reference argument.
 
-            HashSet<Entities.Project> projects = new();
+            HashSet<Database.Entities.Project> projects = new();
             RecurseLoad(presale.Projects?.ToList(), db, ref projects);
 
-            HashSet<Entities.Invoice>? invoices = new();
-            presale.SumProfit(from, to, ref invoices);
+            // HashSet<Database.Entities.Invoice>? invoices = new();
+            presale.SumProfit(from, to, out var invoices);
 
             if (invoices == null || !invoices.Any())
                 return Task.FromResult(new KpiResponse());
@@ -87,7 +87,7 @@ namespace PresalesMonitor.Server.Services
             foreach(var invoice in invoices.OrderBy(i => (int)i.Counterpart[0]).ThenBy(i => i.Counterpart).ThenBy(i => i.Number))
             {
                 HashSet<PresaleAction> actionsIgnored = new(), actionsTallied = new();
-                HashSet<Entities.Project> projectsIgnored = new(), projectsFound = new();
+                HashSet<Database.Entities.Project> projectsIgnored = new(), projectsFound = new();
 
                 var percent = invoice.Project?.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound) switch
                 {
@@ -112,20 +112,21 @@ namespace PresalesMonitor.Server.Services
                 foreach (var inv in projectsFound.OrderBy(p => p.Number))
                     invoiceReply.ProjectsFound.Add(inv.Translate());
 
-                foreach (var action in actionsIgnored.OrderBy(a => a.Project.Number).ThenBy(a => a.Number))
+                foreach (var action in actionsIgnored.OrderBy(a => a.Project?.Number).ThenBy(a => a.Number))
                     invoiceReply.ActionsIgnored.Add(action.Translate());
 
-                foreach (var action in actionsTallied.OrderBy(a => a.Project.Number).ThenBy(a => a.Number))
+                foreach (var action in actionsTallied.OrderBy(a => a.Project?.Number).ThenBy(a => a.Number))
                     invoiceReply.ActionsTallied.Add(action.Translate());
 
                 reply.Invoices.Add(invoiceReply);
             }
 
+            db.Dispose();
             return Task.FromResult(new KpiResponse { Kpi = reply });
         }
         public override Task<NamesResponse> GetNames(Empty request, ServerCallContext context)
         {
-            using var db = new DbController.Context();
+            using var db = new Controller.ReadOnlyContext();
             var presalesNames = db.Presales
                 .Where(p => p.Department != Department.None)
                 .Where(p => p.Position != Position.None && p.Position != Position.Director)
@@ -135,6 +136,7 @@ namespace PresalesMonitor.Server.Services
             var reply = new NamesResponse();
             foreach (var name in presalesNames) reply.Names.Add(name);
 
+            db.Dispose();
             return Task.FromResult(reply);
         }
         public override Task<Overview> GetOverview(OverviewRequest request, ServerCallContext context)
@@ -145,13 +147,15 @@ namespace PresalesMonitor.Server.Services
             var department = request?.Department ?? Shared.Department.Any;
             var onlyActive = request?.OnlyActive ?? false;
 
-            using var db = new DbController.Context();
+            using var db = new Controller.ReadOnlyContext();
             var presales = db.Presales
                 .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
                     || (position != Shared.Position.Any && p.Position == position.Translate()))
                     && ((department == Shared.Department.Any && p.Department != Department.None)
                     || (department != Shared.Department.Any && p.Department == department.Translate())))
-                .Include(p => p.Projects.Where(p => p.Actions != null)).ThenInclude(p => p.Actions)
+#pragma warning disable CS8604 // Possible null reference argument.
+                .Include(p => p.Projects.Where(p => p.PresaleActions != null)).ThenInclude(p => p.PresaleActions)
+#pragma warning restore CS8604 // Possible null reference argument.
                 .ToList();
 
             _ = db.Invoices
@@ -161,7 +165,7 @@ namespace PresalesMonitor.Server.Services
                 .Include(i => i.Presale)
                 .Include(i => i.ProfitPeriods).ToList();
 
-            List<Entities.Project> projects = new();
+            List<Database.Entities.Project> projects = new();
             foreach (var presale in presales)
                 if (presale.Projects != null)
                     projects.AddRange(presale.Projects);
@@ -354,6 +358,7 @@ namespace PresalesMonitor.Server.Services
             #endregion
             #endregion
 
+            db.Dispose();
             return Task.FromResult(reply);
         }
         public override Task<ImageResponse> GetImage(ImageRequest request, ServerCallContext context)
@@ -414,7 +419,7 @@ namespace PresalesMonitor.Server.Services
             var department = request?.Department ?? Shared.Department.Any;
             var onlyActive = request?.OnlyActive ?? false;
 
-            using var db = new DbController.Context();
+            using var db = new Controller.ReadOnlyContext();
             var presales = db.Presales?
                 .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
                     || (position != Shared.Position.Any && p.Position == position.Translate()))
@@ -453,6 +458,7 @@ namespace PresalesMonitor.Server.Services
             reply.Left = plan - profit > 0 ? plan - profit : 0;
             reply.DeltaDay = profit - profitPrevDay > 0 ? profit - profitPrevDay : 0;
 
+            db.Dispose();
             return Task.FromResult(reply);
         }
         public override Task<SalesOverview> GetSalesOverview(SalesOverviewRequest request, ServerCallContext context)
@@ -477,12 +483,15 @@ namespace PresalesMonitor.Server.Services
             var response = JsonConvert.DeserializeObject<dynamic>(cachedOverview);
             var reply = new SalesOverview();
 
-            foreach (var manager in response.Топ)
-                reply.CurrentTopSalesManagers.Add(new Manager { Name = string.Join(" ", ((string)manager.Имя).Split().Take(2)), Profit = (decimal)manager.Сумма });
+            if (response != null)
+            {
+                foreach (var manager in response.Топ)
+                    reply.CurrentTopSalesManagers.Add(new Manager { Name = string.Join(" ", ((string)manager.Имя).Split().Take(2)), Profit = (decimal)manager.Сумма });
 
-            reply.PreviousActualProfit = response.Факт1 is null ? 0 : (decimal)response.Факт1;
-            reply.CurrentActualProfit = response.Факт2 is null ? 0 : (decimal)response.Факт2;
-            reply.CurrentSalesTarget = response.План2 is null ? 0 : (decimal)response.План2;
+                reply.PreviousActualProfit = response.Факт1 is null ? 0 : (decimal)response.Факт1;
+                reply.CurrentActualProfit = response.Факт2 is null ? 0 : (decimal)response.Факт2;
+                reply.CurrentSalesTarget = response.План2 is null ? 0 : (decimal)response.План2;
+            }
 
             return Task.FromResult(reply);
         }
@@ -493,17 +502,18 @@ namespace PresalesMonitor.Server.Services
             var is_main_project_include = request?.IsMainProjectInclude ?? false;
             var presale_name = request?.PresaleName ?? string.Empty;
 
-            using var db = new DbController.Context();
+            using var db = new Controller.ReadOnlyContext();
 
-            List<Entities.Presale>? presales;
+            List<Database.Entities.Presale>? presales;
 
             if (is_main_project_include)
+#pragma warning disable CS8604 // Possible null reference argument.
                 presales = db.Presales
                     .Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true)
                     .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
                                                         && p.ClosedAt >= from && p.ClosedAt <= to
                                                         && !p.Invoices.Any(i => i.ProfitPeriods.Any())
-                                                        && !p.MainProject.Invoices.Any(i => i.ProfitPeriods.Any())
+                                                        && p.MainProject != null && !p.MainProject.Invoices.Any(i => i.ProfitPeriods.Any())
                     )).ToList();
             else
                 presales = db.Presales
@@ -512,42 +522,42 @@ namespace PresalesMonitor.Server.Services
                                                         && p.ClosedAt >= from && p.ClosedAt <= to
                                                         && !p.Invoices.Any(i => i.ProfitPeriods.Any())
                     )).ToList();
+#pragma warning restore CS8604 // Possible null reference argument.
 
-            // Все оплаченные проекты (для проекта есть хотя бы один счёт, в котором есть отгрузка хотя бы в одном любом месяце)
-            // .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
-            //                                     && p.ClosedAt >= from && p.ClosedAt <= to
-            //                                     && p.Invoices.Any(i => i.ProfitPeriods.Any()))).ThenInclude(p => p.Invoices).ThenInclude(i => i.ProfitPeriods)
             var reply = new UnpaidProjects();
 
             foreach(var presale in presales)
+#pragma warning disable CS8604 // Possible null reference argument.
                 foreach (var project in presale.Projects.OrderBy(p => p.ClosedAt).ThenBy(p => p.Number))
+#pragma warning restore CS8604 // Possible null reference argument.
                     reply.Projects.Add(project.Translate());
 
+            db.Dispose();
             return Task.FromResult(reply);
         }
-        private void RecurseLoad(List<Entities.Project>? projects, DbController.Context db, ref HashSet<Entities.Project> projectsViewed)
+        private void RecurseLoad(List<Database.Entities.Project>? projects, Controller.ReadOnlyContext db, ref HashSet<Database.Entities.Project> projects_viewed)
         {
             if (projects == null || projects.Count == 0) return;
             foreach (var project in projects)
             {
                 if (project == null) continue;
-                if (projectsViewed.Contains(project)) continue;
-                else projectsViewed.Add(project);
+                if (projects_viewed.Contains(project)) continue;
+                else projects_viewed.Add(project);
 
-                var some = db.Actions?.Where(a => a.Project.Number == project.Number)?.ToList();
+                var some = db.PresaleActions?.Where(a => a.Project != null && a.Project.Number == project.Number)?.ToList();
 
                 var prj = db.Projects?.Where(p => p.Number == project.Number)?.Include(p => p.MainProject).FirstOrDefault();
                 if (prj?.MainProject?.Number != null)
                 {
-                    var mainPrjs = db.Projects?.Where(p => p.Number == prj.MainProject.Number)?.ToList();
-                    RecurseLoad(mainPrjs, db, ref projectsViewed);
+                    var main_projects = db.Projects?.Where(p => p.Number == prj.MainProject.Number)?.ToList();
+                    RecurseLoad(main_projects, db, ref projects_viewed);
                 }
             }
         }
     }
     public static class Extensions
     {
-        public static Shared.Project Translate(this Entities.Project project)
+        public static Shared.Project Translate(this Database.Entities.Project project)
         {
             var proj = new Shared.Project()
             {
@@ -565,7 +575,7 @@ namespace PresalesMonitor.Server.Services
             return proj;
         }
 
-        public static Shared.Invoice Translate(this Entities.Invoice invoice)
+        public static Shared.Invoice Translate(this Database.Entities.Invoice invoice)
         {
             var inv = new Shared.Invoice
             {

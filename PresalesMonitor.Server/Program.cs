@@ -15,9 +15,10 @@ namespace PresalesMonitor.Server
 			builder.Services.AddControllersWithViews();
 			builder.Services.AddRazorPages();
 
-			var app = builder.Build();
+            var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
+
 			if (app.Environment.IsDevelopment())
 			{
 				app.UseWebAssemblyDebugging();
@@ -35,8 +36,9 @@ namespace PresalesMonitor.Server
 			app.UseStaticFiles();
 
 			app.UseRouting();
-			
-			app.UseGrpcWeb();
+
+            app.UseGrpcWeb();
+
 			app.MapGrpcService<Services.PresalesMonitorService>().EnableGrpcWeb();
 
 			app.MapRazorPages();

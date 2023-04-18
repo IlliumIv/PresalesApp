@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -18,19 +18,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.50.0" />
-    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.50.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.10" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.52.0" />
+    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.52.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PresalesMonitor.Client\Web\PresalesMonitor.Client.Web.csproj" />
-    <ProjectReference Include="..\PresalesMonitor.Entities\PresalesMonitor.Entities.csproj" />
+    <ProjectReference Include="..\PresalesMonitor.Database\PresalesMonitor.Database.csproj" />
     <ProjectReference Include="..\PresalesMonitor.Shared\PresalesMonitor.Shared.csproj" />
   </ItemGroup>
 
   <Target Name="PostPublish" AfterTargets="AfterPublish">
-    <Exec Command="cmd /c deploy.bat" />
+	  <!-- <Exec Command="cmd /c deploy.bat" /> -->
   </Target>
 
 </Project>
