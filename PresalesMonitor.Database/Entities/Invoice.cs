@@ -45,28 +45,15 @@ namespace PresalesMonitor.Database.Entities
         
         public decimal GetProfit(DateTime from, DateTime to)
         {
-            var first_day = new DateTime(from.Year, from.Month, 1);
-            var last_day = to == DateTime.MaxValue ? to : new DateTime(to.Year, to.Month, 1).AddMonths(1).AddDays(-1);
+            var fixed_data = from.Add(TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow));
+            var first_day = new DateTime(fixed_data.Year, fixed_data.Month, 1, 0, 0, 0, DateTimeKind.Local);
+            var last_day = to == DateTime.MaxValue ? to : first_day.AddMonths(1).AddSeconds(-1);
 
-            return this.ProfitPeriods?.Where(pd => pd.StartTime >= first_day && pd.StartTime <= last_day)?
-                .Sum(pd => pd.Amount) ?? 0;
+            return this.ProfitPeriods?.Where(pd => pd.StartTime >= first_day.ToUniversalTime()
+                && pd.StartTime <= last_day.ToUniversalTime())?.Sum(pd => pd.Amount) ?? 0;
         }
 
-        public override void Save()
-        {
-            var query = new Task(() =>
-            {
-                using var _dbContext = new ReadWriteContext();
-                if (!this.TryUpdate(_dbContext)) this.Add(_dbContext);
-                _dbContext.SaveChanges();
-                _dbContext.Dispose();
-            });
-
-            Queries.Enqueue(query);
-            query.Wait();
-        }
-
-        internal override Invoice Add(ReadWriteContext dbContext)
+        internal override Invoice GetOrAddIfNotExist(ReadWriteContext dbContext)
         {
             var invoice_in_db = dbContext.Invoices.Where(
                 i => i.Number == this.Number && i.Date.Date == this.Date.Date ||
@@ -83,10 +70,10 @@ namespace PresalesMonitor.Database.Entities
             return invoice_in_db;
         }
 
-        internal override bool TryUpdate(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
         {
-            this.Presale = this.Presale?.Add(dbContext);
-            this.Project = this.Project?.Add(dbContext);
+            this.Presale = this.Presale?.GetOrAddIfNotExist(dbContext);
+            this.Project = this.Project?.GetOrAddIfNotExist(dbContext);
 
             var invoice_in_db = dbContext.Invoices.Where(
                 i => i.Number == this.Number && i.Date.Date == this.Date.Date ||
@@ -116,8 +103,7 @@ namespace PresalesMonitor.Database.Entities
                 foreach (var p in this.ProfitPeriods) profit_periods += $",{p}";
             }
 
-            return "{" +
-                $"\"Номер\":\"{this.Number}\"," +
+            return $"{{\"Номер\":\"{this.Number}\"," +
                 $"\"Дата\":\"{this.Date.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
                 $"\"Контрагент\":\"{this.Counterpart}\"," +
                 $"\"Проект\":\"{this.Project?.Number}\"," +
@@ -125,8 +111,7 @@ namespace PresalesMonitor.Database.Entities
                 $"\"ДатаПоследнейОплаты\":\"{this.LastPayAt.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
                 $"\"ДатаПоследнейОтгрузки\":\"{this.LastShipmentAt.ToLocalTime():dd.MM.yyyy HH: mm:ss.fff zzz}\"," +
                 $"\"Пресейл\":\"{this.Presale?.Name}\"," +
-                $"\"Суммарная прибыль за периоды\":[{profit_periods[1..]}]" +
-            "}";
+                $"\"Суммарная прибыль за периоды\":[{(profit_periods == string.Empty? "" : profit_periods?[1..])}]}}";
         }
     }
 }
