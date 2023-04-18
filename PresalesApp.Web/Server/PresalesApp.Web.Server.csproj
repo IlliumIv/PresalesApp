@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<Version>1.1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.22.3" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.52.0" />
+    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.52.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\PresalesApp.Database\PresalesApp.Database.csproj" />
+    <ProjectReference Include="..\Client\PresalesApp.Web.Client.csproj" />
+    <ProjectReference Include="..\Shared\PresalesApp.Web.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
