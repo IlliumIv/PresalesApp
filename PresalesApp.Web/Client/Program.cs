@@ -1,4 +1,7 @@
 using Blazored.LocalStorage;
+using Blazorise;
+using Blazorise.Bootstrap5;
+using Blazorise.Icons.FontAwesome;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
 using Microsoft.AspNetCore.Components;
@@ -35,12 +38,17 @@ namespace PresalesApp.Web.Client
                 return new PresalesAppBridge1CApi.PresalesAppBridge1CApiClient(channel);
             });
 
+            builder.Services.AddBlazorise();
+            builder.Services.AddBootstrap5Providers();
+            builder.Services.AddFontAwesomeIcons();
+
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddLocalization(options => options.ResourcesPath = Settings.Default.LocalizationPath);
 
             var app = builder.Build();
 
-            var culture = await app.Services.GetService<ILocalStorageService>().GetItemAsStringAsync(Settings.Default.StorageCultureKey);
+            var storage = app.Services.GetService<ILocalStorageService>();
+            var culture = storage is null ? null : await storage.GetItemAsStringAsync(Settings.Default.StorageCultureKey);
             var default_culture = new CultureInfo(culture ?? "ru-RU");
             CultureInfo.CurrentCulture = default_culture;
             CultureInfo.CurrentUICulture = default_culture;

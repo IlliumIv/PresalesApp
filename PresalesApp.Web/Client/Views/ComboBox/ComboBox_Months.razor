@@ -1,5 +1,4 @@
 ﻿@using System.Globalization
-@using PresalesApp.Web.Client.Helpers
 
 <select id="month" value="@month" @onchange="((ChangeEventArgs e) => OnMonthChanged(e?.Value))" class="form-select form-select-combobox">
     @for (int m = 1; m <= 12; m++)

@@ -23,35 +23,28 @@ namespace PresalesApp.Database.Entities
         [JsonProperty("ПричинаПроигрыша")]
         public string LossReason { get; set; } = string.Empty;
 
-        [JsonProperty("ПлановаяДатаОкончанияТек")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("ПлановаяДатаОкончанияТек"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime PotentialWinAt { get; set; } = new(0, DateTimeKind.Utc);
 
-        [JsonProperty("ДатаОкончания")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("ДатаОкончания"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime ClosedAt { get; set; } = new(0, DateTimeKind.Utc);
 
-        [JsonProperty("ДатаСогласованияРТС")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("ДатаСогласованияРТС"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime ApprovalByTechDirectorAt { get; set; } = new(0, DateTimeKind.Utc);
 
-        [JsonProperty("ДатаСогласованияРОП")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("ДатаСогласованияРОП"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime ApprovalBySalesDirectorAt { get; set; } = new(0, DateTimeKind.Utc);
 
-        [JsonProperty("ДатаНачалаРаботыПресейла")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("ДатаНачалаРаботыПресейла"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime PresaleStartAt { get; set; } = new(0, DateTimeKind.Utc);
 
         [JsonProperty("ДействияПресейла")]
         public virtual List<PresaleAction>? PresaleActions { get; set; }
 
-        [JsonProperty("Пресейл")]
-        [JsonConverter(typeof(CreateByStringConverter))]
+        [JsonProperty("Пресейл"), JsonConverter(typeof(CreateByStringConverter))]
         public virtual Presale? Presale { get; set; }
 
-        [JsonProperty("ОсновнойПроект")]
-        [JsonConverter(typeof(CreateByStringConverter))]
+        [JsonProperty("ОсновнойПроект"), JsonConverter(typeof(CreateByStringConverter))]
         public virtual Project? MainProject { get; set; }
 
         public virtual List<Invoice>? Invoices { get; set; }

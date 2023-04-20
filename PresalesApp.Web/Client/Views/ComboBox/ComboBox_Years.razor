@@ -1,5 +1,4 @@
 ﻿@using System.Globalization
-@using PresalesApp.Web.Client.Helpers
 
 <select id="year" value="@year" @onchange="((ChangeEventArgs e) => OnYearChanged(e?.Value))" class="form-select form-select-combobox">
     @for (int y = 2015; y <= DateTime.Now.Year; y++)

@@ -1,7 +1,8 @@
 ﻿@page "/testpage"
 @using PresalesApp.Bridge1C
 @inject PresalesAppBridge1CApi.PresalesAppBridge1CApiClient BridgeApi
-@inject IJSRuntime js
+
+<ErrorSnackbar @ref="error_alert" />
 
 <div>
     <button class="btn btn-primary" @onclick="DoSomething">Say Hello</button>
@@ -10,24 +11,76 @@
         <p>@reply?.Message</p>
     }
 
-    <div>
-        <canvas id="@canvas_id"></canvas>
+    <div style="width: 500px;height: 500px">
+        <button class="btn btn-primary" @onclick="@(async () => await HandleRedraw())">Redraw Chart</button>
+        <PieChart @ref="pieChart" TItem="double" />
     </div>
 </div>
 
+
 @code {
-    private HelloReply? reply;
-    private readonly string canvas_id = "chart";
+    HelloReply? reply;
 
-    private async Task UpdateData()
+    async void DoSomething() => await HandleSayHello();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        reply = await BridgeApi.SayHelloAsync(
-            request: new HelloRequest() { Name = "Иван" });
+        if (firstRender)
+        {
+            await HandleRedraw();
+        }
+    }
 
-        await js.InvokeAsync<object>("GenerateExampleChart", canvas_id);
+    ErrorSnackbar error_alert;
+
+    async Task HandleSayHello()
+    {
+        try
+        {
+            reply = await BridgeApi.SayHelloAsync(new HelloRequest() { Name = "Иван" });
+        }
+        catch
+        {
+            error_alert.Message = (MarkupString)Localization["ConnectErrorTryLater", Localization["BridgeName"]].Value;
+            await error_alert.Show();
+        }
         StateHasChanged();
     }
 
-    private async void DoSomething() => await UpdateData();
-    
+    async Task HandleRedraw()
+    {
+        await pieChart.Clear();
+        // await pieChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset());
+        await pieChart.AddDatasetsAndUpdate(GetLineChartDataset());
+    }
+
+    PieChart<double> pieChart;
+    PieChartDataset<double> GetLineChartDataset()
+    {
+        return new PieChartDataset<double>
+            {
+                Label = "# of randoms",
+                Data = RandomizeData(),
+                BackgroundColor = backgroundColors,
+                BorderColor = borderColors,
+                // Fill = true,
+                // PointRadius = 3,
+                // CubicInterpolationMode = "monotone",
+            };
+    }
+     
+    string[] Labels = { "Red", "Blue", "Yellow", "Green", "Purple", "Orange" };
+    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
+    List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
+    List<double> RandomizeData()
+    {
+        var r = new Random(DateTime.Now.Millisecond);
+
+        return new List<double> {
+            r.Next( 3, 50 ) * r.NextDouble(),
+            r.Next( 3, 50 ) * r.NextDouble(),
+            r.Next( 3, 50 ) * r.NextDouble(),
+            r.Next( 3, 50 ) * r.NextDouble(),
+            r.Next( 3, 50 ) * r.NextDouble(),
+            r.Next( 3, 50 ) * r.NextDouble() };
+    }
 }

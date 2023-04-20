@@ -1,6 +1,4 @@
-﻿@using PresalesApp.Web.Shared
-@using PresalesApp.Web.Client.Helpers
-@using Period = PresalesApp.Web.Client.Helpers.Period
+﻿@using Period = PresalesApp.Web.Client.Helpers.Period
 
 <input title="Начало периода" type="date" max="@Helpers.ToMinMaxFormatString(Period.To)"
     value="@Helpers.ToMinMaxFormatString(Period.From)"

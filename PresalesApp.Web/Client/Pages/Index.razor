@@ -1,10 +1,9 @@
 ﻿@page "/"
-@inject IStringLocalizer<Index> Loc
 
-<PageTitle>Index</PageTitle>
+<PageTitle>@Localization["HomePage"]</PageTitle>
 
-<h1>@Loc["HelloWorldPlaceholder"]</h1>
+<h1>@Localization["HelloWorldPlaceholder"]</h1>
 
-@Loc["WelcomeText"]
+@Localization["WelcomeText"]
 
 <SurveyPrompt Title="How is Blazor working for you?" />

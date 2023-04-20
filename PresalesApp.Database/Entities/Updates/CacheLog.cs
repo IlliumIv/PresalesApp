@@ -6,12 +6,10 @@ namespace PresalesApp.Database.Entities.Updates
 {
     public class CacheLog : Update
     {
-        [JsonProperty("НачалоПериода")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("НачалоПериода"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime PeriodBegin { get; private set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
 
-        [JsonProperty("КонецПериода")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("КонецПериода"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime PeriodEnd { get; private set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
 
         public override DateTime SynchronizedTo

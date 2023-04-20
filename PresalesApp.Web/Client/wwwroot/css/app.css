@@ -1,3 +1,4 @@
+/*
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 html, body {
@@ -99,19 +100,31 @@ a, .btn-link {
 .loading-progress-text:after {
     content: var(--blazor-load-percentage-text, "Loading");
 }
+*/
+.nav-item a.active {
+    background: none!important
+}
+
+.sidebar {
+    width: 50px!important
+}
+
+.snackbar-action-button {
+    margin-left: 10px!important
+}
 
 .form-select-combobox {
-    display: initial;
-    width: unset;
+    display: initial!important;
+    width: unset!important
 }
 
 .date-only-period {
-    display: initial;
+    display: initial!important
 }
 
 .inline-check-big {
-    width: 1.5em;
-    height: 1.5em;
-    vertical-align: middle;
-    cursor: help;
+    width: 1.5em!important;
+    height: 1.5em!important;
+    vertical-align: middle!important;
+    cursor: help!important;
 }

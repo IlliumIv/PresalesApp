@@ -10,8 +10,7 @@ namespace PresalesApp.Database.Entities
         [JsonProperty("НомерСтроки")]
         public int Number { get; set; } = 0;
 
-        [JsonProperty("Дата")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("Дата"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime Date { get; set; } = new DateTime(0, DateTimeKind.Utc);
 
         [JsonProperty("ТипЗадачи")]
