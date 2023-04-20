@@ -5,85 +5,102 @@
 @layout InfographicsLayout
 @inject IJSRuntime js
 
-@*<style>body {overflow: hidden;}</style>*@
-
 <PageTitle>@Localization["SalesDashboardPage"]</PageTitle>
-
 <ErrorSnackbar @ref=error_alert />
 
-<div class="overview">
-    <div class="legend">
-        <fieldset class="salesTarget">
-            <legend>План @Format(current.From) - @Format(current.To)</legend>
-            <p>@if (overview != null) { @Helpers.ToCurrencyString(overview.CurrentSalesTarget, "ru-RU"); }</p>
-        </fieldset>
-        <fieldset class="actualProfit">
-            <legend>Факт @Format(current.From) - @Format(current.To)</legend>
-            <p>@if (overview != null) { @Helpers.ToCurrencyString(overview.CurrentActualProfit, "ru-RU"); }</p>
-        </fieldset>
-        <fieldset class="previousActualProfit">
-            <legend>Факт @Format(previous.From) - @Format(previous.To)</legend>
-            <p>@if (overview != null) { @Helpers.ToCurrencyString(overview.PreviousActualProfit, "ru-RU"); }</p>
-        </fieldset>
-        <fieldset class="increase">
-            <legend>Динамика</legend>
-            <p>@if (overview != null) { @Helpers.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true, "ru-RU"); }</p>
-        </fieldset>
-    </div>
-    <div class="chart">
-        <div class="charts">
-            <PieChart @ref="profitChart" TItem="decimal" OptionsJsonString="@pieChartOptions" />
-            <div class="percent">
+<AuthorizeView>
+    <div class="overview">
+        <div class="legend">
+            <fieldset class="salesTarget">
+                <legend>План @Format(current.From) - @Format(current.To)</legend>
                 <p>@if (overview != null)
                     {
-                        @Helpers.ToPercentString(overview.CurrentSalesTarget != 0 ? decimal.ToDouble(overview.CurrentActualProfit / overview.CurrentSalesTarget) : 0)
+                        @Helpers.ToCurrencyString(overview.CurrentSalesTarget, "ru-RU")
                         ;
                     }</p>
-            </div>
-        </div>
-        <div class="top">
-            <fieldset class="leaderboard">
-                <legend>Лидеры продаж</legend>
-                <table>
-                    @if (overview != null)
+            </fieldset>
+            <fieldset class="actualProfit">
+                <legend>Факт @Format(current.From) - @Format(current.To)</legend>
+                <p>@if (overview != null)
                     {
-                        @foreach (var item in overview.CurrentTopSalesManagers.Select((manager, index) => new { index, manager }))
-                        {
-                            var manager = item.manager;
-                            <tr>
-                                <td><div style="background:@dataset_сolors[item.index]">&nbsp;</div></td>
-                                <td>@(item.index + 1). </td>
-                                <td>@manager.Name</td>
-                                <td>@Helpers.ToCurrencyString(manager.Profit, "ru-RU")</td>
-                            </tr>
-                        }
-                    }
-                </table>
+                        @Helpers.ToCurrencyString(overview.CurrentActualProfit, "ru-RU")
+                        ;
+                    }</p>
+            </fieldset>
+            <fieldset class="previousActualProfit">
+                <legend>Факт @Format(previous.From) - @Format(previous.To)</legend>
+                <p>@if (overview != null)
+                    {
+                        @Helpers.ToCurrencyString(overview.PreviousActualProfit, "ru-RU")
+                        ;
+                    }</p>
+            </fieldset>
+            <fieldset class="increase">
+                <legend>Динамика</legend>
+                <p>@if (overview != null)
+                    {
+                        @Helpers.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true, "ru-RU")
+                        ;
+                    }</p>
             </fieldset>
         </div>
+        <div class="chart">
+            <div class="charts">
+                <PieChart @ref="profitChart" TItem="decimal" OptionsJsonString="@pieChartOptions" />
+                <div class="percent">
+                    <p>
+                        @if (overview != null)
+                        {
+                            @Helpers.ToPercentString(overview.CurrentSalesTarget != 0 ? decimal.ToDouble(overview.CurrentActualProfit / overview.CurrentSalesTarget) : 0)
+                            ;
+                        }
+                    </p>
+                </div>
+            </div>
+            <div class="top">
+                <fieldset class="leaderboard">
+                    <legend>Лидеры продаж</legend>
+                    <table>
+                        @if (overview != null)
+                        {
+                            @foreach (var item in overview.CurrentTopSalesManagers.Select((manager, index) => new { index, manager }))
+                            {
+                                var manager = item.manager;
+                                <tr>
+                                    <td><div style="background:@dataset_сolors[item.index]">&nbsp;</div></td>
+                                    <td>@(item.index + 1). </td>
+                                    <td>@manager.Name</td>
+                                    <td>@Helpers.ToCurrencyString(manager.Profit, "ru-RU")</td>
+                                </tr>
+                            }
+                        }
+                    </table>
+                </fieldset>
+            </div>
+        </div>
     </div>
-</div>
-<div class="params">
-    <div class="@class_hide">
-        <label>Предыдущий период:</label>
-        <DateOnly_Period Period="previous"
-            OnPeriodChangedCallback="(async (Period period) => {previous = period; await UpdateData();})">
-        </DateOnly_Period>
-        <label>Текущий период:</label>
-        <DateOnly_Period Period="current"
-            OnPeriodChangedCallback="(async (Period period) => {current = period; await UpdateData();})">
-        </DateOnly_Period>
-        <button class="btn btn-primary" title="@title_pin" @onclick="PinParams">
-            <span class="oi oi-pin @class_rotatePin"></span>
-        </button>
-        <button class="btn btn-primary" title="Обновить данные" @onclick="HandleRedrawChart">
-            <span class="oi oi-reload"></span>
-        </button>
+    <div class="params">
+        <div class="@class_hide">
+            <label>Предыдущий период:</label>
+            <DateOnly_Period Period="previous"
+                             OnPeriodChangedCallback="(async (Period period) => {previous = period; await UpdateData();})">
+            </DateOnly_Period>
+            <label>Текущий период:</label>
+            <DateOnly_Period Period="current"
+                             OnPeriodChangedCallback="(async (Period period) => {current = period; await UpdateData();})">
+            </DateOnly_Period>
+            <button class="btn btn-primary" title="@title_pin" @onclick="PinParams">
+                <span class="oi oi-pin @class_rotatePin"></span>
+            </button>
+            <button class="btn btn-primary" title="Обновить данные" @onclick="HandleRedrawChart">
+                <span class="oi oi-reload"></span>
+            </button>
+        </div>
     </div>
-</div>
-<div class="error @class_error_hide">
-    <p>@msg_error</p>
-</div>
+    <div class="error @class_error_hide">
+        <p>@msg_error</p>
+    </div>
+</AuthorizeView>
 
 @code {
         ErrorSnackbar error_alert;

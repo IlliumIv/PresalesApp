@@ -139,4 +139,28 @@
   <data name="SalesDashboardPage" xml:space="preserve">
     <value>Инфографика продаж</value>
   </data>
+  <data name="LoginButtonText" xml:space="preserve">
+    <value>Войти</value>
+  </data>
+  <data name="LoginText" xml:space="preserve">
+    <value>Логин</value>
+  </data>
+  <data name="LoginTextPlaceholder" xml:space="preserve">
+    <value>#LoginTextPlaceholder#</value>
+  </data>
+  <data name="PasswordText" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="PasswordTextPlaceholder" xml:space="preserve">
+    <value>#PasswordTextPlaceholder#</value>
+  </data>
+  <data name="CloseButtonText" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="NotAuthenticatedErrorMessage" xml:space="preserve">
+    <value>#NotAuthenticatedErrorMessage#</value>
+  </data>
+  <data name="LogoutButtonText" xml:space="preserve">
+    <value>Выйти</value>
+  </data>
 </root>
