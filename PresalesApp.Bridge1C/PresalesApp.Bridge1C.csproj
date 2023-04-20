@@ -15,7 +15,11 @@
     <WarningLevel>7</WarningLevel>
   </PropertyGroup>
 
-  <ItemGroup>
+	<PropertyGroup>
+		<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+	</PropertyGroup>
+	
+	<ItemGroup>
     <Compile Remove="Publish\**" />
     <Content Remove="Publish\**" />
     <EmbeddedResource Remove="Publish\**" />

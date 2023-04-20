@@ -49,7 +49,7 @@ namespace PresalesApp.Web.Client
 
             var storage = app.Services.GetService<ILocalStorageService>();
             var culture = storage is null ? null : await storage.GetItemAsStringAsync(Settings.Default.StorageCultureKey);
-            var default_culture = new CultureInfo(culture ?? "ru-RU");
+            var default_culture = new CultureInfo(culture == null || culture == string.Empty ? "ru-RU" : culture);
             CultureInfo.CurrentCulture = default_culture;
             CultureInfo.CurrentUICulture = default_culture;
 

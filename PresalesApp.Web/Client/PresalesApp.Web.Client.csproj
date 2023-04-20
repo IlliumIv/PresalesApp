@@ -18,6 +18,10 @@
     <NoWarn>1701;1702;CS8625;CS8618</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
     <PackageReference Include="Blazorise.Bootstrap5" Version="1.2.2" />
