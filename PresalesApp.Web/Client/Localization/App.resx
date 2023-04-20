@@ -97,10 +97,46 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="WelcomeText" xml:space="preserve">
-    <value>Welcome to your new app.</value>
-  </data>
   <data name="HelloWorldPlaceholder" xml:space="preserve">
-    <value>Hello, world!</value>
+    <value>Привет, мир!</value>
+  </data>
+  <data name="WelcomeText" xml:space="preserve">
+    <value>Добро пожаловать в ваше новое приложение.</value>
+  </data>
+  <data name="ConnectErrorTryLater" xml:space="preserve">
+    <value>Не удалось получить ответ от {0}. Попробуйте позже.</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Загрузка</value>
+  </data>
+  <data name="UnsplashCredits" xml:space="preserve">
+    <value>Автор фото {0} на {1}</value>
+  </data>
+  <data name="BridgeName" xml:space="preserve">
+    <value>Bridge1C Service</value>
+  </data>
+  <data name="PWAServerName" xml:space="preserve">
+    <value>PresalesApp Web Server</value>
+  </data>
+  <data name="HomePage" xml:space="preserve">
+    <value>Домашняя</value>
+  </data>
+  <data name="SpreadsheetPage" xml:space="preserve">
+    <value>Обзорная</value>
+  </data>
+  <data name="KpiPage" xml:space="preserve">
+    <value>Kpi</value>
+  </data>
+  <data name="PresalesDashboardPage" xml:space="preserve">
+    <value>Инфографика пресейлов</value>
+  </data>
+  <data name="UnpaidPage" xml:space="preserve">
+    <value>Неоплаченные проекты</value>
+  </data>
+  <data name="UnpaidPageDescription" xml:space="preserve">
+    <value>Все проекты, закрытые за период, к которым не привязано ни одного отгруженного счёта.</value>
+  </data>
+  <data name="SalesDashboardPage" xml:space="preserve">
+    <value>Инфографика продаж</value>
   </data>
 </root>

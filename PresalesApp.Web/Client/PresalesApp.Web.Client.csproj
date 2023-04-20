@@ -10,14 +10,20 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningsAsErrors>$(WarningsAsErrors);NU1605;RZ2012</WarningsAsErrors>
+    <NoWarn>1701;1702;CS8625;CS8618</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <WarningsAsErrors>$(WarningsAsErrors);NU1605;RZ2012</WarningsAsErrors>
+    <NoWarn>1701;1702;CS8625;CS8618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
+    <PackageReference Include="Blazorise.Bootstrap5" Version="1.2.2" />
+    <PackageReference Include="Blazorise.Charts" Version="1.2.2" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.2.2" />
+    <PackageReference Include="Blazorise.Snackbar" Version="1.2.2" />
     <PackageReference Include="Grpc.Net.Client.Web" Version="2.52.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.5" PrivateAssets="all" />

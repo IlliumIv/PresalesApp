@@ -1,20 +1,11 @@
 ﻿@page "/unpaid"
-@using PresalesApp.Web.Shared
-@using PresalesApp.Web.Client.Views
-@using PresalesApp.Web.Client.Views.Table
-@using PresalesApp.Web.Client.Views.ComboBox
-@using PresalesApp.Web.Client.Helpers
-@using Google.Protobuf.WellKnownTypes
 @using Period = PresalesApp.Web.Client.Helpers.Period
-@inject PresalesAppApi.PresalesAppApiClient Api
 @inject IJSRuntime js
 
-<PageTitle>Unpaid</PageTitle>
+<PageTitle>@Localization["UnpaidPage"]</PageTitle>
 
-<h1>Unpaid</h1>
-<p>
-    Все проекты, закрытые за период, к которым не привязано ни одного отгруженного счёта.
-</p>
+<h1>@Localization["UnpaidPage"]</h1>
+<p>@Localization["UnpaidPageDescription"]</p>
 <p>
     <ComboBox_PresalesNames
         OnSelectCallback="(async (string name) => {presale_name = name; await UpdateData();})">

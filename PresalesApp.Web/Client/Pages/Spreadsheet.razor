@@ -1,19 +1,12 @@
-﻿@page "/monitor"
-@using PresalesApp.Web.Client.Helpers
-@using PresalesApp.Web.Client.Views
-@using PresalesApp.Web.Client.Views.ComboBox
-@using PresalesApp.Web.Shared
-@using Google.Protobuf.Collections
-@using Google.Protobuf.WellKnownTypes
+﻿@page "/spreadsheet"
 @using Department = PresalesApp.Web.Shared.Department
 @using Position = PresalesApp.Web.Shared.Position
-@using System.Threading
 @using Period = PresalesApp.Web.Client.Helpers.Period
-@inject PresalesAppApi.PresalesAppApiClient Api
+@using System.Threading
 
-<PageTitle>Presales Monitor</PageTitle>
+<PageTitle>@Localization["SpreadsheetPage"]</PageTitle>
 
-<h1>Presales Monitor</h1>
+<h1>@Localization["SpreadsheetPage"]</h1>
 
 <p>
     <DateOnly_Period Period="period"

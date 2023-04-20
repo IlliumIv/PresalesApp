@@ -1,17 +1,10 @@
 ﻿@page "/kpi"
-@using PresalesApp.Web.Shared
-@using Google.Protobuf.WellKnownTypes
-@using PresalesApp.Web.Client.Views
-@using PresalesApp.Web.Client.Views.Table
-@using PresalesApp.Web.Client.Views.ComboBox
-@using PresalesApp.Web.Client.Helpers
 @using Period = PresalesApp.Web.Client.Helpers.Period
-@inject PresalesAppApi.PresalesAppApiClient Api
 @inject IJSRuntime js
 
-<PageTitle>KPI</PageTitle>
+<PageTitle>@Localization["KpiPage"]</PageTitle>
 
-<h1>KPI</h1>
+<h1>@Localization["KpiPage"]</h1>
 
 <p>
     <ComboBox_PresalesNames

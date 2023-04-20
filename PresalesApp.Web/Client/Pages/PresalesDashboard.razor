@@ -1,0 +1,207 @@
+﻿@page "/presales-dashboard"
+@using Department = PresalesApp.Web.Shared.Department
+@using Position = PresalesApp.Web.Shared.Position
+@using Period = PresalesApp.Web.Client.Helpers.Period
+@using System.Threading
+@implements IDisposable
+@layout InfographicsLayout
+
+<PageTitle>@Localization["PresalesDashboardPage"]</PageTitle>
+
+<ErrorSnackbar @ref=error_alert />
+
+<div class="dashboard">
+    <div class="chart">
+        <div class="legend">
+            @if (overview != null)
+            {
+                foreach (var item in overview.Presales.Select((presale, index) => new { index, presale }))
+                {
+                    if ((decimal)item.presale.Statistics.Profit > 0)
+                    {
+                        <div>
+                            <div style="background: @ChartColor.FromRgba(colors[item.index].R, colors[item.index].G, colors[item.index].B, color_alfa).ToString()"></div>
+                            <p>@item.presale.Name:</p>
+                            <p>@Helpers.ToCurrencyString(item.presale.Statistics.Profit, "ru-RU")</p>
+                        </div>
+                    }
+                }
+            }
+            else
+            {
+                <em>@Localization["Loading"]...</em>
+            }
+        </div>
+        <div class="delta-container timer-container">
+            <div class="timer">@time_left</div>
+            @if (overview != null && (decimal)overview.DeltaDay > 0)
+            {
+                <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay, "ru-RU")</div>
+            }
+        </div>
+        <div class="pie">
+            <PieChart @ref="chart" TItem="decimal" OptionsJsonString="@chart_options" />
+        </div>
+        <div style="position: relative">
+            @if (overview != null)
+            {
+                <div class="percent">@Helpers.ToPercentString((double)(overview.Profit/overview.Plan), 1)</div>
+                <div class="left">@Helpers.ToCurrencyString((decimal)overview.Left, "ru-RU")</div>
+            }
+        </div>
+    </div>
+    <div class="img-container">
+        @if (img != null)
+        {
+            <img src="@img.Regular" alt="@img.AltDescription" />
+            <div>
+                <p>
+                    @((MarkupString)Localization["UnsplashCredits",
+                        (MarkupString)$"<a href=\"{img.AuthorUrl}\" target=\"_blank\">{img.AuthorName}</a>",
+                        (MarkupString)$"<a href=\"{img.SourceUrl}\" target=\"_blank\">{img.SourceName}</a>"].Value)
+                </p>
+                <input @bind="@query" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
+            </div>
+        }
+    </div>
+</div>
+
+
+@code {
+    private TimeSpan time_left = new (0, 10, 0);
+
+    private MonthProfitOverview overview;
+
+    private PieChart<decimal> chart;
+
+    private ErrorSnackbar error_alert;
+
+    private static ImageResponse img;
+
+    private string query = "girl";
+
+    private PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
+
+    private Period period = new Period
+        {
+            From = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1),
+            To = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+        };
+
+    private string chart_options => "{\"cutout\":\"30%\",\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
+
+    private (byte R, byte G, byte B)[] colors = new[]
+    {
+        ((byte)5, (byte)47, (byte)91),
+        ((byte)165, (byte)14, (byte)130),
+        ((byte)12, (byte)90, (byte)74),
+        ((byte)232, (byte)125, (byte)55),
+        ((byte)106, (byte)158, (byte)31),
+        ((byte)20, (byte)150, (byte)124),
+        ((byte)99, (byte)8, (byte)78),
+        ((byte)198, (byte)35, (byte)36),
+        ((byte)3, (byte)28, (byte)58)
+    };
+
+    private float color_alfa = 0.5f;
+
+    private async void RunTimer()
+    {
+        int count = 0;
+        var second = new TimeSpan(0, 0, 1);
+        while (await periodic_timer.WaitForNextTickAsync())
+        {
+            time_left = time_left.Subtract(second);
+            if (count > 600)
+            {
+                count = 0;
+                period.To = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+                await UpdateData(period);
+                await UpdateImage();
+                await RedrawChart();
+                time_left = new(0, 10, 0);
+            }
+            count++;
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateData(Period period)
+    {
+        try
+        {
+            overview = await Api.GetMonthProfitOverviewAsync(new OverviewRequest
+                {
+                    Period = period.Translate(),
+                    Department = Department.Any,
+                    Position = Position.Any
+                });
+        }
+        catch
+        {
+            error_alert.Message = (MarkupString)Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value;
+            await error_alert.Show();
+            return;
+        }
+    }
+
+    private async Task UpdateImage() => img = await Api.GetImageAsync(new ImageRequest
+    {
+        Keyword = query,
+        Orientation = ImageOrientation.Portrait
+    });
+
+    private async Task RedrawChart()
+    {
+        if (overview == null) return;
+
+        await chart.Clear();
+        var dataset = new List<decimal>();
+        var backgroud_colors = new List<string>();
+        var border_colors = new List<string>();
+
+        foreach (var item in overview.Presales.Select((presale, index) => new { index, presale }))
+        {
+            if ((decimal)item.presale.Statistics.Profit > 0)
+            {
+                dataset.Add(item.presale.Statistics.Profit);
+                backgroud_colors.Add(ChartColor.FromRgba(colors[item.index].R, colors[item.index].G, colors[item.index].B, color_alfa));
+                border_colors.Add(ChartColor.FromRgba(colors[item.index].R, colors[item.index].G, colors[item.index].B, 1));
+            };
+        };
+
+        if ((decimal)overview.Left > 0)
+        {
+            dataset.Add(overview.Left);
+            backgroud_colors.Add(ChartColor.FromRgba(240, 240, 240, 0.5f));
+            border_colors.Add(ChartColor.FromRgba(240, 240, 240, 1));
+        }
+
+        await chart.AddDatasetsAndUpdate(new PieChartDataset<decimal>()
+        {
+            Data = dataset,
+            BackgroundColor = backgroud_colors,
+            BorderColor = border_colors
+        });
+    }
+
+    private async void OnManuallyImageUpdate(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+            await UpdateImage();
+    }
+
+    protected override void OnInitialized() => RunTimer();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await UpdateData(period);
+            await UpdateImage();
+            await RedrawChart();
+        }
+    }
+
+    public void Dispose() => periodic_timer?.Dispose();
+}
