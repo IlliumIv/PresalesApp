@@ -139,4 +139,28 @@
   <data name="UnpaidPageDescription" xml:space="preserve">
     <value>#UnpaidPageDescriptionPlaceholder#</value>
   </data>
+  <data name="LoginButtonText" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="LoginText" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="LoginTextPlaceholder" xml:space="preserve">
+    <value>#LoginTextPlaceholder#</value>
+  </data>
+  <data name="PasswordText" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="PasswordTextPlaceholder" xml:space="preserve">
+    <value>#PasswordTextPlaceholder#</value>
+  </data>
+  <data name="CloseButtonText" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="NotAuthenticatedErrorMessage" xml:space="preserve">
+    <value>#NotAuthenticatedErrorMessage#</value>
+  </data>
+  <data name="LogoutButtonText" xml:space="preserve">
+    <value>Sing out</value>
+  </data>
 </root>

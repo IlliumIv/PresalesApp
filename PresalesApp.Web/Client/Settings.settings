@@ -9,7 +9,7 @@
       <Value Profile="(Default)">Localization</Value>
     </Setting>
     <Setting Name="StorageCultureKey" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">i18nextLng</Value>
+      <Value Profile="(Default)">lang_culture</Value>
     </Setting>
   </Settings>
 </SettingsFile>

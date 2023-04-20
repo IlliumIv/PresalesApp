@@ -2,7 +2,7 @@
 @using Enum = System.Enum
 @inject NavigationManager Navigation
 
-<select value="@CultureInfo.CurrentCulture" @onchange="((ChangeEventArgs e) => OnChanged(e?.Value))" class="form-select form-select-combobox">
+<select value="@CultureInfo.CurrentCulture" @onchange="((ChangeEventArgs e) => OnChanged(e?.Value))" class="form-select form-select-combobox ">
     @foreach (CultureInfo culture in _supportedCultures)
     {
         <option value="@culture">@culture.NativeName</option>

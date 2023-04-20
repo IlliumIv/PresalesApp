@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
+<ErrorSnackbar @ref=error_alert />
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -7,11 +9,41 @@
 
     <main>
         <div class="top-row px-4">
+            <LoginPopup />
+            <p style="margin: 0 5px;"></p>
             <CultureSelector />
         </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
+        <AuthorizeView>
+            <Authorized>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </Authorized>
+            <NotAuthorized>
+                <article class="content px-4">
+                    <PresalesApp.Web.Client.Pages.Index></PresalesApp.Web.Client.Pages.Index>
+                </article>
+            </NotAuthorized>
+        </AuthorizeView>
     </main>
 </div>
+
+@code {
+    private ErrorSnackbar error_alert;
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            AuthenticationState state = await AuthenticationState;
+            if (state.User.Identity is null || !state.User.Identity.IsAuthenticated)
+            {
+                error_alert.Message = (MarkupString)Localization["NotAuthenticatedErrorMessage"].Value;
+                await error_alert.Show();
+            }
+        }
+    }
+}

@@ -5,6 +5,7 @@ using Blazorise.Icons.FontAwesome;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using PresalesApp.Bridge1C;
@@ -45,13 +46,19 @@ namespace PresalesApp.Web.Client
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddLocalization(options => options.ResourcesPath = Settings.Default.LocalizationPath);
 
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped<AuthenticationStateProvider, IdentityAuthenticationStateProvider>();
+            builder.Services.AddScoped<AuthorizeApi>();
+
             var app = builder.Build();
 
             var storage = app.Services.GetService<ILocalStorageService>();
             var culture = storage is null ? null : await storage.GetItemAsStringAsync(Settings.Default.StorageCultureKey);
             var default_culture = new CultureInfo(culture == null || culture == string.Empty ? "ru-RU" : culture);
-            CultureInfo.CurrentCulture = default_culture;
-            CultureInfo.CurrentUICulture = default_culture;
+            await storage.SetItemAsStringAsync(Settings.Default.StorageCultureKey, default_culture.Name);
+
+            CultureInfo.DefaultThreadCurrentCulture = default_culture;
+            CultureInfo.DefaultThreadCurrentUICulture = default_culture;
 
             await app.RunAsync();
         }
