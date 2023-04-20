@@ -101,8 +101,13 @@ a, .btn-link {
     content: var(--blazor-load-percentage-text, "Loading");
 }
 */
-.nav-item a.active {
-    background: none!important
+
+h1 {
+    outline: none!important;
+}
+
+.nav-item a.active, .nav-item a:hover {
+    background: none !important
 }
 
 .sidebar {
