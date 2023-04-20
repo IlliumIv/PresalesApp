@@ -10,30 +10,25 @@ namespace PresalesApp.Database.Entities
         [JsonProperty("Номер")]
         public string Number { get; set; } = string.Empty;
 
-        [JsonProperty("Дата")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("Дата"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime Date { get; set; } = new(0, DateTimeKind.Utc);
 
         [JsonProperty("Контрагент")]
         public string Counterpart { get; set; } = string.Empty;
 
-        [JsonProperty("Проект")]
-        [JsonConverter(typeof(CreateByStringConverter))]
+        [JsonProperty("Проект"), JsonConverter(typeof(CreateByStringConverter))]
         public virtual Project? Project { get; set; }
 
         [JsonProperty("СуммаРуб")]
         public decimal Amount { get; set; } = decimal.Zero;
 
-        [JsonProperty("ДатаПоследнейОплаты")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("ДатаПоследнейОплаты"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime LastPayAt { get; set; } = new(0, DateTimeKind.Utc);
 
-        [JsonProperty("ДатаПоследнейОтгрузки")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("ДатаПоследнейОтгрузки"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime LastShipmentAt { get; set; } = new(0, DateTimeKind.Utc);
 
-        [JsonProperty("Пресейл")]
-        [JsonConverter(typeof(CreateByStringConverter))]
+        [JsonProperty("Пресейл"), JsonConverter(typeof(CreateByStringConverter))]
         public virtual Presale? Presale { get; set; }
 
         [JsonProperty("ПрибыльПериоды")]

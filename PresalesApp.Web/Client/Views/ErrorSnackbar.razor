@@ -1,0 +1,19 @@
+﻿<Snackbar Interval="10000" @ref="errorAlert" Color="SnackbarColor.Danger">
+    <SnackbarBody>
+        @Message
+        <SnackbarAction>
+            <Button Class="btn-close" Clicked="@(()=>errorAlert.Hide())"></Button>
+        </SnackbarAction>
+    </SnackbarBody>
+</Snackbar>
+
+@code {
+    public MarkupString Message { get; set; }
+
+    Snackbar errorAlert;
+
+    public async Task Show()
+    {
+        await errorAlert.Show();
+    }
+}

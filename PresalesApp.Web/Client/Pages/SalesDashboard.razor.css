@@ -19,12 +19,12 @@
 }
 
 .charts {
-    width: 60%;
+    width: 40%;
     z-index: -1;
 }
 
 .top {
-    width: 40%;
+    width: 60%;
 }
 
 .buble {
@@ -95,8 +95,7 @@ legend {
 }
 
 .leaderboard {
-    width: 150%;
-    margin-left: -52%;
+    width: 100%;
     border: none;
     border-top: 1px solid #000;
     border-bottom: 1px solid #000;

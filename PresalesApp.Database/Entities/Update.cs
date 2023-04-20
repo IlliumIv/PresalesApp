@@ -6,8 +6,7 @@ namespace PresalesApp.Database.Entities
 {
     public abstract class Update : Entity
     {
-        [JsonProperty("ДатаРасчета")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("ДатаРасчета"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime Timestamp { get; set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
 
         public virtual DateTime SynchronizedTo
@@ -16,8 +15,7 @@ namespace PresalesApp.Database.Entities
             set { this._synchronizedTo = value; }
         }
 
-        [NotMapped]
-        [JsonIgnore]
+        [NotMapped, JsonIgnore]
         protected DateTime _synchronizedTo = new(0, DateTimeKind.Utc);
 
         protected Update() { }

@@ -2,13 +2,13 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PresalesApp.Web.Client" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="Bridge1CAddress" Type="(Web Service URL)" Scope="User">
+    <Setting Name="Bridge1CAddress" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">https://localhost:33443</Value>
     </Setting>
-    <Setting Name="LocalizationPath" Type="System.String" Scope="User">
+    <Setting Name="LocalizationPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Localization</Value>
     </Setting>
-    <Setting Name="StorageCultureKey" Type="System.String" Scope="User">
+    <Setting Name="StorageCultureKey" Type="System.String" Scope="Application">
       <Value Profile="(Default)">lang_culture</Value>
     </Setting>
   </Settings>

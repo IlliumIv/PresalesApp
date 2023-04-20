@@ -5,8 +5,7 @@ namespace PresalesApp.Database.Entities
 {
     public class ProfitPeriod : Entity
     {
-        [JsonProperty("Период")]
-        [JsonConverter(typeof(DateTimeDeserializationConverter))]
+        [JsonProperty("Период"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime StartTime { get; set; } = new(0, DateTimeKind.Utc);
 
         [JsonProperty("Сумма")]
