@@ -102,10 +102,6 @@ a, .btn-link {
 }
 */
 
-h1 {
-    outline: none!important;
-}
-
 .nav-item a.active, .nav-item a:hover {
     background: none !important
 }

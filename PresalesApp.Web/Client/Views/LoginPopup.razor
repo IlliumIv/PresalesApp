@@ -1,0 +1,61 @@
+﻿@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized>
+        <Button Type="ButtonType.Button" Color="Color.Dark" Clicked="@Logout">@Localization["LogoutButtonText"]</Button>
+    </Authorized>
+    <NotAuthorized>
+        <Button Type="ButtonType.Button" Color="Color.Dark" Clicked="@ShowLoginPopup">@Localization["LoginButtonText"]</Button>
+    </NotAuthorized>
+</AuthorizeView>
+
+<Modal @ref="_loginPopupRef">
+    <ModalContent Centered>
+        <ModalBody>
+            <Field>
+                <FieldLabel>@Localization["LoginText"]</FieldLabel>
+                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]" Role="TextRole.Text" @bind-Text="_login"/>
+            </Field>
+            <Field>
+                <FieldLabel>@Localization["PasswordText"]</FieldLabel>
+                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]" Role="TextRole.Password" @bind-Text="_password"/>
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideLoginPopup">@Localization["CloseButtonText"]</Button>
+            <Button Color="Color.Primary" Clicked="@Login">@Localization["LoginButtonText"]</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    private Modal _loginPopupRef;
+    private string _login;
+    private string _password;
+
+    private Task ShowLoginPopup()
+    {
+        return _loginPopupRef.Show();
+    }
+
+    private Task HideLoginPopup()
+    {
+        return _loginPopupRef.Hide();
+    }
+
+    private async Task Login()
+    {
+        var success = await AuthorizeApi.Login(_login, _password);
+        if(success)
+        {
+            Navigation.NavigateTo(Navigation.Uri, true);
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthorizeApi.Logout();
+        Navigation.NavigateTo(Navigation.Uri, true);
+    }
+}
+

@@ -4,28 +4,34 @@
 
 <PageTitle>@Localization["UnpaidPage"]</PageTitle>
 
-<h1>@Localization["UnpaidPage"]</h1>
-<p>@Localization["UnpaidPageDescription"]</p>
-<p>
-    <ComboBox_PresalesNames
-        OnSelectCallback="(async (string name) => {presale_name = name; await UpdateData();})">
-    </ComboBox_PresalesNames>
-    <DateOnly_Period Period="period"
-        OnPeriodChangedCallback="(async (Period period) => { this.period = period; await UpdateData();})">
-    </DateOnly_Period>
-    <input title="Учитывать счета в основных проектах" type="checkbox"
-        id="lookAtMains" value="@is_main_project_include"
-        @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
-        unchecked class="inline-check" style="cursor: help;" />
-    <button @attributes="downloadBtnAttrs" class="btn btn-primary"
-        @onclick="DownloadFile">Скачать отчёт</button>
-</p>
+<AuthorizeView>
+    <h1>@Localization["UnpaidPage"]</h1>
+    <p>@Localization["UnpaidPageDescription"]</p>
+    <p>
+        <ComboBox_PresalesNames OnSelectCallback="(async (string name) => {presale_name = name; await UpdateData();})">
+        </ComboBox_PresalesNames>
+        <DateOnly_Period Period="period"
+                         OnPeriodChangedCallback="(async (Period period) => { this.period = period; await UpdateData();})">
+        </DateOnly_Period>
+        <input title="Учитывать счета в основных проектах" type="checkbox"
+               id="lookAtMains" value="@is_main_project_include"
+               @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
+               unchecked class="inline-check" style="cursor: help;" />
+        <button @attributes="downloadBtnAttrs" class="btn btn-primary"
+                @onclick="DownloadFile">
+            Скачать отчёт
+        </button>
+    </p>
 
-@if(projects == null) { <p><em>Loading...</em></p>
-}
-else {
-    <Table_Projects Projects="projects.Projects"></Table_Projects>
-}
+    @if (projects == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <Table_Projects Projects="projects.Projects"></Table_Projects>
+    }
+</AuthorizeView>
 
 @code {
     private UnpaidProjects? projects;
