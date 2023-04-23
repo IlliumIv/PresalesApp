@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using PresalesApp.Bridge1C.Controllers;
 using PresalesApp.Database;
@@ -7,6 +8,7 @@ using Serilog;
 using Serilog.Templates;
 using Serilog.Templates.Themes;
 using System.Reflection;
+using static PresalesApp.Database.DbController;
 
 namespace PresalesApp.Bridge1C
 {
@@ -76,7 +78,7 @@ namespace PresalesApp.Bridge1C
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(
-                    name: "CORS Allow-All",
+                    name: "cors_policy",
                     policy =>
                     {
                         policy
@@ -89,12 +91,12 @@ namespace PresalesApp.Bridge1C
 
             var app = builder.Build();
 
-            app.UseCors(); // HTTP 500
             app.UseGrpcWeb();
+            app.UseCors(); // HTTP 500
 
             // Configure the HTTP request pipeline.
             app.MapGrpcService<ApiController>().EnableGrpcWeb()
-                .RequireCors("CORS Allow-All"); // HTTP 405
+                .RequireCors("cors_policy"); // HTTP 405
 
             app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 

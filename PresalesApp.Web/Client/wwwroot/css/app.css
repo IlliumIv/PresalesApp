@@ -114,8 +114,12 @@ a, .btn-link {
     margin-left: 10px!important
 }
 
+.d-flex {
+    align-items: center;
+    gap: 10px;
+}
+
 .form-select-combobox {
-    display: initial!important;
     width: unset!important
 }
 

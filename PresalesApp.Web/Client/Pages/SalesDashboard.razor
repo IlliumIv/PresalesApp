@@ -79,7 +79,7 @@
             </div>
         </div>
     </div>
-    <div class="params">
+    <div class="params d-flex">
         <div class="@class_hide">
             <label>Предыдущий период:</label>
             <DateOnly_Period Period="previous"
@@ -217,7 +217,6 @@
         {
             dataset.Add(manager.Profit);
             dataset_сolors.Add(ChartColor.FromRgba(Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), 1));
-            Console.WriteLine($"{manager.Name}: {manager.Profit}");
         }
 
         var sum = overview.CurrentTopSalesManagers.Sum(m => m.Profit);

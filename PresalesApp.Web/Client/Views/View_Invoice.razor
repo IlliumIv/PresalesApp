@@ -20,7 +20,7 @@
                     <summary>Найдено проектов при подсчёте рангов: @Invoice.ProjectsFound.Count</summary>
                     @foreach (var project in Invoice.ProjectsFound)
                     {
-                        <p style="margin-bottom: 0">@project.Format()</p>
+                        <p style="margin-bottom: 0">@project.Format(Localization)</p>
                     }
                 </details>
             }
@@ -30,7 +30,7 @@
                     <summary style="color:red">Проигнорировано проектов при подсчёте рангов: @Invoice.ProjectsIgnored.Count</summary>
                     @foreach (var project in Invoice.ProjectsIgnored)
                     {
-                        <p style="margin-bottom: 0">@project.Format()</p>
+                        <p style="margin-bottom: 0">@project.Format(Localization)</p>
                     }
                 </details>
             }
@@ -40,7 +40,7 @@
                     <summary>Действий учтено при подсчёте рангов: @Invoice.ActionsTallied.Count</summary>
                     @foreach (var action in Invoice.ActionsTallied)
                     {
-                        <p style="margin-bottom: 0">@action.Format()</p>
+                        <p style="margin-bottom: 0">@action.Format(Localization)</p>
                     }
                 </details>
             }
@@ -50,7 +50,7 @@
                     <summary style="color:red">Действий проигнорировано при подсчёте рангов: @Invoice.ActionsIgnored.Count</summary>
                     @foreach (var action in Invoice.ActionsIgnored)
                     {
-                        <p style="margin-bottom: 0">@action.Format()</p>
+                        <p style="margin-bottom: 0">@action.Format(Localization)</p>
                     }
                 </details>
             }

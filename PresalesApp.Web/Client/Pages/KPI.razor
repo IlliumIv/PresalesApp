@@ -6,15 +6,15 @@
 <ErrorSnackbar @ref=error_alert />
 
 <h1>@Localization["KpiPage"]</h1>
-<p>
+<div class="d-flex">
     <ComboBox_PresalesNames OnSelectCallback="(async (string name) => {presale_name = name; await GenerateReport();})">
     </ComboBox_PresalesNames>
     <ComboBox_Months OnSelectCallback="(async (int month) => {this.month = month; await GenerateReport();})">
     </ComboBox_Months>
     <ComboBox_Years OnSelectCallback="(async (int year) => {this.year = year; await GenerateReport();})">
     </ComboBox_Years>
-    <button @attributes="btn_download_attr" class="btn btn-primary" @onclick="DownloadReport">Скачать отчёт</button>
-</p>
+    <button @attributes="btn_download_attr" class="btn btn-primary" @onclick="DownloadReport">@Localization["DownloadReportButtonText"]</button>
+</div>
 <p role="status">@msg_info</p>
 @if (kpi is not null)
 {
@@ -53,13 +53,13 @@
     private Dictionary<string, object> btn_download_attr { get; set; } = new() {{ "disabled", "disabled" }};
     private string msg_info = string.Empty;
 
-    private async Task DownloadReport() => await kpi.Download(js, presale_name, month, year);
+    private async Task DownloadReport() => await kpi.Download(js, presale_name, month, year, Localization);
     private async Task GenerateReport()
     {
         kpi = null;
         btn_download_attr = new() {{ "disabled", "disabled" }};
 
-        if (string.IsNullOrEmpty(presale_name)) msg_info = "Выберите пресейла.";
+        if (string.IsNullOrEmpty(presale_name)) msg_info = $"{Localization["NeedSelectPresaleMessageText"]}";
 
         var from = new DateOnly(year, month, 1);
         var response = await Api.GetKpiAsync(new KpiRequest
@@ -73,18 +73,18 @@
             }
         );
 
-        if (response.ResponseCase == KpiResponse.ResponseOneofCase.Kpi)
+        if (response.ResultCase == KpiResponse.ResultOneofCase.Kpi)
         {
             kpi = response.Kpi;
             btn_download_attr = new();
         }
 
-        msg_info = response.ResponseCase switch
+        msg_info = response.ResultCase switch
         {
-            KpiResponse.ResponseOneofCase.Error => response.Error.Message,
-            KpiResponse.ResponseOneofCase.Kpi => "Отчёт сгенерирован!",
-            KpiResponse.ResponseOneofCase.None => "Нет счетов за указанный период.",
-            _ => "Неизвестный ответ сервера."
+            KpiResponse.ResultOneofCase.Error => response.Error.Message,
+            KpiResponse.ResultOneofCase.Kpi => $"{Localization["ReportIsDoneMessageText"]}",
+            KpiResponse.ResultOneofCase.None => $"{Localization["NoInvoicesForThisPeriodMessageText"]}",
+            _ => $"{Localization["UnknownServerResponseMessageText"]}"
         };
         StateHasChanged();
     }

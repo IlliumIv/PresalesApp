@@ -82,6 +82,7 @@ namespace PresalesApp.Bridge1C.Controllers
 
             Log.Debug($"{http_client.BaseAddress}{message.RequestUri}");
 
+            http_client.Timeout = TimeSpan.FromMinutes(3);
             HttpResponseMessage response = http_client.SendAsync(message).Result;
 
             if (response.IsSuccessStatusCode)

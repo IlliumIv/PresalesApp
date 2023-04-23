@@ -1,11 +1,12 @@
-﻿@using Period = PresalesApp.Web.Client.Helpers.Period
+﻿@using System.Globalization
+@using Period = PresalesApp.Web.Client.Helpers.Period
 
 <input title="Начало периода" type="date" max="@Helpers.ToMinMaxFormatString(Period.To)"
-    value="@Helpers.ToMinMaxFormatString(Period.From)"
+    value="@Helpers.ToMinMaxFormatString(Period.From)" lang="@CultureInfo.CurrentCulture"
        @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text date-only-period" />
 <label>&nbsp;-&nbsp;</label>
 <input title="Конец периода" type="date" min="@Helpers.ToMinMaxFormatString(Period.From)"
-    value="@Helpers.ToMinMaxFormatString(Period.To)"
+    value="@Helpers.ToMinMaxFormatString(Period.To)" lang="@CultureInfo.CurrentCulture"
        @onchange="((ChangeEventArgs e) => OnToChanged(e?.Value))" class="input-group-text date-only-period" />
 
 @code {

@@ -83,5 +83,41 @@ namespace PresalesApp.Database {
                 this["Password"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("***REMOVED***")]
+        public string Issuer {
+            get {
+                return ((string)(this["Issuer"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("***REMOVED***")]
+        public string Audience {
+            get {
+                return ((string)(this["Audience"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("\"someLongLongVeryVerySecretKey\"")]
+        public string SecretKey {
+            get {
+                return ((string)(this["SecretKey"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.00:00:00")]
+        public global::System.TimeSpan Expiry {
+            get {
+                return ((global::System.TimeSpan)(this["Expiry"]));
+            }
+        }
     }
 }

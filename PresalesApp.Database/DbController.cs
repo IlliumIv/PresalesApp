@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PresalesApp.Database.Entities;
 using PresalesApp.Database.Entities.Updates;
 using Serilog;
@@ -93,7 +94,7 @@ namespace PresalesApp.Database
             public void Delete() => Database.EnsureDeleted();
         }
 
-        public class ReadOnlyContext : DbContext
+        public class ReadOnlyContext : IdentityDbContext<User>
         {
             // https://stackoverflow.com/a/10438977
             public ReadOnlyContext() { }
@@ -144,6 +145,33 @@ namespace PresalesApp.Database
 
             internal Task<int> BaseSaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
                 base.SaveChangesAsync(acceptAll, token);
+        }
+
+        public class TODOReadWriteContext : ReadOnlyContext
+        {
+            public TODOReadWriteContext() { }
+
+            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            {
+                optionsBuilder.UseNpgsql($"host={Settings.Default.Host};" +
+                    $"port={Settings.Default.Port};" +
+                    $"database={Settings.Default.Database};" +
+                    $"username={Settings.Default.Username};" +
+                    $"password={Settings.Default.Password}");
+            }
+
+            public new int SaveChanges() => base.BaseSaveChanges();
+
+            public new int SaveChanges(bool acceptAll) => base.BaseSaveChanges(acceptAll);
+
+            public new Task<int> SaveChangesAsync(CancellationToken token = default)
+                => base.BaseSaveChangesAsync(token);
+
+            public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
+                base.BaseSaveChangesAsync(acceptAll, token);
+
+            public void Create() => Database.EnsureCreated();
+            public void Delete() => Database.EnsureDeleted();
         }
     }
 }

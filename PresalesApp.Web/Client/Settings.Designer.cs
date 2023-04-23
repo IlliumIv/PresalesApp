@@ -44,10 +44,19 @@ namespace PresalesApp.Web.Client {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("lang_culture")]
+        [global::System.Configuration.DefaultSettingValueAttribute("i18nextLng")]
         public string StorageCultureKey {
             get {
                 return ((string)(this["StorageCultureKey"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("token")]
+        public string StorageTokenKey {
+            get {
+                return ((string)(this["StorageTokenKey"]));
             }
         }
     }

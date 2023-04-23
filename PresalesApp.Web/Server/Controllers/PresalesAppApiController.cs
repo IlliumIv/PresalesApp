@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PresalesApp.Database;
 using PresalesApp.Database.Entities;
+using PresalesApp.Database.Authorization;
 using PresalesApp.Web.Shared;
 using System.Security.Authentication;
 using System.Security.Cryptography;
@@ -15,13 +16,22 @@ using Position = PresalesApp.Database.Enums.Position;
 using ProjectStatus = PresalesApp.Database.Enums.ProjectStatus;
 using Project = PresalesApp.Database.Entities.Project;
 using static PresalesApp.Database.DbController;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Google.Protobuf;
 
 namespace PresalesApp.Web.Controllers
 {
+    [Authorize]
     public class PresalesAppApiController : PresalesAppApi.PresalesAppApiBase
     {
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<User> _userManager;
+        private readonly TokenParameters _tokenParameters;
+        private readonly ILogger<PresalesAppApiController> _logger;
+
         private readonly decimal plan = 10017608;
-        private string cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
+        private string _cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
         private ImageResponse _cashedImageGirl = new()
         {
             Raw = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3",
@@ -36,7 +46,6 @@ namespace PresalesApp.Web.Controllers
             AuthorUrl = @"https://unsplash.com/@ganinph",
             SourceUrl = @"https://unsplash.com/",
         };
-
         private ImageResponse _cashedImageNY = new()
         {
             Raw = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3",
@@ -51,6 +60,116 @@ namespace PresalesApp.Web.Controllers
             AuthorUrl = @"https://unsplash.com/@mero_dnt",
             SourceUrl = @"https://unsplash.com/",
         };
+
+        public PresalesAppApiController(
+            RoleManager<IdentityRole> roleManager,
+            UserManager<User> userManager,
+            TokenParameters tokenParameters,
+            ILogger<PresalesAppApiController> logger)
+        {
+            _roleManager = roleManager;
+            _userManager = userManager;
+            _tokenParameters = tokenParameters;
+            _logger = logger;
+        }
+
+        [AllowAnonymous]
+        public override async Task<LoginResponse> Register(RegisterRequest request, ServerCallContext context)
+        {
+            if (string.IsNullOrWhiteSpace(request.LoginRequest.Login))
+            {
+                return new LoginResponse
+                {
+                    Error = new Error
+                    {
+                        Message = "Login is not valid"
+                    }
+                };
+            }
+
+            var newUser = new User
+            {
+                ProfileName = request.Profile.Name,
+                UserName = request.LoginRequest.Login
+            };
+
+            var user = await _userManager.CreateAsync(newUser, request.LoginRequest.Password);
+
+            if (user.Succeeded)
+            {
+                return new LoginResponse
+                {
+                    UserInfo = new UserInfo
+                    {
+                        Token = await newUser.GenerateJwtToken(_tokenParameters, _roleManager, _userManager),
+                        Profile = new UserProfile
+                        {
+                            Name = newUser.ProfileName
+                        }
+                    }
+                };
+            }
+
+            return new LoginResponse
+            {
+                Error = new Error
+                {
+                    Message = user.Errors.FirstOrDefault()?.Description
+                }
+            };
+        }
+
+        [AllowAnonymous]
+        public override async Task<LoginResponse> Login(LoginRequest request, ServerCallContext context)
+        {
+            var user = await _userManager.FindByNameAsync(request.Login);
+            if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+            {
+                return new LoginResponse
+                {
+                    Error = new Error
+                    {
+                        Message = "User not found or password is incorrect"
+                    }
+                };
+            }
+
+            return new LoginResponse
+            {
+                UserInfo = new UserInfo
+                {
+                    Token = await user.GenerateJwtToken(_tokenParameters, _roleManager, _userManager),
+                    Profile = new UserProfile
+                    {
+                        Name = user.ProfileName
+                    }
+                }
+            };
+        }
+
+        public override async Task<UserInfoResponse> GetUserProfile(Empty request, ServerCallContext context)
+        {
+            var user = await _userManager.GetUserAsync(context.GetHttpContext().User);
+
+            if (user == null)
+            {
+                return new UserInfoResponse
+                {
+                    Error = new Error
+                    {
+                        Message = "No access"
+                    }
+                };
+            }
+
+            return new UserInfoResponse
+            {
+                Profile = new UserProfile
+                {
+                    Name = user.ProfileName
+                },
+            };
+        }
 
         public override Task<KpiResponse> GetKpi(KpiRequest request, ServerCallContext context)
         {
@@ -358,6 +477,7 @@ namespace PresalesApp.Web.Controllers
             return Task.FromResult(reply);
         }
 
+        [AllowAnonymous]
         public override Task<ImageResponse> GetImage(ImageRequest request, ServerCallContext context)
         {
             try
@@ -476,10 +596,10 @@ namespace PresalesApp.Web.Controllers
             httpRequest.Headers.Add("Authorization", "Basic 0J/QvtC70Y/QutC+0LLQmDpraDk5OFh0Rg==");
             var httpResponse = httpClient.SendAsync(httpRequest).Result;
             var result = httpResponse.Content.ReadAsStringAsync().Result;
-            if (!httpResponse.IsSuccessStatusCode) result = cachedOverview;
-            cachedOverview = result;
+            if (!httpResponse.IsSuccessStatusCode) result = _cachedOverview;
+            _cachedOverview = result;
 
-            var response = JsonConvert.DeserializeObject<dynamic>(cachedOverview);
+            var response = JsonConvert.DeserializeObject<dynamic>(_cachedOverview);
             var reply = new SalesOverview();
 
             if (response != null)

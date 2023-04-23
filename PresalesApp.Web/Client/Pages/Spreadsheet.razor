@@ -8,7 +8,7 @@
 
 <AuthorizeView>
     <h1>@Localization["SpreadsheetPage"]</h1>
-    <p>
+    <div class="d-flex">
         <DateOnly_Period Period="period"
                          OnPeriodChangedCallback="(async (Period period) => {this.period = period; await UpdateData();})">
         </DateOnly_Period>
@@ -19,7 +19,7 @@
         <input title="Только действующие" type="checkbox" id="onlyActive" value="@only_active"
                @onchange="((ChangeEventArgs e) => OnStatusChanged(e?.Value))"
                checked class="inline-check inline-check-big" style="cursor: help;" />
-    </p>
+    </div>
     @if (overview == null)
     {
         <p><em>Loading...</em></p>
@@ -130,6 +130,9 @@
 </AuthorizeView>
 
 @code {
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
     private static readonly DateOnly first_day = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
     private Period period = new Period
         {
@@ -188,5 +191,5 @@
         only_active = obj == null ? only_active : (bool)obj;
         await UpdateData();
     }
-    protected override async Task OnInitializedAsync() => await UpdateData();
+    protected override async Task OnParametersSetAsync() => await UpdateData();
 }
