@@ -1,0 +1,124 @@
+﻿@inject AuthorizeApi _autorizeApi
+
+<AuthorizeView>
+    <Authorized>
+        <Button Type="ButtonType.Button" Color="Color.Light">@_profile.Name</Button>
+        <Button Type="ButtonType.Button" Color="Color.Light" Clicked="@Logout">@Localization["LogoutButtonText"]</Button>
+    </Authorized>
+    <NotAuthorized>
+        <Button Type="ButtonType.Button" Color="Color.Dark" Clicked="@(() => _registerModal.Show())">@Localization["RegisterModalButtonText"]</Button>
+        <Button Type="ButtonType.Button" Color="Color.Dark" Clicked="@(() => _loginModal.Show())">@Localization["LoginButtonModalText"]</Button>
+    </NotAuthorized>
+</AuthorizeView>
+
+<Modal @ref="_loginModal">
+    <ModalContent Centered>
+        <ModalBody>
+            <Field>
+                <FieldLabel>@Localization["LoginText"]</FieldLabel>
+                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]" Role="TextRole.Text" @bind-Text="_login" />
+            </Field>
+            <Field>
+                <FieldLabel>@Localization["PasswordText"]</FieldLabel>
+                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]" Role="TextRole.Password" @bind-Text="_password" />
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@(() => _loginModal.Hide())">@Localization["CloseButtonText"]</Button>
+            <Button Color="Color.Primary" Clicked="@Login" Disabled="@_loginDisabled">@Localization["LoginButtonModalText"]</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<Modal @ref="_registerModal">
+    <ModalContent Centered>
+        <ModalBody>
+            <Field>
+                <FieldLabel>@Localization["UsernameText"]</FieldLabel>
+                <TextEdit Placeholder="@Localization["UsernameTextPlaceholder"]" Role="TextRole.Text" @bind-Text="@_profile.Name" />
+            </Field>
+            <Field>
+                <FieldLabel>@Localization["LoginText"]</FieldLabel>
+                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]" Role="TextRole.Text" @bind-Text="_login" />
+            </Field>
+            <Field>
+                <FieldLabel>@Localization["PasswordText"]</FieldLabel>
+                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]" Role="TextRole.Password" @bind-Text="_password" />
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@(() => _registerModal.Hide())">@Localization["CloseButtonText"]</Button>
+            <Button Color="Color.Primary" Clicked="@Register" Disabled="@_registerDisabled">@Localization["RegisterModalButtonText"]</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter, EditorRequired]
+    public ErrorSnackbar ErrorSnackbar { get; set; }
+
+    private UserProfile _profile => IdentityAuthenticationStateProvider.Profile;
+
+    private Modal _loginModal;
+    private Modal _registerModal;
+
+    private bool _loginDisabled = false;
+    private bool _registerDisabled = false;
+
+    private string _login;
+    private string _password;
+
+    private async Task Register()
+    {
+        _registerDisabled = true;
+        try
+        {
+            if (await _autorizeApi.TryRegister(new RegisterRequest
+                {
+                    LoginRequest = new LoginRequest
+                    {
+                        Login = _login,
+                        Password = _password
+                    },
+                    Profile = _profile
+                }))
+            {
+                await _registerModal.Hide();
+            }
+        }
+        catch (Exception e)
+        {
+            ErrorSnackbar.Message = (MarkupString)e.Message;
+            await ErrorSnackbar.Show();
+        }
+        _registerDisabled = false;
+    }
+
+    private async Task Login()
+    {
+        _loginDisabled = true;
+        try
+        {
+            if (await _autorizeApi.TryLogin(new LoginRequest
+                {
+                    Login = _login,
+                    Password = _password
+                }))
+            {
+                await _loginModal.Hide();
+            }
+        }
+        catch (Exception e)
+        {
+            ErrorSnackbar.Message = (MarkupString)e.Message;
+            await ErrorSnackbar.Show();
+        }
+        _loginDisabled = false;
+    }
+
+    private async Task Logout()
+    {
+        await _autorizeApi.Logout();
+    }
+}
+

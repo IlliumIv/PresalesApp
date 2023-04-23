@@ -1,7 +1,8 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using PresalesApp.Web.Shared;
-using System;
 using System.Globalization;
 using System.Text;
 using Action = PresalesApp.Web.Shared.Action;
@@ -56,24 +57,34 @@ namespace PresalesApp.Web.Client.Helpers
                 Convert.ToBase64String(data));
         }
 
-        public async static Task Download(this Kpi? kpi, IJSRuntime js, string presaleName, int month, int year)
+        public async static Task Download(this Kpi? kpi, IJSRuntime js, string presaleName, int month, int year, IStringLocalizer<App> localization)
         {
             if (kpi == null) return;
 
-            string text = $"№;Контрагент;Номер;Дата;Сумма по счёту;Себестоимость;Прибыль;Процент;Премия;Проекты\n";
+            string text = $"{localization["OrderNumberText"]};" +
+                $"{localization["CounterpartText"]};" +
+                $"{localization["InvoiceNumberText"]};" +
+                $"{localization["InvoiceDateText"]};" +
+                $"{localization["InvoiceAmountText"]};" +
+                $"{localization["InvoiceCostPriceText"]};" +
+                $"{localization["InvoiceProfitText"]};" +
+                $"{localization["PresalePercentText"]};" +
+                $"{localization["PresaleProfitText"]};" +
+                $"{localization["ProjectsText"]}\n";
+
             int i = 0;
-            foreach (var inv in kpi.Invoices)
+            foreach (var invoice in kpi.Invoices)
             {
                 i++;
-                text += $"{i};{inv.Counterpart};{inv.Number};{inv.Date.ToDateTime().ToPresaleTime()};" +
-                $"{(decimal)inv.Amount};{(decimal)inv.Cost};" +
-                $"{(decimal)inv.SalesAmount};{(inv.Percent > 0 ? inv.Percent * 100 : "")};" +
-                $"{((decimal)inv.Profit > 0 ? (decimal)inv.Profit : "")};";
-                foreach (var project in inv.ProjectsFound)
+                text += $"{i};{invoice.Counterpart};{invoice.Number};{invoice.Date.ToDateTime().ToPresaleTime()};" +
+                $"{(decimal)invoice.Amount};{(decimal)invoice.Cost};" +
+                $"{(decimal)invoice.SalesAmount};{(invoice.Percent > 0 ? invoice.Percent * 100 : "")};" +
+                $"{((decimal)invoice.Profit > 0 ? (decimal)invoice.Profit : "")};";
+                foreach (var project in invoice.ProjectsFound)
                 {
                     text += $"{project.Number}, ";
                 }
-                if (inv.ProjectsFound.Any()) text = text[..^2];
+                if (invoice.ProjectsFound.Any()) text = text[..^2];
                 text += "\n";
             }
 
@@ -81,17 +92,28 @@ namespace PresalesApp.Web.Client.Helpers
             byte[] result = Encoding.UTF8.GetPreamble().Concat(bytes).ToArray();
             UTF8Encoding encoder = new(true);
             text = encoder.GetString(result);
-            await SaveAs(js, $"Отчёт KPI за {ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(month))} {year}, {presaleName}.csv", Encoding.UTF8.GetBytes(text));
+            await SaveAs(js, $"{(MarkupString)localization["KpiReportFileName",
+                        ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(month)),
+                        year, presaleName].Value}.csv", Encoding.UTF8.GetBytes(text));
         }
 
-        public async static Task Download(this UnpaidProjects? projects, IJSRuntime js)
+        public async static Task Download(this UnpaidProjects? projects, IJSRuntime js, IStringLocalizer<App> localization)
         {
             if (projects == null) return;
 
-            string text = $"Номер;Название;Пресейл;Статус;Согласовано РОП;Согласовано РП;Взято в работу;Закрыто;Привязанных счетов\n";
+            string text = $"{localization["ProjectNumberText"]};" +
+                $"{localization["ProjectNameText"]};" +
+                $"{localization["PresaleNameText"]};" +
+                $"{localization["ProjectStatusText"]};" +
+                $"{localization["ApprovalBySalesDirectorDateText"]} ;" +
+                $"{localization["ApprovalByTechDirectorDateText"]} ;" +
+                $"{localization["PresaleStartDateText"]} ;" +
+                $"{localization["ProjectCloseDateText"]} ;" +
+                $"{localization["ProjectInvoicesCountText"]}\n";
+
             foreach(var project in projects.Projects)
             {
-                text += $"{project.Number};{project.Name};{project.PresaleName};{project.Status.GetName()};" +
+                text += $"{project.Number};{project.Name};{project.PresaleName};{project.Status.GetName(localization)};" +
                     $"{project.ApprovalBySalesDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.PresaleStartAt.ToDateTime().ToPresaleTime()};" +
@@ -103,34 +125,34 @@ namespace PresalesApp.Web.Client.Helpers
             byte[] result = Encoding.UTF8.GetPreamble().Concat(bytes).ToArray();
             UTF8Encoding encoder = new(true);
             text = encoder.GetString(result);
-            await SaveAs(js, $"Неоплаченные проекты на {DateTime.Now}.csv", Encoding.UTF8.GetBytes(text));
+            await SaveAs(js, $"{(MarkupString)localization["UnpaidReportFileName", DateTime.Now].Value}.csv", Encoding.UTF8.GetBytes(text));
         }
 
-        public static string GetName(this Department department) => department switch
+        public static string GetName(this Department department, IStringLocalizer<App> localization) => department switch
         {
-            Department.None => "Без направления",
-            Department.Russian => "Россия и СНГ",
-            Department.International => "Международное",
-            Department.Any => "Любое заданное",
+            Department.None => localization["DepartmentNoneText"],
+            Department.Russian => localization["DepartmentRussianText"],
+            Department.International => localization["DepartmentInternationalText"],
+            Department.Any => localization["DepartmentAnyText"],
             _ => throw new NotImplementedException()
         };
 
-        public static string GetName(this Position position) => position switch
+        public static string GetName(this Position position, IStringLocalizer<App> localization) => position switch
         {
-            Position.None => "Без должности",
-            Position.Account => "Аккаунт",
-            Position.Engineer => "Инженер",
-            Position.Director => "Руководитель",
-            Position.Any => "Любая заданная",
+            Position.None => localization["PositionNoneText"],
+            Position.Account => localization["PositionAccountText"],
+            Position.Engineer => localization["PositionEngineerText"],
+            Position.Director => localization["PositionDirectorText"],
+            Position.Any => localization["PositionAnyText"],
             _ => throw new NotImplementedException()
         };
 
-        public static string GetName(this ProjectStatus status) => status switch
+        public static string GetName(this ProjectStatus status, IStringLocalizer<App> localization) => status switch
         {
-            ProjectStatus.Unknown => "Неизвестно",
-            ProjectStatus.WorkInProgress => "В работе",
-            ProjectStatus.Won => "Выигран",
-            ProjectStatus.Loss => "Проигран",
+            ProjectStatus.Unknown => localization["ProjectStatusUnknownText"],
+            ProjectStatus.WorkInProgress => localization["ProjectStatusWorkInProgressText"],
+            ProjectStatus.Won => localization["ProjectStatusWonText"],
+            ProjectStatus.Loss => localization["ProjectStatusLossText"],
             _ => throw new NotImplementedException()
         };
 
@@ -141,14 +163,14 @@ namespace PresalesApp.Web.Client.Helpers
             return dateTime.ToLocalTime();
         }
 
-        public static string Format(this Action action) =>
+        public static string Format(this Action action, IStringLocalizer<App> localization) =>
             $"{action.ProjectNumber} [{action.Type}" +
             $"{ToDateString(action.Date, ": ")}" +
             $" ({action.Timespend.ToTimeSpan().TotalMinutes})], \"{action.Description}\"" +
-            (action.SalesFunnel ? " (Действие в рамках воронки)." : ".");
+            (action.SalesFunnel ? $" ({localization["ActionSalesFunnelMarkText"]})." : ".");
 
-        public static string Format(this Project project) =>
-            $"{project.Number} [{project.Status.GetName()}" +
+        public static string Format(this Project project, IStringLocalizer<App> localization) =>
+            $"{project.Number} [{project.Status.GetName(localization)}" +
             $"{ToDateString(project.ClosedAt, ": ")}" +
             $"], \"{project.Name}\"";
 
