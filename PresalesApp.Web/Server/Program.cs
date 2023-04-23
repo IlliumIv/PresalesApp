@@ -1,48 +1,10 @@
-using PresalesApp.Web.Controllers;
+using PresalesApp.Web.Server.Startup;
 
 namespace PresalesApp.Web
 {
     public class Program
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-
-            builder.Services.AddControllersWithViews();
-            builder.Services.AddRazorPages();
-            builder.Services.AddGrpc();
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseWebAssemblyDebugging();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseBlazorFrameworkFiles();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseGrpcWeb();
-            app.MapGrpcService<PresalesAppApiController>().EnableGrpcWeb();
-
-            app.MapRazorPages();
-            app.MapControllers();
-            app.MapFallbackToFile("index.html");
-
-            app.Run();
-        }
+        public static void Main(string[] args) => 
+            WebApplication.CreateBuilder(args).ConfigureServices().Build().ConfigureApplication().Run();
     }
 }

@@ -139,7 +139,7 @@
   <data name="SalesDashboardPage" xml:space="preserve">
     <value>Инфографика продаж</value>
   </data>
-  <data name="LoginButtonText" xml:space="preserve">
+  <data name="LoginButtonModalText" xml:space="preserve">
     <value>Войти</value>
   </data>
   <data name="LoginText" xml:space="preserve">
@@ -162,5 +162,134 @@
   </data>
   <data name="LogoutButtonText" xml:space="preserve">
     <value>Выйти</value>
+  </data>
+  <data name="RegisterModalButtonText" xml:space="preserve">
+    <value>Зарегистрироваться</value>
+  </data>
+  <data name="UsernameText" xml:space="preserve">
+    <value>#UsernameText#</value>
+  </data>
+  <data name="UsernameTextPlaceholder" xml:space="preserve">
+    <value>#UsernameTextPlaceholder#</value>
+  </data>
+  <data name="DepartmentNoneText" xml:space="preserve">
+    <value>Без направления</value>
+  </data>
+  <data name="DepartmentRussianText" xml:space="preserve">
+    <value>Россия и СНГ</value>
+  </data>
+  <data name="DepartmentInternationalText" xml:space="preserve">
+    <value>Международное</value>
+  </data>
+  <data name="DepartmentAnyText" xml:space="preserve">
+    <value>Любое заданное</value>
+  </data>
+  <data name="PositionNoneText" xml:space="preserve">
+    <value>Без должности</value>
+  </data>
+  <data name="PositionAccountText" xml:space="preserve">
+    <value>Аккаунт</value>
+  </data>
+  <data name="PositionEngineerText" xml:space="preserve">
+    <value>Инженер</value>
+  </data>
+  <data name="PositionDirectorText" xml:space="preserve">
+    <value>Руководитель</value>
+  </data>
+  <data name="PositionAnyText" xml:space="preserve">
+    <value>Любая заданная</value>
+  </data>
+  <data name="ProjectStatusUnknownText" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="ProjectStatusWorkInProgressText" xml:space="preserve">
+    <value>В работе</value>
+  </data>
+  <data name="ProjectStatusWonText" xml:space="preserve">
+    <value>Выигран</value>
+  </data>
+  <data name="ProjectStatusLossText" xml:space="preserve">
+    <value>Проигран</value>
+  </data>
+  <data name="OrderNumberText" xml:space="preserve">
+    <value>№</value>
+  </data>
+  <data name="CounterpartText" xml:space="preserve">
+    <value>Контрагент</value>
+  </data>
+  <data name="InvoiceNumberText" xml:space="preserve">
+    <value>Номер счёта</value>
+  </data>
+  <data name="InvoiceDateText" xml:space="preserve">
+    <value>Дата счёта</value>
+  </data>
+  <data name="InvoiceAmountText" xml:space="preserve">
+    <value>Сумма по счёту</value>
+  </data>
+  <data name="InvoiceCostPriceText" xml:space="preserve">
+    <value>Себестоимость</value>
+  </data>
+  <data name="InvoiceProfitText" xml:space="preserve">
+    <value>Прибыль</value>
+  </data>
+  <data name="PresalePercentText" xml:space="preserve">
+    <value>Процент</value>
+  </data>
+  <data name="PresaleProfitText" xml:space="preserve">
+    <value>Премия</value>
+  </data>
+  <data name="ProjectsText" xml:space="preserve">
+    <value>Проекты</value>
+  </data>
+  <data name="KpiReportFileName" xml:space="preserve">
+    <value>Отчёт KPI за {0} {1}, {2}</value>
+  </data>
+  <data name="ProjectNumberText" xml:space="preserve">
+    <value>Номер проекта</value>
+  </data>
+  <data name="ProjectNameText" xml:space="preserve">
+    <value>Название проекта</value>
+  </data>
+  <data name="PresaleNameText" xml:space="preserve">
+    <value>Пресейл</value>
+  </data>
+  <data name="ProjectStatusText" xml:space="preserve">
+    <value>Статус проекта</value>
+  </data>
+  <data name="ApprovalBySalesDirectorDateText" xml:space="preserve">
+    <value>Дата согласования РОП</value>
+  </data>
+  <data name="ApprovalByTechDirectorDateText" xml:space="preserve">
+    <value>Дата согласования руководителем пресейлов</value>
+  </data>
+  <data name="PresaleStartDateText" xml:space="preserve">
+    <value>Дата взятия пресейлом в работу</value>
+  </data>
+  <data name="ProjectCloseDateText" xml:space="preserve">
+    <value>Дата закрытия проекта</value>
+  </data>
+  <data name="ProjectInvoicesCountText" xml:space="preserve">
+    <value>Количество привязанных счетов</value>
+  </data>
+  <data name="UnpaidReportFileName" xml:space="preserve">
+    <value>Неоплаченные проекты на {0}</value>
+  </data>
+  <data name="ActionSalesFunnelMarkText" xml:space="preserve">
+    <value>Действие в рамках воронки</value>
+  </data>
+  <data name="DownloadReportButtonText" xml:space="preserve">
+    <value>Скачать отчёт</value>
+  </data>
+  <data name="NeedSelectPresaleMessageText" xml:space="preserve">
+    <value>Выберите пресейла.</value>
+  </data>
+  <data name="ReportIsDoneMessageText" xml:space="preserve">
+    <value>Отчёт сгенерирован!</value>
+  </data>
+  <data name="NoInvoicesForThisPeriodMessageText" xml:space="preserve">
+    <value>Нет счетов за указанный период.</value>
+  </data>
+  <data name="UnknownServerResponseMessageText" xml:space="preserve">
+    <value>Неизвестный ответ сервера.</value>
   </data>
 </root>

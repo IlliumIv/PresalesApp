@@ -15,10 +15,14 @@ else
 }
 
 @code {
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
     private NamesResponse? presales;
     private string selectedName = string.Empty;
 
-    protected override async Task OnInitializedAsync() => presales = await Api.GetNamesAsync(new Empty());
+    protected override async Task OnParametersSetAsync() => presales = await Api.GetNamesAsync(new Empty());
+
     private void OnPresaleChanged(object? obj)
     {
         selectedName = obj?.ToString() ?? string.Empty;

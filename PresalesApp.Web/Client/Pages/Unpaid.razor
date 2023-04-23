@@ -34,6 +34,9 @@
 </AuthorizeView>
 
 @code {
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
     private UnpaidProjects? projects;
     private string presale_name = string.Empty;
     private bool is_main_project_include = false;
@@ -47,7 +50,8 @@
 
     private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() { { "disabled", "disabled" } };
 
-    protected override async Task OnInitializedAsync() => await UpdateData();
+    protected override async Task OnParametersSetAsync() => await UpdateData();
+
     private async Task UpdateData()
     {
         try
@@ -66,7 +70,7 @@
         }
         StateHasChanged();
     }
-    private async Task DownloadFile() => await projects.Download(js);
+    private async Task DownloadFile() => await projects.Download(js, Localization);
 
     private async void OnModeChanged(object? obj)
     {
