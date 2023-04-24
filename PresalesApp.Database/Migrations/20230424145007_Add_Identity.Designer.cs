@@ -11,9 +11,9 @@ using PresalesApp.Database;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ReadWriteContext))]
-    [Migration("20230422164248_Add_User_ProfileName")]
-    partial class Add_User_ProfileName
+    [DbContext(typeof(DbController.ControllerContext))]
+    [Migration("20230424145007_Add_Identity")]
+    partial class Add_Identity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

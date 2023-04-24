@@ -11,7 +11,7 @@ namespace PresalesApp.Database
         {
             var query = new Task(() =>
             {
-                using var _dbContext = new ReadWriteContext();
+                using var _dbContext = new ControllerContext();
                 if (!this.TryUpdateIfExist(_dbContext)) this.GetOrAddIfNotExist(_dbContext);
                 _dbContext.SaveChanges();
                 _dbContext.Dispose();
@@ -21,9 +21,9 @@ namespace PresalesApp.Database
             query.Wait();
         }
 
-        internal abstract bool TryUpdateIfExist(ReadWriteContext dbContext);
+        internal abstract bool TryUpdateIfExist(ControllerContext dbContext);
 
-        internal abstract Entity GetOrAddIfNotExist(ReadWriteContext dbContext);
+        internal abstract Entity GetOrAddIfNotExist(ControllerContext dbContext);
 
         public abstract override string ToString();
 

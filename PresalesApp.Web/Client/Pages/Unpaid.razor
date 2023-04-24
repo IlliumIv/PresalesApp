@@ -4,38 +4,33 @@
 
 <PageTitle>@Localization["UnpaidPage"]</PageTitle>
 
-<AuthorizeView>
-    <h1>@Localization["UnpaidPage"]</h1>
-    <p>@Localization["UnpaidPageDescription"]</p>
-    <p>
-        <ComboBox_PresalesNames OnSelectCallback="(async (string name) => {presale_name = name; await UpdateData();})">
-        </ComboBox_PresalesNames>
-        <DateOnly_Period Period="period"
-                         OnPeriodChangedCallback="(async (Period period) => { this.period = period; await UpdateData();})">
-        </DateOnly_Period>
-        <input title="Учитывать счета в основных проектах" type="checkbox"
-               id="lookAtMains" value="@is_main_project_include"
-               @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
-               unchecked class="inline-check" style="cursor: help;" />
-        <button @attributes="downloadBtnAttrs" class="btn btn-primary"
-                @onclick="DownloadFile">
-            Скачать отчёт
-        </button>
-    </p>
+<h1>@Localization["UnpaidPage"]</h1>
+<p>@Localization["UnpaidPageDescription"]</p>
+<div class="d-flex">
+    <ComboBox_PresalesNames OnSelectCallback="@(async (string name) => { presale_name = name; await UpdateData();})" />
+    <DateOnly_Period Period="period" OnPeriodChangedCallback="(async (Period period) => { this.period = period; await UpdateData();})" />
+    <input title="Учитывать счета в основных проектах" type="checkbox"
+            id="lookAtMains" value="@is_main_project_include"
+            @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
+            unchecked class="inline-check" style="cursor: help;" />
+    <button @attributes="downloadBtnAttrs" class="btn btn-primary"
+            @onclick="DownloadFile">
+        Скачать отчёт
+    </button>
+</div>
 
-    @if (projects == null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        <Table_Projects Projects="projects.Projects"></Table_Projects>
-    }
-</AuthorizeView>
+@if (projects == null)
+{
+    <em>Loading...</em>
+}
+else
+{
+    <Table_Projects Projects="projects.Projects" />
+}
 
 @code {
     [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationState { get; set; }
+    public MessageSnackbar messageHandler { get; set; }
 
     private UnpaidProjects? projects;
     private string presale_name = string.Empty;
@@ -64,12 +59,14 @@
             });
             downloadBtnAttrs = new();
         }
-        catch
+        catch (Exception e)
         {
             downloadBtnAttrs = new() { { "disabled", "disabled" } };
+            await messageHandler.Show(e.Message);
         }
         StateHasChanged();
     }
+
     private async Task DownloadFile() => await projects.Download(js, Localization);
 
     private async void OnModeChanged(object? obj)

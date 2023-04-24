@@ -60,12 +60,12 @@ namespace PresalesApp.Database.Entities
             $"\"Описание\":\"{this.Description}\"," +
             $"\"Проект\":\"{this.Project?.Number}\"}}";
 
-        internal override bool TryUpdateIfExist(DbController.ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(DbController.ControllerContext dbContext)
         {
             throw new NotImplementedException();
         }
 
-        internal override PresaleAction GetOrAddIfNotExist(DbController.ReadWriteContext dbContext)
+        internal override PresaleAction GetOrAddIfNotExist(DbController.ControllerContext dbContext)
         {
             throw new NotImplementedException();
         }

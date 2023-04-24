@@ -101,6 +101,9 @@ a, .btn-link {
     content: var(--blazor-load-percentage-text, "Loading");
 }
 */
+.snackbar-body {
+    justify-content: center!important;
+}
 
 .nav-item a.active, .nav-item a:hover {
     background: none !important

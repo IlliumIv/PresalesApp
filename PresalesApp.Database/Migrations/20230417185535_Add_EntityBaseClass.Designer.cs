@@ -11,7 +11,7 @@ using PresalesApp.Database;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ReadWriteContext))]
+    [DbContext(typeof(DbController.ControllerContext))]
     [Migration("20230417185535_Add_EntityBaseClass")]
     partial class Add_EntityBaseClass
     {

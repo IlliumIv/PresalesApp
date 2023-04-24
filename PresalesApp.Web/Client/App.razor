@@ -1,8 +1,10 @@
 ﻿<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            <!--<FocusOnNavigate RouteData="@routeData" Selector="h1" />-->
+            <MessageSnackbar @ref=messageHandler />
+            <CascadingValue Value="@messageHandler">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            </CascadingValue>
         </Found>
         <NotFound>
             <PageTitle>Not found</PageTitle>
@@ -22,3 +24,7 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    private MessageSnackbar messageHandler = new MessageSnackbar();
+}

@@ -4,7 +4,7 @@ namespace PresalesApp.Database.Entities.Updates
 {
     public class CacheLogsUpdate : Update
     {
-        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ControllerContext dbContext)
         {
             var update_in_db = dbContext.CacheLogsUpdates.SingleOrDefault();
             if (update_in_db != null)
@@ -17,7 +17,7 @@ namespace PresalesApp.Database.Entities.Updates
             return update_in_db != null;
         }
 
-        internal override CacheLogsUpdate GetOrAddIfNotExist(ReadWriteContext dbContext)
+        internal override CacheLogsUpdate GetOrAddIfNotExist(ControllerContext dbContext)
         {
             var update_in_db = dbContext.CacheLogsUpdates.SingleOrDefault();
             if (update_in_db == null)

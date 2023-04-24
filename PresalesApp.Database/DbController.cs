@@ -11,10 +11,8 @@ namespace PresalesApp.Database
         internal static readonly QueriesQueue<Task> Queries = new();
         private readonly static ManualResetEvent _while_queue_empty = new(false);
 
-        public static void Start(ILogger logger)
+        public static void Start()
         {
-            Log.Logger = logger;
-
             Queries.OnEnqueued += Queries_OnEnqueued;
             Queries.OnReachedEmpty += Queries_OnReachedEmpty;
 
@@ -46,7 +44,7 @@ namespace PresalesApp.Database
             _while_queue_empty.Set();
         }
 
-        internal static List<T>? Update<T>(this List<T>? itemsA, List<T>? itemsB, ReadWriteContext dbContext)
+        internal static List<T>? Update<T>(this List<T>? itemsA, List<T>? itemsB, ControllerContext dbContext)
             where T : Entity
         {
             if (itemsB == null) return null;
@@ -67,9 +65,9 @@ namespace PresalesApp.Database
             return itemsB;
         }
 
-        internal class ReadWriteContext : ReadOnlyContext
+        internal class ControllerContext : ReadOnlyContext
         {
-            public ReadWriteContext() { }
+            public ControllerContext() { }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
@@ -89,12 +87,9 @@ namespace PresalesApp.Database
 
             public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
                 base.BaseSaveChangesAsync(acceptAll, token);
-
-            public void Create() => Database.EnsureCreated();
-            public void Delete() => Database.EnsureDeleted();
         }
 
-        public class ReadOnlyContext : IdentityDbContext<User>
+        public class ReadOnlyContext : UsersContext
         {
             // https://stackoverflow.com/a/10438977
             public ReadOnlyContext() { }
@@ -147,9 +142,9 @@ namespace PresalesApp.Database
                 base.SaveChangesAsync(acceptAll, token);
         }
 
-        public class TODOReadWriteContext : ReadOnlyContext
+        public class UsersContext : IdentityDbContext<User>
         {
-            public TODOReadWriteContext() { }
+            public UsersContext() { }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
@@ -159,19 +154,6 @@ namespace PresalesApp.Database
                     $"username={Settings.Default.Username};" +
                     $"password={Settings.Default.Password}");
             }
-
-            public new int SaveChanges() => base.BaseSaveChanges();
-
-            public new int SaveChanges(bool acceptAll) => base.BaseSaveChanges(acceptAll);
-
-            public new Task<int> SaveChangesAsync(CancellationToken token = default)
-                => base.BaseSaveChangesAsync(token);
-
-            public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
-                base.BaseSaveChangesAsync(acceptAll, token);
-
-            public void Create() => Database.EnsureCreated();
-            public void Delete() => Database.EnsureDeleted();
         }
     }
 }

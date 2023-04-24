@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ReadWriteContext))]
+    [DbContext(typeof(DbController.ControllerContext))]
     [Migration("20221003102758_UpdateProject")]
     partial class UpdateProject
     {

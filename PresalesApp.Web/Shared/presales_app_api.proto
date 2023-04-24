@@ -19,6 +19,11 @@ service PresalesAppApi {
 	rpc GetMonthProfitOverview(OverviewRequest) returns (MonthProfitOverview);
 	rpc GetSalesOverview(SalesOverviewRequest) returns (SalesOverview);
 	rpc GetUnpaidProjects(UnpaidRequest) returns (UnpaidProjects);
+	rpc GetFunnelProjects(google.protobuf.Empty) returns (FunnelProjects);
+}
+
+message FunnelProjects {
+	repeated Project projects = 1;
 }
 
 message UserInfo {
@@ -173,11 +178,9 @@ message Overview {
 message Presale {
 	string name = 1;
 	Statistic statistics = 2;
-	int32 deficit_projects = 3;
-	custom_types.DecimalValue deficit_potential = 4;
-	Department department = 5;
-	Position position = 6;
-	bool is_active = 7;
+	Department department = 3;
+	Position position = 4;
+	bool is_active = 5;
 }
 
 message Statistic {
@@ -202,10 +205,12 @@ message Project {
 	google.protobuf.Timestamp approval_by_tech_director_at = 3;
 	google.protobuf.Timestamp approval_by_sales_director_at = 4;
 	google.protobuf.Timestamp presale_start_at = 5;
-	string presale_name = 6;
+	Presale presale = 6;
 	ProjectStatus status = 7;
 	google.protobuf.Timestamp closed_at = 8;
 	repeated Invoice invoices = 9;
+	repeated Action actions = 10;
+	custom_types.DecimalValue potential = 11;
 }
 
 message Action {
