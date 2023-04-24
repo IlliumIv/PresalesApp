@@ -4,7 +4,7 @@ namespace PresalesApp.Database.Entities.Updates
 {
     public class ProjectsUpdate : Update
     {
-        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ControllerContext dbContext)
         {
             var update_in_db = dbContext.ProjectsUpdates.SingleOrDefault();
             if (update_in_db != null)
@@ -17,7 +17,7 @@ namespace PresalesApp.Database.Entities.Updates
             return update_in_db != null;
         }
 
-        internal override ProjectsUpdate GetOrAddIfNotExist(ReadWriteContext dbContext)
+        internal override ProjectsUpdate GetOrAddIfNotExist(ControllerContext dbContext)
         {
             var update_in_db = dbContext.ProjectsUpdates.SingleOrDefault();
             if (update_in_db == null)

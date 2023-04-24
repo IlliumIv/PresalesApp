@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ReadWriteContext))]
+    [DbContext(typeof(DbController.ControllerContext))]
     [Migration("20221003104412_Project_Add_LastStatusChanged")]
     partial class Project_Add_LastStatusChanged
     {

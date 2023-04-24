@@ -1,7 +1,5 @@
 ﻿@inherits LayoutComponentBase
 
-<ErrorSnackbar @ref=error_alert />
-
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -9,7 +7,7 @@
 
     <main>
         <div class="top-row px-4 d-flex">
-            <Profile ErrorSnackbar="error_alert"/>
+            <Profile />
             <CultureSelector />
         </div>
         <AuthorizeView>
@@ -20,7 +18,7 @@
             </Authorized>
             <NotAuthorized>
                 <article class="content px-4">
-                    <PresalesApp.Web.Client.Pages.Index></PresalesApp.Web.Client.Pages.Index>
+                    <PresalesApp.Web.Client.Pages.Index />
                 </article>
             </NotAuthorized>
         </AuthorizeView>
@@ -28,7 +26,8 @@
 </div>
 
 @code {
-    private ErrorSnackbar error_alert;
+    [CascadingParameter]
+    public MessageSnackbar messageHandler { get; set; }
 
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationState { get; set; }
@@ -40,8 +39,7 @@
             AuthenticationState state = await AuthenticationState;
             if (state.User.Identity is null || !state.User.Identity.IsAuthenticated)
             {
-                error_alert.Message = (MarkupString)Localization["NotAuthenticatedErrorMessage"].Value;
-                await error_alert.Show();
+                await messageHandler.Show(Localization["NotAuthenticatedErrorMessage"].Value);
             }
         }
     }

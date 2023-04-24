@@ -292,4 +292,10 @@
   <data name="UnknownServerResponseMessageText" xml:space="preserve">
     <value>Неизвестный ответ сервера.</value>
   </data>
+  <data name="FunnelPage" xml:space="preserve">
+    <value>Воронка</value>
+  </data>
+  <data name="ProjectPotentialText" xml:space="preserve">
+    <value>Потенциал</value>
+  </data>
 </root>

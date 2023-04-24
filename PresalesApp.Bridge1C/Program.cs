@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using PresalesApp.Bridge1C.Controllers;
 using PresalesApp.Database;
@@ -8,7 +7,6 @@ using Serilog;
 using Serilog.Templates;
 using Serilog.Templates.Themes;
 using System.Reflection;
-using static PresalesApp.Database.DbController;
 
 namespace PresalesApp.Bridge1C
 {
@@ -23,7 +21,7 @@ namespace PresalesApp.Bridge1C
             var log_directory = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ??
                 Directory.GetCurrentDirectory();
 
-            Log.Logger = new LoggerConfiguration()
+            var logger = new LoggerConfiguration()
                 // https://github.com/serilog/serilog/wiki/Enrichment
                 .Enrich.FromLogContext()
                 .Enrich.WithThreadId() // Serilog.Enrichers.Thread
@@ -39,7 +37,7 @@ namespace PresalesApp.Bridge1C
                 .WriteTo.Async(a => a.File(
                     formatter: new ExpressionTemplate(log_template),
                     restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information,
-                    path: $"{log_directory}/Logs/Parser.log"))
+                    path: $"{log_directory}/Logs/Bridge1C.log"))
                 .WriteTo.Async(a => a.File(
                     formatter: new ExpressionTemplate(log_template),
                     restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error,
@@ -61,7 +59,7 @@ namespace PresalesApp.Bridge1C
             };
             #endregion
 
-            DbController.Start(Log.Logger);
+            DbController.Start();
             BridgeController.Start<Project>(TimeSpan.Zero);
             BridgeController.Start<CacheLog>(TimeSpan.FromSeconds(5));
             BridgeController.Start<Invoice>(TimeSpan.FromSeconds(10));
@@ -73,6 +71,9 @@ namespace PresalesApp.Bridge1C
             // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
 
             // Add services to the container.
+            builder.Logging.ClearProviders();
+            builder.Logging.AddSerilog(logger);
+
             builder.Services.AddGrpc();
 
             builder.Services.AddCors(options =>

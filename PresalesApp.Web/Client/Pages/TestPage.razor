@@ -2,23 +2,19 @@
 @using PresalesApp.Bridge1C
 @inject PresalesAppBridge1CApi.PresalesAppBridge1CApiClient BridgeApi
 
-<ErrorSnackbar @ref="error_alert" />
-
-<div>
-    <button class="btn btn-primary" @onclick="DoSomething">Say Hello</button>
-    @if (reply != null)
-    {
-        <p>@reply?.Message</p>
-    }
-
-    <div style="width: 500px;height: 500px">
-        <button class="btn btn-primary" @onclick="@(async () => await HandleRedraw())">Redraw Chart</button>
-        <PieChart @ref="pieChart" TItem="double" />
-    </div>
+<div class="d-flex">
+    <Button Type="ButtonType.Button" Color="Color.Dark" Clicked="DoSomething">Say Hello</Button>
+    <Button Type="ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
+</div>
+<p>@reply?.Message</p>
+<div style="width: 500px;height: 500px">
+    <PieChart @ref="pieChart" TItem="double" />
 </div>
 
-
 @code {
+    [CascadingParameter]
+    public MessageSnackbar messageHandler { get; set; }
+
     HelloReply? reply;
 
     async void DoSomething() => await HandleSayHello();
@@ -30,18 +26,15 @@
         }
     }
 
-    ErrorSnackbar error_alert;
-
     async Task HandleSayHello()
     {
         try
         {
             reply = await BridgeApi.SayHelloAsync(new HelloRequest() { Name = "Иван" });
         }
-        catch
+        catch (Exception e)
         {
-            error_alert.Message = (MarkupString)Localization["ConnectErrorTryLater", Localization["BridgeName"]].Value;
-            await error_alert.Show();
+            await messageHandler.Show(e.Message);
         }
         StateHasChanged();
     }
@@ -49,8 +42,7 @@
     async Task HandleRedraw()
     {
         await pieChart.Clear();
-        // await pieChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset());
-        await pieChart.AddDatasetsAndUpdate(GetLineChartDataset());
+        await pieChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset());
     }
 
     PieChart<double> pieChart;
