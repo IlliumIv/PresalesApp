@@ -113,7 +113,7 @@ namespace PresalesApp.Web.Client.Helpers
 
             foreach(var project in projects.Projects)
             {
-                text += $"{project.Number};{project.Name};{project.PresaleName};{project.Status.GetName(localization)};" +
+                text += $"{project.Number};{project.Name};{project.Presale?.Name};{project.Status.GetName(localization)};" +
                     $"{project.ApprovalBySalesDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.PresaleStartAt.ToDateTime().ToPresaleTime()};" +

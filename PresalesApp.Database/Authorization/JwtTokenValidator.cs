@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,7 +12,6 @@ namespace PresalesApp.Database.Authorization
 {
     public class JwtTokenValidator : ISecurityTokenValidator
     {
-
         public bool CanValidateToken => true;
 
         public int MaximumTokenSizeInBytes { get; set; } = int.MaxValue;
@@ -53,8 +53,6 @@ namespace PresalesApp.Database.Authorization
             }
             catch (Exception e)
             {
-                Console.WriteLine("ValidateToken catch called.");
-                throw;
                 validatedToken = new JwtSecurityToken();
                 return new ClaimsPrincipal();
             }

@@ -15,7 +15,7 @@
             <tr>
                 <td>@project.Number</td>
                 <td>@project.Name</td>
-                <td>@project.PresaleName</td>
+                <td>@project.Presale?.Name</td>
                 <td>@project.Status.GetName(Localization)</td>
                 <td>@project.ClosedAt.ToDateTime().ToPresaleTime()</td>
                 <td>@project.Invoices.Count</td>

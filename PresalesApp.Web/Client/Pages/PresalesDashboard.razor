@@ -7,7 +7,6 @@
 @layout InfographicsLayout
 
 <PageTitle>@Localization["PresalesDashboardPage"]</PageTitle>
-<ErrorSnackbar @ref=error_alert />
 
 <div class="dashboard">
     <div class="chart">
@@ -67,13 +66,14 @@
 
 
 @code {
+    [CascadingParameter]
+    public MessageSnackbar messageHandler { get; set; }
+
     private TimeSpan time_left = new (0, 10, 0);
 
     private MonthProfitOverview overview;
 
     private PieChart<decimal> chart;
-
-    private ErrorSnackbar error_alert;
 
     private static ImageResponse img;
 
@@ -138,8 +138,7 @@
         }
         catch
         {
-            error_alert.Message = (MarkupString)Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value;
-            await error_alert.Show();
+            await messageHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
             return;
         }
     }

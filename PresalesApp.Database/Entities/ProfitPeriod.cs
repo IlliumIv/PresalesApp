@@ -19,12 +19,12 @@ namespace PresalesApp.Database.Entities
 
         public override string ToString() => $"{{\"{this.StartTime}\":\"{this.Amount}\"}}";
 
-        internal override bool TryUpdateIfExist(DbController.ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(DbController.ControllerContext dbContext)
         {
             throw new NotImplementedException();
         }
 
-        internal override ProfitPeriod GetOrAddIfNotExist(DbController.ReadWriteContext dbContext)
+        internal override ProfitPeriod GetOrAddIfNotExist(DbController.ControllerContext dbContext)
         {
             throw new NotImplementedException();
         }

@@ -3,7 +3,6 @@
 @inject IJSRuntime js
 
 <PageTitle>@Localization["KpiPage"]</PageTitle>
-<ErrorSnackbar @ref=error_alert />
 
 <h1>@Localization["KpiPage"]</h1>
 <div class="d-flex">
@@ -15,7 +14,6 @@
     </ComboBox_Years>
     <button @attributes="btn_download_attr" class="btn btn-primary" @onclick="DownloadReport">@Localization["DownloadReportButtonText"]</button>
 </div>
-<p role="status">@msg_info</p>
 @if (kpi is not null)
 {
     <details class="pmspoiler">
@@ -44,14 +42,15 @@
 }
 
 @code {
-    private ErrorSnackbar error_alert;
+    [CascadingParameter]
+    public MessageSnackbar messageHandler { get; set; }
+
     private int month = DateTime.Now.Month;
     private int year = DateTime.Now.Year;
     private string presale_name = string.Empty;
 
     private Kpi? kpi;
     private Dictionary<string, object> btn_download_attr { get; set; } = new() {{ "disabled", "disabled" }};
-    private string msg_info = string.Empty;
 
     private async Task DownloadReport() => await kpi.Download(js, presale_name, month, year, Localization);
     private async Task GenerateReport()
@@ -59,7 +58,11 @@
         kpi = null;
         btn_download_attr = new() {{ "disabled", "disabled" }};
 
-        if (string.IsNullOrEmpty(presale_name)) msg_info = $"{Localization["NeedSelectPresaleMessageText"]}";
+        if (string.IsNullOrEmpty(presale_name))
+        {
+            await messageHandler.Show($"{Localization["NeedSelectPresaleMessageText"]}");
+            return;
+        }
 
         var from = new DateOnly(year, month, 1);
         var response = await Api.GetKpiAsync(new KpiRequest
@@ -79,13 +82,15 @@
             btn_download_attr = new();
         }
 
-        msg_info = response.ResultCase switch
+        (string message, SnackbarColor color) msg = response.ResultCase switch
         {
-            KpiResponse.ResultOneofCase.Error => response.Error.Message,
-            KpiResponse.ResultOneofCase.Kpi => $"{Localization["ReportIsDoneMessageText"]}",
-            KpiResponse.ResultOneofCase.None => $"{Localization["NoInvoicesForThisPeriodMessageText"]}",
-            _ => $"{Localization["UnknownServerResponseMessageText"]}"
+            KpiResponse.ResultOneofCase.Error => (response.Error.Message, SnackbarColor.Danger),
+            KpiResponse.ResultOneofCase.Kpi => ($"{Localization["ReportIsDoneMessageText"]}", SnackbarColor.Success),
+            KpiResponse.ResultOneofCase.None => ($"{Localization["NoInvoicesForThisPeriodMessageText"]}", SnackbarColor.Success),
+            _ => ($"{Localization["UnknownServerResponseMessageText"]}", SnackbarColor.Danger)
         };
+
+        await messageHandler.Show(msg.message, msg.color);
         StateHasChanged();
     }
 }

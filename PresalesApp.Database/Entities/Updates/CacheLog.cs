@@ -27,7 +27,7 @@ namespace PresalesApp.Database.Entities.Updates
             this.PeriodEnd = synchronizedTo.ToUniversalTime();
         }
 
-        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ControllerContext dbContext)
         {
             var cache_log_in_db = dbContext.CacheLogsHistory
                 .Where(i => i.PeriodBegin == this.PeriodBegin && i.PeriodEnd == this.PeriodEnd).SingleOrDefault();
@@ -41,7 +41,7 @@ namespace PresalesApp.Database.Entities.Updates
             return cache_log_in_db != null;
         }
 
-        internal override CacheLog GetOrAddIfNotExist(ReadWriteContext dbContext)
+        internal override CacheLog GetOrAddIfNotExist(ControllerContext dbContext)
         {
             var cache_log_in_db = dbContext.CacheLogsHistory
                 .Where(i => i.PeriodBegin == this.PeriodBegin && i.PeriodEnd == this.PeriodEnd).SingleOrDefault();

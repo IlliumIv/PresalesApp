@@ -10,12 +10,13 @@
             Nanos = nanos;
         }
 
-        public static implicit operator decimal(DecimalValue decimalValue) => ToDecimal(decimalValue);
+        public static implicit operator decimal(DecimalValue? decimalValue) => ToDecimal(decimalValue);
 
         public static implicit operator DecimalValue(decimal value) => FromDecimal(value);
 
-        public static decimal ToDecimal(DecimalValue decimalValue)
+        public static decimal ToDecimal(DecimalValue? decimalValue)
         {
+            if (decimalValue == null) return 0;
             return decimalValue.Units + decimalValue.Nanos / NanoFactor;
         }
 

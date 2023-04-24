@@ -15,6 +15,8 @@ using Enum = System.Enum;
 using Position = PresalesApp.Database.Enums.Position;
 using ProjectStatus = PresalesApp.Database.Enums.ProjectStatus;
 using Project = PresalesApp.Database.Entities.Project;
+using Presale = PresalesApp.Database.Entities.Presale;
+using Invoice = PresalesApp.Database.Entities.Invoice;
 using static PresalesApp.Database.DbController;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -289,81 +291,17 @@ namespace PresalesApp.Web.Controllers
             if (otherProjects != null)
                 projects.AddRange(otherProjects);
 
-            decimal maxPotential = presales.Max(p => p.Projects?
-                .Where(p => p.Presale?.Department == Department.Russian)?
-                .Where(p => p.Presale?.Position == Position.Engineer)?
-                .Where(p => p.ApprovalByTechDirectorAt >= from && p.ApprovalByTechDirectorAt <= to)?
-                .Sum(p => p.PotentialAmount)) ?? 0;
-            int maxCount = presales.Max(p => p.Projects?
-                .Where(p => p.Presale?.Department == Department.Russian)?
-                .Where(p => p.Presale?.Position == Position.Engineer)?
-                .Where(p => p.ApprovalByTechDirectorAt >= from && p.ApprovalByTechDirectorAt <= to)?
-                .Count()) ?? 0;
-
             int won, assign;
             var reply = new Overview();
             #region Метрики пресейла
             foreach (var presale in presales)
             {
                 if (onlyActive && !presale.IsActive) continue;
-                var isRuEngineer = presale.Department == Department.Russian
-                                && presale.Position == Position.Engineer;
-                won = presale.ClosedByStatus(ProjectStatus.Won, from, to);
-                assign = presale.CountProjectsAssigned(from, to);
 
                 reply.Presales.Add(new Shared.Presale()
                 {
                     Name = presale.Name,
-                    Statistics = new Statistic()
-                    {
-                        #region Показатели этого периода
-                        #region В работе
-                        InWork = presale.CountProjectsInWork(from, to),
-                        #endregion
-                        #region Назначено
-                        Assign = assign,
-                        #endregion
-                        #region Выиграно
-                        Won = won,
-                        #endregion
-                        #region Проиграно
-                        Loss = presale.ClosedByStatus(ProjectStatus.Loss, from, to),
-                        #endregion
-                        #region Конверсия
-                        Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
-                        #endregion
-                        #region Среднее время реакции
-                        AvgTimeToReaction = Duration.FromTimeSpan(presale.AverageTimeToReaction(from, to)),
-                        #endregion
-                        #region Суммарное потраченное время на проекты
-                        SumSpend = Duration.FromTimeSpan(presale.SumTimeSpend(from, to)),
-                        #endregion
-                        #region Cреднее время потраченное на проект
-                        AvgSpend = Duration.FromTimeSpan(presale.AverageTimeSpend(from, to)),
-                        #endregion
-                        #region Чистые
-                        Profit = presale.SumProfit(from, to),
-                        #endregion
-                        #region Потенциал
-                        Potential = presale.SumPotential(from, to),
-                        #endregion
-                        #endregion
-                        #region Среднее время жизни проекта до выигрыша
-                        AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
-                        #endregion
-                        #region Средний ранг проектов
-                        AvgRank = presale.AverageRank(),
-                        #endregion
-                        #region Количество "брошенных" проектов
-                        Abnd = presale.CountProjectsAbandoned(DateTime.UtcNow, 30),
-                        #endregion
-                    },
-                    #region Недостаток проектов
-                    DeficitProjects = isRuEngineer ? maxCount - presale.CountProjectsAssigned(from, to) : 0,
-                    #endregion
-                    #region Недостаток потенциала
-                    DeficitPotential = isRuEngineer ? maxPotential - presale.SumPotential(from, to) : 0,
-                    #endregion
+                    Statistics = presale.GetStatistic(from, to),
                     Department = Extensions.Translate(presale.Department),
                     Position = Extensions.Translate(presale.Position),
                     IsActive = presale.IsActive,
@@ -624,7 +562,7 @@ namespace PresalesApp.Web.Controllers
 
             using var db = new ReadOnlyContext();
 
-            List<Database.Entities.Presale>? presales;
+            List<Presale>? presales;
 
             if (is_main_project_include)
 #pragma warning disable CS8604 // Possible null reference argument.
@@ -656,6 +594,26 @@ namespace PresalesApp.Web.Controllers
             return Task.FromResult(reply);
         }
 
+        public override Task<FunnelProjects> GetFunnelProjects(Empty request, ServerCallContext context)
+        {
+            using var db = new ReadOnlyContext();
+
+            var projects = db.Projects
+                .Where(p => p.PresaleActions.Any(a => a.SalesFunnel))
+                .Include(p => p.PresaleActions)
+                .Include(p => p.Presale);
+
+            var reply = new FunnelProjects();
+
+            foreach(var project in projects)
+            {
+                reply.Projects.Add(project.Translate());
+            }
+
+            db.Dispose();
+            return Task.FromResult(reply);
+        }
+
         private static void RecursiveLoad(List<Project>? projects, ReadOnlyContext db, ref HashSet<Project> projectsViewed)
         {
             if (projects == null || projects.Count == 0) return;
@@ -679,7 +637,63 @@ namespace PresalesApp.Web.Controllers
 
     public static class Extensions
     {
-        public static Shared.Project Translate(this Database.Entities.Project project)
+        public static Statistic GetStatistic(this Presale presale, DateTime? from = null, DateTime? to = null)
+        {
+            if (from is null || to is null) return new Statistic();
+
+            var _from = (DateTime)from;
+            var _to = (DateTime)to;
+
+            var won = presale.ClosedByStatus(ProjectStatus.Won, _from, _to);
+            var assign = presale.CountProjectsAssigned(_from, _to);
+
+            return new Statistic()
+            {
+                #region Показатели этого периода
+                #region В работе
+                InWork = presale.CountProjectsInWork(_from, _to),
+                #endregion
+                #region Назначено
+                Assign = assign,
+                #endregion
+                #region Выиграно
+                Won = won,
+                #endregion
+                #region Проиграно
+                Loss = presale.ClosedByStatus(ProjectStatus.Loss, _from, _to),
+                #endregion
+                #region Конверсия
+                Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
+                #endregion
+                #region Среднее время реакции
+                AvgTimeToReaction = Duration.FromTimeSpan(presale.AverageTimeToReaction(_from, _to)),
+                #endregion
+                #region Суммарное потраченное время на проекты
+                SumSpend = Duration.FromTimeSpan(presale.SumTimeSpend(_from, _to)),
+                #endregion
+                #region Cреднее время потраченное на проект
+                AvgSpend = Duration.FromTimeSpan(presale.AverageTimeSpend(_from, _to)),
+                #endregion
+                #region Чистые
+                Profit = presale.SumProfit(_from, _to),
+                #endregion
+                #region Потенциал
+                Potential = presale.SumPotential(_from, _to),
+                #endregion
+                #endregion
+                #region Среднее время жизни проекта до выигрыша
+                AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
+                #endregion
+                #region Средний ранг проектов
+                AvgRank = presale.AverageRank(),
+                #endregion
+                #region Количество "брошенных" проектов
+                Abnd = presale.CountProjectsAbandoned(DateTime.UtcNow, 30),
+                #endregion
+            };
+        }
+
+        public static Shared.Project Translate(this Project project)
         {
             var proj = new Shared.Project()
             {
@@ -689,17 +703,23 @@ namespace PresalesApp.Web.Controllers
                 ApprovalBySalesDirectorAt = Timestamp.FromDateTime(project.ApprovalBySalesDirectorAt.ToUniversalTime()),
                 PresaleStartAt = Timestamp.FromDateTime(project.PresaleStartAt.ToUniversalTime()),
                 ClosedAt = Timestamp.FromDateTime(project.ClosedAt.ToUniversalTime()),
-                PresaleName = project.Presale?.Name ?? "",
+                Presale = project.Presale?.Translate(),
                 Status = project.Status.Translate(),
+                Potential = project.PotentialAmount
             };
 
-            if (project.Invoices != null && project.Invoices.Any()) foreach (var invoice in project.Invoices) proj.Invoices.Add(invoice.Translate());
+            if (project.Invoices != null && project.Invoices.Any())
+                foreach (var invoice in project.Invoices)
+                    proj.Invoices.Add(invoice.Translate());
+
+            if (project.PresaleActions != null && project.PresaleActions.Any())
+                foreach (var action in project.PresaleActions)
+                    proj.Actions.Add(action.Translate());
+
             return proj;
         }
 
-        public static Shared.Invoice Translate(this Database.Entities.Invoice invoice)
-        {
-            var inv = new Shared.Invoice
+        public static Shared.Invoice Translate(this Invoice invoice) => new Shared.Invoice
             {
                 Counterpart = invoice.Counterpart,
                 Number = invoice.Number,
@@ -710,8 +730,14 @@ namespace PresalesApp.Web.Controllers
                 Profit = invoice.GetProfit(),
             };
 
-            return inv;
-        }
+        public static Shared.Presale Translate(this Presale presale) => new Shared.Presale
+            {
+                Name = presale.Name,
+                Statistics = presale.GetStatistic(),
+                Department = presale.Department.Translate(),
+                Position = presale.Position.Translate(),
+                IsActive = presale.IsActive
+            };
 
         public static Shared.Action Translate(this PresaleAction action) => new()
         {

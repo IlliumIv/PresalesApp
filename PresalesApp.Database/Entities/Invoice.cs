@@ -54,7 +54,7 @@ namespace PresalesApp.Database.Entities
                 .Sum(pd => pd.Amount) ?? 0;
         }
 
-        internal override Invoice GetOrAddIfNotExist(ReadWriteContext dbContext)
+        internal override Invoice GetOrAddIfNotExist(ControllerContext dbContext)
         {
             var invoice_in_db = dbContext.Invoices.Where(
                 i => i.Number == this.Number && i.Date.Date == this.Date.Date ||
@@ -71,7 +71,7 @@ namespace PresalesApp.Database.Entities
             return invoice_in_db;
         }
 
-        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ControllerContext dbContext)
         {
             this.Presale = this.Presale?.GetOrAddIfNotExist(dbContext);
             this.Project = this.Project?.GetOrAddIfNotExist(dbContext);

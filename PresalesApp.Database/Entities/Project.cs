@@ -51,7 +51,7 @@ namespace PresalesApp.Database.Entities
 
         public Project(string number) => this.Number = number;
 
-        internal override Project GetOrAddIfNotExist(ReadWriteContext dbContext)
+        internal override Project GetOrAddIfNotExist(ControllerContext dbContext)
         {
             var project_in_db = dbContext.Projects.Where(p => p.Number == this.Number)
                 .Include(p => p.PresaleActions).SingleOrDefault();
@@ -65,7 +65,7 @@ namespace PresalesApp.Database.Entities
             else return project_in_db;
         }
 
-        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ControllerContext dbContext)
         {
             this.Presale = this.Presale?.GetOrAddIfNotExist(dbContext);
             this.MainProject = this.MainProject?.GetOrAddIfNotExist(dbContext);

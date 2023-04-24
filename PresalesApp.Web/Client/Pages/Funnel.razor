@@ -1,0 +1,90 @@
+﻿@page "/funnel"
+
+<PageTitle>@Localization["FunnelPage"]</PageTitle>
+
+<h1>@Localization["FunnelPage"]</h1>
+
+<DataGrid TItem="Project"
+          Data="@response?.Projects"
+          @bind-SelectedRow="@_selectedProject"
+          DetailRowStartsVisible="false"
+          Filterable
+          FilterMethod="DataGridFilterMethod.StartsWith"
+          Sortable="false"
+          Responsive>
+    <DataGridColumns>
+        <DataGridCommandColumn />
+        <DataGridColumn Field="@nameof(Project.Presale)" Caption="@Localization["PresaleNameText"]" Editable="false" Width="15%" CustomFilter="@OnPresaleFilter">
+            <DisplayTemplate>
+                @($"{(context as Project)?.Presale.Name}")
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn Field="@nameof(Project.Number)" Caption="@Localization["ProjectNumberText"]" Editable="false" Width="10%"/>
+        <DataGridColumn Field="@nameof(Project.Potential)" Caption="@Localization["ProjectPotentialText"]" Editable="false" Width="15%" CustomFilter="@OnPotentialFilter">
+            <DisplayTemplate>
+                @($"{@Helpers.ToCurrencyString((context as Project)?.Potential, "ru-RU")}")
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn Field="@nameof(Project.Name)" Caption="@Localization["ProjectNameText"]" Editable="false" />
+    </DataGridColumns>
+    <DetailRowTemplate>
+        @{
+            var actions = (context as Project).Actions.Where(a => a.SalesFunnel).OrderBy(a => a.Number);
+            <DataGrid TItem="Web.Shared.Action"
+                  Data="actions"
+                  Sortable="false"
+                  ShowCaptions="false">
+                <DataGridCommandColumn />
+                <DataGridNumericColumn Field="@nameof(Web.Shared.Action.Number)" />
+                <DataGridColumn Field="@nameof(Web.Shared.Action.Date)" Context="action" Width="15%">
+                    <DisplayTemplate>
+                        @($"{(action as Web.Shared.Action)?.Date.ToDateTime().ToPresaleTime()}")
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridDateColumn Field="@nameof(Web.Shared.Action.Description)" />
+            </DataGrid>
+        }
+    </DetailRowTemplate>
+</DataGrid>
+
+@code {
+    [CascadingParameter]
+    public MessageSnackbar messageHandler { get; set; }
+
+    private Project _selectedProject;
+    private FunnelProjects? response;
+
+    private bool OnPotentialFilter(object itemValue, object searchValue)
+    {
+        var potential = (decimal)((DecimalValue)itemValue);
+
+        if (decimal.TryParse(searchValue?.ToString(), out var filter))
+        {
+            return potential > filter;
+        }
+
+        return true;
+    }
+
+    private bool OnPresaleFilter(object itemValue, object searchValue)
+    {
+        var presale = (Presale)itemValue;
+        var search = searchValue?.ToString() ?? string.Empty;
+        return presale.Name.StartsWith(search, StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    protected override async Task OnParametersSetAsync() => await UpdateData();
+
+    private async Task UpdateData()
+    {
+        try
+        {
+            response = await Api.GetFunnelProjectsAsync(new Empty());
+        }
+        catch (Exception e)
+        {
+            await messageHandler.Show(e.Message);
+        }
+        StateHasChanged();
+    }
+}

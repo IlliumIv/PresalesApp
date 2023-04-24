@@ -21,7 +21,7 @@ namespace PresalesApp.Database.Entities
 
         public Presale(string name) => this.Name = name;
 
-        internal override bool TryUpdateIfExist(ReadWriteContext dbContext)
+        internal override bool TryUpdateIfExist(ControllerContext dbContext)
         {
             var presale_in_db = dbContext.Presales.Where(p => p.Name == this.Name).SingleOrDefault();
             if (presale_in_db != null)
@@ -34,7 +34,7 @@ namespace PresalesApp.Database.Entities
             return presale_in_db != null;
         }
 
-        internal override Presale GetOrAddIfNotExist(ReadWriteContext dbContext)
+        internal override Presale GetOrAddIfNotExist(ControllerContext dbContext)
         {
             var presale_in_db = dbContext.Presales.Where(p => p.Name == this.Name).SingleOrDefault();
             if (presale_in_db == null)
