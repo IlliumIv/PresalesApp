@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PresalesApp.Database.Entities;
 using PresalesApp.Database.Entities.Updates;
 using Serilog;
@@ -91,9 +92,6 @@ namespace PresalesApp.Database
 
         public class ReadOnlyContext : UsersContext
         {
-            // https://stackoverflow.com/a/10438977
-            public ReadOnlyContext() { }
-
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
                 optionsBuilder.UseNpgsql($"host={Settings.Default.Host};" +
@@ -104,6 +102,12 @@ namespace PresalesApp.Database
                     $"options=-c default_transaction_read_only=on")
                     // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                     ;
+
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                {
+                    optionsBuilder.LogTo(Log.Logger.Information, LogLevel.Information, null)
+                    .EnableSensitiveDataLogging();
+                }
             }
 
             public DbSet<Presale> Presales { get; set; }
@@ -116,6 +120,7 @@ namespace PresalesApp.Database
             public DbSet<CacheLogsUpdate> CacheLogsUpdates { get; set; }
             public DbSet<Update> Updates { get; set; }
 
+            // https://stackoverflow.com/a/10438977
             [Obsolete("This context is read-only", true)]
             public new int SaveChanges() =>
                 throw new InvalidOperationException("This context is read-only.");

@@ -81,11 +81,11 @@
     <div class="@class_hide">
         <label>Предыдущий период:</label>
         <DateOnly_Period Period="previous"
-                            OnPeriodChangedCallback="(async (Period period) => {previous = period; await UpdateData();})">
+                         OnPeriodChangedCallback="(async (Period period) => {previous = period; await HandleRedrawChart();})">
         </DateOnly_Period>
         <label>Текущий период:</label>
         <DateOnly_Period Period="current"
-                            OnPeriodChangedCallback="(async (Period period) => {current = period; await UpdateData();})">
+                         OnPeriodChangedCallback="(async (Period period) => {current = period; await HandleRedrawChart();})">
         </DateOnly_Period>
         <button class="btn btn-primary" title="@title_pin" @onclick="PinParams">
             <span class="oi oi-pin @class_rotatePin"></span>

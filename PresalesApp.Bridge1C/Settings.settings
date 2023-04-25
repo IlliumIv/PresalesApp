@@ -17,8 +17,5 @@
     <Setting Name="Username" Type="System.String" Scope="User">
       <Value Profile="(Default)">ПоляковИ</Value>
     </Setting>
-    <Setting Name="WebServerAddress" Type="(Web Service URL)" Scope="User">
-      <Value Profile="(Default)">https://localhost:45443</Value>
-    </Setting>
   </Settings>
 </SettingsFile>
