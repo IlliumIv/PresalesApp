@@ -1,0 +1,72 @@
+﻿<tr style="color: @Helpers.SetColor(Invoice)">
+    <td>@(Index + 1)</td>
+    <td>@Invoice.Counterpart</td>
+    <td>@Invoice.Number</td>
+    <td>@Invoice.Date.ToDateTime().ToPresaleTime()</td>
+    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Amount, "ru-RU")</td>
+    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Cost, "ru-RU")</td>
+    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.SalesAmount, "ru-RU")</td>
+    <td style="text-align: right">@Helpers.ToPercentString(Invoice.Percent, 1)</td>
+    <td style="text-align: right">@Helpers.ToCurrencyString(Invoice.Profit, "ru-RU")</td>
+</tr>
+
+@if(isVerboseView)
+{
+    <tr>
+        <td colspan="9">
+            @if (Invoice.ProjectsFound.Count > 0)
+            {
+                <details class="pmspoiler">
+                    <summary>Найдено проектов при подсчёте рангов: @Invoice.ProjectsFound.Count</summary>
+                    @foreach (var project in Invoice.ProjectsFound)
+                    {
+                        <p style="margin-bottom: 0">@project.Format(Localization)</p>
+                    }
+                </details>
+            }
+            @if (Invoice.ProjectsIgnored.Count > 0)
+            {
+                <details class="pmspoiler">
+                    <summary style="color:red">Проигнорировано проектов при подсчёте рангов: @Invoice.ProjectsIgnored.Count</summary>
+                    @foreach (var project in Invoice.ProjectsIgnored)
+                    {
+                        <p style="margin-bottom: 0">@project.Format(Localization)</p>
+                    }
+                </details>
+            }
+            @if (Invoice.ActionsTallied.Count > 0)
+            {
+                <details class="pmspoiler">
+                    <summary>Действий учтено при подсчёте рангов: @Invoice.ActionsTallied.Count</summary>
+                    @foreach (var action in Invoice.ActionsTallied)
+                    {
+                        <p style="margin-bottom: 0">@action.Format(Localization)</p>
+                    }
+                </details>
+            }
+            @if (Invoice.ActionsIgnored.Count > 0)
+            {
+                <details class="pmspoiler">
+                    <summary style="color:red">Действий проигнорировано при подсчёте рангов: @Invoice.ActionsIgnored.Count</summary>
+                    @foreach (var action in Invoice.ActionsIgnored)
+                    {
+                        <p style="margin-bottom: 0">@action.Format(Localization)</p>
+                    }
+                </details>
+            }
+        </td>
+    </tr>
+}
+<tr>&nbsp</tr>
+
+@code {
+#pragma warning disable CS8618 // Specified EditorRequired and marked compiler option warning RZ2012 as error
+    [Parameter, EditorRequired]
+    public Invoice Invoice { get; set; }
+
+    [Parameter]
+    public int Index { get; set; }
+
+    [Parameter]
+    public bool isVerboseView { get; set; }
+}

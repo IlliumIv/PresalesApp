@@ -1,0 +1,10 @@
+﻿<SnackbarStack @ref="_snackbarStack" Location="SnackbarStackLocation.Center" />
+
+@code {
+    private SnackbarStack _snackbarStack;
+
+    public async Task Show(string message, SnackbarColor color = SnackbarColor.Danger, double interval = 5000)
+    {
+        await _snackbarStack.PushAsync(message, color, options => { options.IntervalBeforeClose = interval; });
+    }
+}

@@ -1,0 +1,28 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
+@using Blazorise
+@using Blazorise.Charts
+@using Blazorise.Snackbar
+@using Blazorise.DataGrid
+@using Blazorise.Components
+@using Google.Protobuf.Collections
+@using Google.Protobuf.WellKnownTypes
+@using PresalesApp.Web.Client
+@using PresalesApp.Web.Client.Shared
+@using PresalesApp.Web.Client.Views
+@using PresalesApp.Web.Client.Helpers
+@using PresalesApp.Web.Client.Views.Table
+@using PresalesApp.Web.Client.Views.ComboBox
+@using PresalesApp.Web.Shared;
+@using PresalesApp.Web.Client.Authorization;
+@inject IStringLocalizer<App> Localization
+@inject PresalesAppApi.PresalesAppApiClient Api
+@inject Blazored.LocalStorage.ILocalStorageService Storage

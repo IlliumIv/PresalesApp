@@ -1,0 +1,34 @@
+﻿@using System.Globalization
+@using Period = PresalesApp.Web.Client.Helpers.Period
+
+<input title="Начало периода" type="date" max="@Helpers.ToMinMaxFormatString(Period.To)"
+    value="@Helpers.ToMinMaxFormatString(Period.From)" lang="@CultureInfo.CurrentCulture"
+       @onchange="((ChangeEventArgs e) => OnFromChanged(e?.Value))" class="input-group-text date-only-period" />
+<label>-</label>
+<input title="Конец периода" type="date" min="@Helpers.ToMinMaxFormatString(Period.From)"
+    value="@Helpers.ToMinMaxFormatString(Period.To)" lang="@CultureInfo.CurrentCulture"
+       @onchange="((ChangeEventArgs e) => OnToChanged(e?.Value))" class="input-group-text date-only-period" />
+
+@code {
+#pragma warning disable CS8618 // Specified EditorRequired and marked compiler option warning RZ2012 as error
+#pragma warning disable CS8604 // Handling NullRef by try-catch block
+    [Parameter, EditorRequired]
+    public Period Period { get; set; }
+
+    private void OnFromChanged(object? obj)
+    {
+        try { Period.From = DateOnly.Parse(obj?.ToString()); }
+        catch { return; }
+        OnPeriodChangedCallback.InvokeAsync(Period);
+    }
+
+    private void OnToChanged(object? obj)
+    {
+        try { Period.To = DateOnly.Parse(obj?.ToString()); }
+        catch { return; }
+        OnPeriodChangedCallback.InvokeAsync(Period);
+    }
+
+    [Parameter]
+    public EventCallback<Period> OnPeriodChangedCallback { get; set; }
+}

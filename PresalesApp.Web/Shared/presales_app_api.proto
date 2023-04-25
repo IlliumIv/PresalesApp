@@ -1,0 +1,272 @@
+﻿syntax = "proto3";
+option csharp_namespace = "PresalesApp.Web.Shared";
+package presales_app_api;
+
+import "custom_types.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
+
+service PresalesAppApi {
+	rpc Login(LoginRequest) returns (LoginResponse);
+	rpc Register(RegisterRequest) returns (LoginResponse);
+	rpc GetUserProfile(google.protobuf.Empty) returns (UserInfoResponse);
+
+	rpc GetOverview(OverviewRequest) returns (Overview);
+	rpc GetNames(google.protobuf.Empty) returns (NamesResponse);
+	rpc GetKpi(KpiRequest) returns (KpiResponse);
+	rpc GetImage(ImageRequest) returns (ImageResponse);
+	rpc GetMonthProfitOverview(OverviewRequest) returns (MonthProfitOverview);
+	rpc GetSalesOverview(SalesOverviewRequest) returns (SalesOverview);
+	rpc GetUnpaidProjects(UnpaidRequest) returns (UnpaidProjects);
+	rpc GetFunnelProjects(google.protobuf.Empty) returns (FunnelProjects);
+}
+
+message FunnelProjects {
+	repeated Project projects = 1;
+}
+
+message UserInfo {
+	string token = 1;
+	UserProfile profile = 2;
+}
+
+message UserProfile {
+	string name = 1;
+}
+
+message LoginRequest {
+	string login = 1;
+	string password = 2;
+}
+
+message RegisterRequest {
+	LoginRequest login_request = 1;
+	UserProfile profile = 2;
+}
+
+message LoginResponse {
+	oneof result {
+		Error error = 1;
+		UserInfo user_info = 2;
+	}
+}
+
+message UserInfoResponse {
+	oneof result {
+		Error error = 1;
+		UserProfile profile = 2;
+	}
+}
+
+message UnpaidRequest{
+	string presale_name = 1;
+	Period period = 2;
+	bool is_main_project_include = 3;
+}
+
+message UnpaidProjects {
+	repeated Project projects = 1;
+}
+
+message SalesOverviewRequest {
+	Period previous = 1;
+	Period current = 2;
+}
+
+message SalesOverview {
+	custom_types.DecimalValue previous_actual_profit = 1;
+	custom_types.DecimalValue current_actual_profit = 2;
+	custom_types.DecimalValue current_sales_target = 3;
+	repeated Manager current_top_sales_managers = 4;
+}
+
+message Manager {
+	string name = 1;
+	custom_types.DecimalValue profit = 2;
+}
+
+message MonthProfitOverview {
+	repeated Presale presales = 1;
+	custom_types.DecimalValue profit = 2;
+	custom_types.DecimalValue plan = 3;
+	custom_types.DecimalValue left = 4;
+	custom_types.DecimalValue delta_day = 5;
+}
+
+message ImageRequest {
+	string keyword = 1;
+	ImageOrientation orientation = 2;
+}
+
+message ImageResponse {
+	string raw = 1;
+	string full = 2;
+	string regular = 3;
+	string small = 4;
+	string thumb = 5;
+	string small_s3 = 6;
+	string alt_description = 7;
+	string author_name = 8;
+	string author_url = 9;
+	string source_name = 10;
+	string source_url = 11;
+}
+
+message KpiRequest{
+	string presale_name = 1;
+	Period period = 2;
+}
+
+message KpiResponse {
+	oneof result {
+		Kpi kpi = 1;
+		Error error = 2;
+	}
+}
+
+message Kpi {
+	repeated Invoice invoices = 1; 
+}
+
+message Error {
+	string message = 1;
+}
+
+message Invoice {
+	string counterpart = 1;
+	string number = 2;
+	google.protobuf.Timestamp date = 3;
+	custom_types.DecimalValue amount = 4;
+	custom_types.DecimalValue cost = 5;
+	custom_types.DecimalValue sales_amount = 6;
+	double percent = 7;
+	custom_types.DecimalValue profit = 8;
+	repeated Project projects_found = 9;
+	repeated Project projects_ignored = 10;
+	repeated Action actions_tallied = 11;
+	repeated Action actions_ignored = 12;
+	google.protobuf.Timestamp last_pay_at = 13;
+	google.protobuf.Timestamp last_shipment_at = 14;
+}
+
+message NamesResponse {
+	repeated string names = 1;
+}
+
+message Period {
+	google.protobuf.Timestamp from = 1;
+	google.protobuf.Timestamp to = 2;
+}
+
+message OverviewRequest {
+	Period period = 1;
+	Department department = 2;
+	Position position = 3;
+	bool only_active = 4;
+}
+
+message Overview {
+	repeated Presale presales = 1;
+	Statistic statistics = 2;
+	google.protobuf.Duration avg_director_time_to_reaction = 3;
+	repeated Project escalations = 4;
+	repeated Project forgotten = 5;
+	repeated Project new = 6;
+}
+
+message Presale {
+	string name = 1;
+	Statistic statistics = 2;
+	Department department = 3;
+	Position position = 4;
+	bool is_active = 5;
+}
+
+message Statistic {
+	int32 in_work = 1;
+	int32 assign = 2;
+	int32 won = 3;
+	int32 loss = 4;
+	int32 abnd = 5;
+	double conversion = 6;
+	google.protobuf.Duration avg_time_to_win = 7;
+	google.protobuf.Duration avg_time_to_reaction = 8;
+	double avg_rank = 9;
+	google.protobuf.Duration avg_spend = 10;
+	google.protobuf.Duration sum_spend = 11;
+	custom_types.DecimalValue profit = 12;
+	custom_types.DecimalValue potential = 13;
+}
+
+message Project {
+	string number = 1;
+	string name = 2;
+	google.protobuf.Timestamp approval_by_tech_director_at = 3;
+	google.protobuf.Timestamp approval_by_sales_director_at = 4;
+	google.protobuf.Timestamp presale_start_at = 5;
+	Presale presale = 6;
+	ProjectStatus status = 7;
+	google.protobuf.Timestamp closed_at = 8;
+	repeated Invoice invoices = 9;
+	repeated Action actions = 10;
+	custom_types.DecimalValue potential = 11;
+}
+
+message Action {
+	string project_number = 1;
+	int32 number = 2;
+	google.protobuf.Timestamp date = 3;
+	ActionType type = 4;
+	google.protobuf.Duration timespend = 5;
+	string description = 6;
+	bool sales_funnel = 7;
+}
+
+enum ProjectStatus {
+	PROJECT_STATUS_UNKNOWN = 0;
+	PROJECT_STATUS_WORK_IN_PROGRESS = 1;
+	PROJECT_STATUS_WON = 2;
+	PROJECT_STATUS_LOSS = 3;
+}
+
+enum ActionType {
+	ACTION_TYPE_UNKNOWN = 0;
+	ACTION_TYPE_FULL_SETUP = 1;
+	ACTION_TYPE_SETTINGS_CHECKUP = 2;
+	ACTION_TYPE_PROBLEM_DIAGNOSTICS = 3;
+	ACTION_TYPE_CALCULATION = 4;
+	ACTION_TYPE_SPECIFICATION_CHECKUP = 5;
+	ACTION_TYPE_SPECIFICATION_CREATE_FROM_TEMPLATE = 6;
+	ACTION_TYPE_SPECIFICATION_CREATE = 7;
+	ACTION_TYPE_REQUIREMENTS_CREATE = 8;
+	ACTION_TYPE_CONSULTATION = 9;
+	ACTION_TYPE_NEGOTIATIONS = 10;
+	ACTION_TYPE_PRESENTATION = 11;
+	ACTION_TYPE_DEPARTURE_FULL_SETUP = 12;
+	ACTION_TYPE_DEPARTURE_SETTINGS_CHECKUP = 13;
+	ACTION_TYPE_DEPARTURE_PROBLEM_DIAGNOSIS = 14;
+	ACTION_TYPE_DEPARTURE_PRESENTATION = 15;
+	ACTION_TYPE_DEPARTURE_CONSULTATION = 16;
+}
+
+enum Department {
+	DEPARTMENT_NONE = 0;
+	DEPARTMENT_INTERNATIONAL = 1;
+	DEPARTMENT_RUSSIAN = 2;
+	DEPARTMENT_ANY = 3;
+}
+
+enum Position {
+	POSITION_NONE = 0;
+	POSITION_ENGINEER = 1;
+	POSITION_ACCOUNT = 2;
+	POSITION_DIRECTOR = 3;
+	POSITION_ANY = 4;
+}
+
+enum ImageOrientation {
+	IMAGEORIENTATION_LANDSCAPE = 0;
+	IMAGEORIENTATION_PORTRAIT = 1;
+	IMAGEORIENTATION_SQUARISH = 2;
+}

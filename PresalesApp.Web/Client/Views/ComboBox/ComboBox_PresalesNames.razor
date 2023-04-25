@@ -1,0 +1,44 @@
+﻿@if (presales == null)
+{
+    <em>Loading...</em>
+}
+else
+{
+    <label>Пресейл:</label>
+    <select value="@selectedName" @onchange="((ChangeEventArgs e) => OnPresaleChanged(e?.Value))" class="form-select form-select-combobox">
+        <option selected=""></option>
+        @foreach (var name in presales.Names)
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+}
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnSelectCallback { get; set; }
+
+    [CascadingParameter]
+    public MessageSnackbar messageHandler { get; set; }
+
+    private NamesResponse? presales;
+    private string selectedName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            presales = await Api.GetNamesAsync(new Empty());
+        }
+        catch (Exception e)
+        {
+            await messageHandler.Show(e.Message);
+        }
+    }
+
+    private void OnPresaleChanged(object? obj)
+    {
+        selectedName = obj?.ToString() ?? string.Empty;
+        OnSelectCallback.InvokeAsync(selectedName);
+    }
+}

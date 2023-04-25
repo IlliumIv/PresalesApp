@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex">
+            <Profile />
+            <CultureSelector />
+        </div>
+        <AuthorizeView>
+            <Authorized>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </Authorized>
+            <NotAuthorized>
+                <article class="content px-4">
+                    <PresalesApp.Web.Client.Pages.Index />
+                </article>
+            </NotAuthorized>
+        </AuthorizeView>
+    </main>
+</div>
+
+@code {
+    [CascadingParameter]
+    public MessageSnackbar messageHandler { get; set; }
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            AuthenticationState state = await AuthenticationState;
+            if (state.User.Identity is null || !state.User.Identity.IsAuthenticated)
+            {
+                await messageHandler.Show(Localization["NotAuthenticatedErrorMessage"].Value);
+            }
+        }
+    }
+}
