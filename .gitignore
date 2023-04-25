@@ -349,5 +349,4 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-PresalesMonitor.Server/PresalesMonitor.Server.7z
-PresalesMonitor.Console/PresalesMonitor.Console.7z
+*.7z
