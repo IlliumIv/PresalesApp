@@ -1,0 +1,32 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<Version>1.2.1</Version>
+	<PlatformTarget>AnyCPU</PlatformTarget>
+	<Configurations>Debug;Release</Configurations>
+	<Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="*\Logs\**" />
+    <Compile Remove="*\publish\**" />
+    <Content Remove="*\Logs\**" />
+    <Content Remove="*\publish\**" />
+    <EmbeddedResource Remove="*\Logs\**" />
+    <EmbeddedResource Remove="*\publish\**" />
+    <None Remove="*\Logs\**" />
+    <None Remove="*\publish\**" />
+  </ItemGroup>
+
+</Project>

@@ -1,4 +1,5 @@
 ﻿@inject AuthorizeApi _autorizeApi
+@inject NavigationManager Navigation
 
 <AuthorizeView>
     <Authorized>
@@ -84,6 +85,7 @@
                 }))
             {
                 await _registerModal.Hide();
+                Navigation.NavigateTo(Navigation.Uri, true);
             }
         }
         catch (Exception e)
@@ -105,6 +107,7 @@
                 }))
             {
                 await _loginModal.Hide();
+                Navigation.NavigateTo(Navigation.Uri, true);
             }
         }
         catch (Exception e)
@@ -117,6 +120,7 @@
     private async Task Logout()
     {
         await _autorizeApi.Logout();
+        Navigation.NavigateTo(Navigation.Uri, true);
     }
 }
 

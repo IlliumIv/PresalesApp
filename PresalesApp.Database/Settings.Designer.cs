@@ -12,7 +12,7 @@ namespace PresalesApp.Database {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.5.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.4.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -26,7 +26,7 @@ namespace PresalesApp.Database {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("localhost")]
+        [global::System.Configuration.DefaultSettingValueAttribute("127.0.0.1")]
         public string Host {
             get {
                 return ((string)(this["Host"]));
@@ -38,7 +38,7 @@ namespace PresalesApp.Database {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("5433")]
+        [global::System.Configuration.DefaultSettingValueAttribute("5432")]
         public int Port {
             get {
                 return ((int)(this["Port"]));
@@ -113,7 +113,7 @@ namespace PresalesApp.Database {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1.00:00:00")]
+        [global::System.Configuration.DefaultSettingValueAttribute("00.00:00:01")]
         public global::System.TimeSpan Expiry {
             get {
                 return ((global::System.TimeSpan)(this["Expiry"]));

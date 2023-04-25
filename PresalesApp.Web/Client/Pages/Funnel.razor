@@ -9,27 +9,36 @@
           @bind-SelectedRow="@_selectedProject"
           DetailRowStartsVisible="false"
           Filterable
-          FilterMethod="DataGridFilterMethod.StartsWith"
           Sortable="false"
+          RowStyling="@OnRowStyling"
+          ShowPager
+          SelectedRowStyling="@OnRowStyling"
           Responsive>
     <DataGridColumns>
         <DataGridCommandColumn />
         <DataGridColumn Field="@nameof(Project.Presale)" Caption="@Localization["PresaleNameText"]" Editable="false" Width="15%" CustomFilter="@OnPresaleFilter">
             <DisplayTemplate>
-                @($"{(context as Project)?.Presale.Name}")
+                @{
+                    var name = (context as Project)?.Presale?.Name;
+                    string placeholder = Localization["PresaleNotAssignedYetMessage"];
+                    if (!string.IsNullOrEmpty(name))
+                        placeholder = name;
+                }
+                @placeholder
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn Field="@nameof(Project.Number)" Caption="@Localization["ProjectNumberText"]" Editable="false" Width="10%"/>
+        <DataGridColumn Field="@nameof(Project.Number)" Caption="@Localization["ProjectNumberText"]" Editable="false" Width="10%" CustomFilter="@OnDefaultFilter" />
         <DataGridColumn Field="@nameof(Project.Potential)" Caption="@Localization["ProjectPotentialText"]" Editable="false" Width="15%" CustomFilter="@OnPotentialFilter">
             <DisplayTemplate>
                 @($"{@Helpers.ToCurrencyString((context as Project)?.Potential, "ru-RU")}")
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn Field="@nameof(Project.Name)" Caption="@Localization["ProjectNameText"]" Editable="false" />
+        <DataGridColumn Field="@nameof(Project.Name)" Caption="@Localization["ProjectNameText"]" Editable="false" CustomFilter="@OnDefaultFilter" />
     </DataGridColumns>
     <DetailRowTemplate>
         @{
             var actions = (context as Project).Actions.Where(a => a.SalesFunnel).OrderBy(a => a.Number);
+            if (!actions.Any()) return;
             <DataGrid TItem="Web.Shared.Action"
                   Data="actions"
                   Sortable="false"
@@ -54,6 +63,22 @@
     private Project _selectedProject;
     private FunnelProjects? response;
 
+    private bool OnDefaultFilter(object itemValue, object searchValue)
+    {
+        if (searchValue is string defaultFilter)
+        {
+            return itemValue.ToString()?.Contains(defaultFilter, StringComparison.OrdinalIgnoreCase) ?? true;
+        }
+
+        return true;
+    }
+
+    private void OnRowStyling(Project project, DataGridRowStyling styling)
+    {
+        if (!project.Actions.Any(a => a.SalesFunnel))
+            styling.Style = "color: red;";
+    }
+
     private bool OnPotentialFilter(object itemValue, object searchValue)
     {
         var potential = (decimal)((DecimalValue)itemValue);
@@ -70,7 +95,7 @@
     {
         var presale = (Presale)itemValue;
         var search = searchValue?.ToString() ?? string.Empty;
-        return presale.Name.StartsWith(search, StringComparison.OrdinalIgnoreCase) == true;
+        return presale?.Name?.StartsWith(search, StringComparison.OrdinalIgnoreCase) ?? true;
     }
 
     protected override async Task OnParametersSetAsync() => await UpdateData();

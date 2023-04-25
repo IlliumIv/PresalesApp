@@ -5,6 +5,7 @@ VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E5CA684C-1CEA-4E45-B141-51D45CF3A09C}"
 	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -49,7 +50,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_NeutralResourcesLanguage = ru-RU
 		SolutionGuid = {17F5E084-7F1B-401C-AC9B-8962A8CF066F}
+		RESX_NeutralResourcesLanguage = ru-RU
 	EndGlobalSection
 EndGlobal
