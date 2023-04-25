@@ -617,6 +617,7 @@ namespace PresalesApp.Web.Controllers
 
             var projects = db.Projects
                 .Where(p => p.Status == ProjectStatus.WorkInProgress)
+                .Where(p => p.Presale.Department == Department.Russian)
                 .Where(p => p.PresaleActions.Any(a => a.SalesFunnel) ||
                     (p.PotentialAmount > 2000000 && p.ApprovalBySalesDirectorAt > new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc)))
                 .Include(p => p.PresaleActions)
