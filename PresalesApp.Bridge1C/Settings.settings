@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='koi8-r'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PresalesApp.Bridge1C" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="RequestsTimeout" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:10:00</Value>
+    </Setting>
+    <Setting Name="ProjectsUpdateDelay" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:02:00</Value>
+    </Setting>
+    <Setting Name="Host" Type="(Web Service URL)" Scope="User">
+      <Value Profile="(Default)">127.0.0.1</Value>
+    </Setting>
+    <Setting Name="Password" Type="System.String" Scope="User">
+      <Value Profile="(Default)">***REMOVED***</Value>
+    </Setting>
+    <Setting Name="Username" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ПоляковИ</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

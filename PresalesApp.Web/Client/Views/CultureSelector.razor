@@ -1,0 +1,25 @@
+﻿@using System.Globalization
+@using Enum = System.Enum
+@inject NavigationManager Navigation
+
+<select value="@CultureInfo.CurrentCulture" @onchange="((ChangeEventArgs e) => OnChanged(e?.Value))" class="form-select form-select-combobox ">
+    @foreach (CultureInfo culture in _supportedCultures)
+    {
+        <option value="@culture">@culture.NativeName</option>
+    }
+</select>
+
+@code {
+    private readonly CultureInfo[] _supportedCultures = new[]
+    {
+            new CultureInfo("ru-RU"),
+            new CultureInfo("en-US")
+    };
+
+    private async void OnChanged(object? obj)
+    {
+        var newCulture = new CultureInfo(obj?.ToString() ?? "ru-RU");
+        await Storage.SetItemAsStringAsync(Settings.Default.StorageCultureKey, newCulture.Name);
+        Navigation.NavigateTo(Navigation.Uri, true);
+    }
+}
