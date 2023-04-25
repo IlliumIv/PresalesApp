@@ -21,6 +21,7 @@ using static PresalesApp.Database.DbController;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Google.Protobuf;
+using PresalesApp.Database.Enums;
 
 namespace PresalesApp.Web.Controllers
 {
@@ -180,14 +181,15 @@ namespace PresalesApp.Web.Controllers
             var from = request.Period.From.ToDateTime();
             var to = request.Period.To.ToDateTime();
 
-            var presale = db.Presales?
-                .Where(p => p.Name == request.PresaleName)
-                // .Include(p => p.Projects)
-                .Include(p => p.Invoices.Where(i => i.Date >= from || i.LastPayAt >= from || i.LastShipmentAt >= from))?
-                    .ThenInclude(i => i.Project)
-                .Include(p => p.Invoices.Where(i => i.Date >= from || i.LastPayAt >= from || i.LastShipmentAt >= from))?
-                    .ThenInclude(i => i.ProfitPeriods)
-                .FirstOrDefault();
+            var invQuery = db.Invoices
+                .Where(i => i.Date >= from || i.LastPayAt >= from || i.LastShipmentAt >= from)
+                .Where(i => i.Presale.Name == request.PresaleName)
+                .Include(i => i.Project)
+                .Include(i => i.ProfitPeriods);
+            invQuery.Load();
+
+            var presale = db.Presales
+                .Where(p => p.Name == request.PresaleName).SingleOrDefault();
 
             if (presale == null)
                 return Task.FromResult(new KpiResponse { Error = new Error { Message = "Пресейл не найден в базе данных." } });
@@ -269,20 +271,34 @@ namespace PresalesApp.Web.Controllers
             var onlyActive = request?.OnlyActive ?? false;
 
             using var db = new ReadOnlyContext();
+
+            var projQuery = db.Projects.Where(p => p != null)
+                .Where(p => ((position == Shared.Position.Any && p.Presale.Position != Position.None)
+                    || (position != Shared.Position.Any && p.Presale.Position == position.Translate()))
+                    && ((department == Shared.Department.Any && p.Presale.Department != Department.None)
+                    || (department != Shared.Department.Any && p.Presale.Department == department.Translate())))
+                .Include(p => p.PresaleActions);
+
+            var invQuery = db.Invoices.Where(i => (i.Date >= from && i.Date <= to)
+                    || (i.LastPayAt >= from && i.LastPayAt <= to)
+                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
+                .Where(i => ((position == Shared.Position.Any && i.Presale.Position != Position.None)
+                    || (position != Shared.Position.Any && i.Presale.Position == position.Translate()))
+                    && ((department == Shared.Department.Any && i.Presale.Department != Department.None)
+                    || (department != Shared.Department.Any && i.Presale.Department == department.Translate())))
+                .Include(i => i.ProfitPeriods);
+
+            projQuery.Load();
+            invQuery.Load();
+
             var presales = db.Presales
                 .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
                     || (position != Shared.Position.Any && p.Position == position.Translate()))
                     && ((department == Shared.Department.Any && p.Department != Department.None)
                     || (department != Shared.Department.Any && p.Department == department.Translate())))
-#pragma warning disable CS8604 // Possible null reference argument.
-                .Include(p => p.Projects.Where(p => p != null)).ThenInclude(p => p.PresaleActions)
-                .Include(p => p.Invoices.Where(i => (i.Date >= from && i.Date <= to)
-                    || (i.LastPayAt >= from && i.LastPayAt <= to)
-                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))).ThenInclude(i => i.ProfitPeriods)
-#pragma warning restore CS8604 // Possible null reference argument.
                 .ToList();
 
-            List<Database.Entities.Project> projects = new();
+            List<Project> projects = new();
             foreach (var presale in presales)
                 if (presale.Projects != null)
                     projects.AddRange(presale.Projects);
@@ -476,19 +492,22 @@ namespace PresalesApp.Web.Controllers
             var onlyActive = request?.OnlyActive ?? false;
 
             using var db = new ReadOnlyContext();
+
+            var invQuery = db.Invoices
+                .Where(i => (i.Date >= from && i.Date <= to)
+                    || (i.LastPayAt >= from && i.LastPayAt <= to)
+                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
+                .Include(i => i.Presale)
+                .Include(i => i.ProfitPeriods);
+
+            invQuery.Load();
+
             var presales = db.Presales?
                 .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
                     || (position != Shared.Position.Any && p.Position == position.Translate()))
                     && ((department == Shared.Department.Any && p.Department != Department.None)
                     || (department != Shared.Department.Any && p.Department == department.Translate())))
                 .ToList();
-
-            _ = db.Invoices
-                .Where(i => (i.Date >= from && i.Date <= to)
-                    || (i.LastPayAt >= from && i.LastPayAt <= to)
-                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
-                .Include(i => i.Presale)
-                .Include(i => i.ProfitPeriods).ToList();
 
             var reply = new MonthProfitOverview();
             if (presales == null) return Task.FromResult(reply);
@@ -562,33 +581,31 @@ namespace PresalesApp.Web.Controllers
 
             using var db = new ReadOnlyContext();
 
-            List<Presale>? presales;
-
             if (is_main_project_include)
-#pragma warning disable CS8604 // Possible null reference argument.
-                presales = db.Presales
-                    .Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true)
-                    .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
-                                                        && p.ClosedAt >= from && p.ClosedAt <= to
-                                                        && !p.Invoices.Any(i => i.ProfitPeriods.Any())
-                                                        && p.MainProject != null && !p.MainProject.Invoices.Any(i => i.ProfitPeriods.Any())
-                    )).ToList();
+            {
+                db.Projects
+                    .Where(p => p.Status == ProjectStatus.Won && p.ClosedAt >= from && p.ClosedAt <= to &&
+                        !p.Invoices.Any(i => i.ProfitPeriods.Any()) && p.MainProject != null &&
+                        !p.MainProject.Invoices.Any(i => i.ProfitPeriods.Any()))
+                    .Where(p => presale_name != string.Empty ? p.Presale.Name == presale_name : p.Presale.IsActive == true).Load();
+            }
             else
-                presales = db.Presales
-                    .Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true)
-                    .Include(p => p.Projects.Where(p => p.Status == ProjectStatus.Won
-                                                        && p.ClosedAt >= from && p.ClosedAt <= to
-                                                        && !p.Invoices.Any(i => i.ProfitPeriods.Any())
-                    )).ToList();
-#pragma warning restore CS8604 // Possible null reference argument.
+            {
+                db.Projects
+                    .Where(p => p.Status == ProjectStatus.Won && p.ClosedAt >= from && p.ClosedAt <= to &&
+                        !p.Invoices.Any(i => i.ProfitPeriods.Any()))
+                    .Where(p => presale_name != string.Empty ? p.Presale.Name == presale_name : p.Presale.IsActive == true).Load();
+            }
 
+            var presales = db.Presales.Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true).ToList();
             var reply = new UnpaidProjects();
 
             foreach (var presale in presales)
-#pragma warning disable CS8604 // Possible null reference argument.
+            {
+                if (!presale.Projects?.Any() ?? true) continue;
                 foreach (var project in presale.Projects.OrderBy(p => p.ClosedAt).ThenBy(p => p.Number))
-#pragma warning restore CS8604 // Possible null reference argument.
                     reply.Projects.Add(project.Translate());
+            }
 
             db.Dispose();
             return Task.FromResult(reply);
@@ -599,9 +616,12 @@ namespace PresalesApp.Web.Controllers
             using var db = new ReadOnlyContext();
 
             var projects = db.Projects
-                .Where(p => p.PresaleActions.Any(a => a.SalesFunnel))
+                .Where(p => p.Status == ProjectStatus.WorkInProgress)
+                .Where(p => p.PresaleActions.Any(a => a.SalesFunnel) ||
+                    (p.PotentialAmount > 2000000 && p.ApprovalBySalesDirectorAt > new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc)))
                 .Include(p => p.PresaleActions)
-                .Include(p => p.Presale);
+                .Include(p => p.Presale)
+                .ToList();
 
             var reply = new FunnelProjects();
 
