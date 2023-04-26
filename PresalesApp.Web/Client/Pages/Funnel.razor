@@ -95,7 +95,7 @@
     {
         var presale = (Presale)itemValue;
         var search = searchValue?.ToString() ?? string.Empty;
-        return presale?.Name?.StartsWith(search, StringComparison.OrdinalIgnoreCase) ?? true;
+        return presale?.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? true;
     }
 
     protected override async Task OnParametersSetAsync() => await UpdateData();
