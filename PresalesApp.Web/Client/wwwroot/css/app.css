@@ -136,3 +136,8 @@ a, .btn-link {
     vertical-align: middle!important;
     cursor: help!important;
 }
+
+html, body * {
+    scrollbar-color: #bfbfbf transparent;
+    scrollbar-width: thin;
+}

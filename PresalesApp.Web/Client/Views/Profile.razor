@@ -25,8 +25,8 @@
             </Field>
         </ModalBody>
         <ModalFooter>
-            <Button Color="Color.Secondary" Clicked="@(() => _loginModal.Hide())">@Localization["CloseButtonText"]</Button>
-            <Button Color="Color.Primary" Clicked="@Login" Disabled="@_loginDisabled">@Localization["LoginButtonModalText"]</Button>
+            <Button Color="Color.Light" Clicked="@(() => _loginModal.Hide())">@Localization["CloseButtonText"]</Button>
+            <Button Color="Color.Dark" Clicked="@Login" Disabled="@_loginDisabled">@Localization["LoginButtonModalText"]</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
@@ -48,8 +48,8 @@
             </Field>
         </ModalBody>
         <ModalFooter>
-            <Button Color="Color.Secondary" Clicked="@(() => _registerModal.Hide())">@Localization["CloseButtonText"]</Button>
-            <Button Color="Color.Primary" Clicked="@Register" Disabled="@_registerDisabled">@Localization["RegisterModalButtonText"]</Button>
+            <Button Color="Color.Light" Clicked="@(() => _registerModal.Hide())">@Localization["CloseButtonText"]</Button>
+            <Button Color="Color.Dark" Clicked="@Register" Disabled="@_registerDisabled">@Localization["RegisterModalButtonText"]</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
