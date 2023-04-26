@@ -4,6 +4,7 @@ using PresalesApp.Database.Entities;
 using PresalesApp.Database.Entities.Updates;
 using Serilog;
 using PresalesApp.Bridge1C.Startup;
+using PresalesApp.Web.Shared.Startup;
 
 namespace PresalesApp.Bridge1C
 {
@@ -11,7 +12,7 @@ namespace PresalesApp.Bridge1C
     {
         public static void Main(string[] args)
         {
-            SerilogConfiguration.ConfigureLogger();
+            SerilogConfiguration.ConfigureLogger<Program>();
             JsonConvertConfiguration.ConfigureJsonConvert();
 
             DbController.Start();
