@@ -18,6 +18,10 @@
     align-items: center;
 }
 
+.charts {
+    width: 40%;
+}
+
 .top {
     width: 60%;
 }

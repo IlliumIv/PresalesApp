@@ -42,6 +42,10 @@
                 }</p>
         </fieldset>
     </div>
+    @if (overview == null)
+    {
+        <Loader />
+    }
     <div class="chart">
         <div class="charts">
             <PieChart @ref="profitChart" TItem="decimal" OptionsJsonString="@pieChartOptions" />

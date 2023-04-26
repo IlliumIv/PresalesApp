@@ -321,4 +321,7 @@
   <data name="PresaleNotAssignedYetMessage" xml:space="preserve">
     <value>Пресейл не назначен</value>
   </data>
+  <data name="ProjectApprovalByTechDirectorAtText" xml:space="preserve">
+    <value>Дата назначения пресейла</value>
+  </data>
 </root>

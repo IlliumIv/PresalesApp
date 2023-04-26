@@ -19,20 +19,60 @@
     </button>
 </div>
 
-@if (projects == null)
+@if (response == null)
 {
-    <em>Loading...</em>
+    <Loader />
 }
 else
 {
-    <Table_Projects Projects="projects.Projects" />
+    <DataGrid TItem="Project"
+          Data="@response?.Projects"
+            Filterable
+          Sortable="false"
+          PageSize="@int.MaxValue"
+            Responsive>
+    <DataGridColumns>
+        <DataGridCommandColumn />
+        <DataGridColumn Field="@nameof(Project.Number)" Caption="@Localization["ProjectNumberText"]"
+                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.OnDefaultFilter" />
+        <DataGridColumn Field="@nameof(Project.Name)" Caption="@Localization["ProjectNameText"]"
+                        Editable="false" CustomFilter="@DataGridFilters.OnDefaultFilter" />
+        <DataGridColumn Field="@nameof(Project.Presale)" Caption="@Localization["PresaleNameText"]"
+                        Editable="false" Width="15%" CustomFilter="@DataGridFilters.OnPresaleFilter" Context="project">
+            <DisplayTemplate>
+                @{
+                        var name = (project as Project)?.Presale?.Name;
+                    }
+                    @(!string.IsNullOrEmpty(name) ? name : Localization["PresaleNotAssignedYetMessage"])
+                </DisplayTemplate>
+            </DataGridColumn>
+            <DataGridColumn Field="@nameof(Project.Status)" Caption="@Localization["ProjectStatusText"]"
+                        Editable="false" CustomFilter="@DataGridFilters.OnDefaultFilter" Context="project" Filterable="false">
+                <DisplayTemplate>
+                    @((project as Project)?.Status.GetName(Localization))
+                </DisplayTemplate>
+            </DataGridColumn>
+            <DataGridColumn Field="@nameof(Project.Potential)" Caption="@Localization["ProjectPotentialText"]"
+                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.OnPotentialFilter" Context="project">
+                <DisplayTemplate>
+                    @($"{@Helpers.ToCurrencyString((project as Project)?.Potential, "ru-RU")}")
+                </DisplayTemplate>
+            </DataGridColumn>
+            <DataGridDateColumn Field="@nameof(Project.ClosedAt)" Caption="@Localization["ProjectCloseDateText"]"
+                            Editable="false" Width="15%" CustomFilter="@DataGridFilters.OnDateTimeFilter" Context="project">
+                <DisplayTemplate>
+                    @($"{(project as Project)?.ClosedAt.ToDateTime().ToPresaleTime()}")
+                </DisplayTemplate>
+            </DataGridDateColumn>
+        </DataGridColumns>
+    </DataGrid>
 }
 
 @code {
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
 
-    private UnpaidProjects? projects;
+    private UnpaidProjects? response;
     private string presale_name = string.Empty;
     private bool is_main_project_include = false;
 
@@ -51,7 +91,7 @@ else
     {
         try
         {
-            projects = await Api.GetUnpaidProjectsAsync(new UnpaidRequest()
+            response = await Api.GetUnpaidProjectsAsync(new UnpaidRequest()
             {
                 IsMainProjectInclude = is_main_project_include,
                 PresaleName = presale_name,
@@ -67,7 +107,7 @@ else
         StateHasChanged();
     }
 
-    private async Task DownloadFile() => await projects.Download(js, Localization);
+    private async Task DownloadFile() => await response.Download(js, Localization);
 
     private async void OnModeChanged(object? obj)
     {

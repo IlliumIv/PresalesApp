@@ -321,4 +321,7 @@
   <data name="PresaleNotAssignedYetMessage" xml:space="preserve">
     <value>Presale Not Assigned</value>
   </data>
+  <data name="ProjectApprovalByTechDirectorAtText" xml:space="preserve">
+    <value>#ProjectApprovalByTechDirectorAtText#</value>
+  </data>
 </root>
