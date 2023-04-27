@@ -5,29 +5,36 @@ namespace PresalesApp.Web.Client.Helpers
 {
     public static class DataGridFilters
     {
-        public static bool OnPotentialFilter(object itemValue, object searchValue)
+        public static bool PercentFilter(object doubleValue, object searchValue)
         {
-            var potential = (decimal)((DecimalValue)itemValue);
-
+            var @double = (double)doubleValue * 100;
+            if (double.TryParse(searchValue?.ToString(), out var filter))
+            {
+                return @double >= filter;
+            }
+            return true;
+        }
+        public static bool DecimalValueFilter(object decimalValue, object searchValue)
+        {
+            var @decimal = (decimal)(DecimalValue)decimalValue;
             if (decimal.TryParse(searchValue?.ToString(), out var filter))
             {
-                return potential > filter;
+                return @decimal >= filter;
             }
-
             return true;
         }
 
-        public static bool OnPresaleFilter(object itemValue, object searchValue)
+        public static bool PresaleFilter(object itemValue, object searchValue)
         {
             var presale = (Presale)itemValue;
             var search = searchValue?.ToString() ?? string.Empty;
             return presale?.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? true;
         }
 
-        public static bool OnDateTimeFilter(object itemValue, object searchValue) =>
-            OnDefaultFilter(((Timestamp)itemValue).ToDateTime().ToPresaleTime(), searchValue);
+        public static bool DateTimeFilter(object itemValue, object searchValue) =>
+            DefaultFilter(((Timestamp)itemValue).ToDateTime().ToPresaleTime(), searchValue);
 
-        public static bool OnDefaultFilter(object itemValue, object searchValue)
+        public static bool DefaultFilter(object itemValue, object searchValue)
         {
             if (searchValue is string defaultFilter)
             {

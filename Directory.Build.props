@@ -4,10 +4,12 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-	<Version>1.2.3</Version>
+	<Version>1.2.4</Version>
 	<PlatformTarget>AnyCPU</PlatformTarget>
 	<Configurations>Debug;Release</Configurations>
 	<Platforms>AnyCPU</Platforms>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <PreBuildEvent>cmd /c $(SolutionDir)killNode.bat</PreBuildEvent>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -17,16 +19,5 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="*\Logs\**" />
-    <Compile Remove="*\publish\**" />
-    <Content Remove="*\Logs\**" />
-    <Content Remove="*\publish\**" />
-    <EmbeddedResource Remove="*\Logs\**" />
-    <EmbeddedResource Remove="*\publish\**" />
-    <None Remove="*\Logs\**" />
-    <None Remove="*\publish\**" />
-  </ItemGroup>
 
 </Project>

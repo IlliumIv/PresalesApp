@@ -16,14 +16,14 @@ else
             Filterable
           Sortable="false"
           RowStyling="@OnRowStyling"
+          SelectedRowStyling="@OnRowStyling"
             ShowPager
           PageSize="15"
-          SelectedRowStyling="@OnRowStyling"
             Responsive>
     <DataGridColumns>
         <DataGridCommandColumn />
         <DataGridColumn Field="@nameof(Project.Presale)" Caption="@Localization["PresaleNameText"]"
-                        Editable="false" Width="15%" CustomFilter="@DataGridFilters.OnPresaleFilter" Context="project">
+                        Editable="false" Width="15%" CustomFilter="@DataGridFilters.PresaleFilter" Context="project">
             <DisplayTemplate>
                 @{
                         var name = (project as Project)?.Presale?.Name;
@@ -35,21 +35,21 @@ else
                 </DisplayTemplate>
             </DataGridColumn>
             <DataGridColumn Field="@nameof(Project.Number)" Caption="@Localization["ProjectNumberText"]"
-                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.OnDefaultFilter" />
+                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.DefaultFilter" />
             <DataGridColumn Field="@nameof(Project.Potential)" Caption="@Localization["ProjectPotentialText"]"
-                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.OnPotentialFilter" Context="project">
+                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="project">
                 <DisplayTemplate>
-                    @($"{@Helpers.ToCurrencyString((project as Project)?.Potential, "ru-RU")}")
+                    @($"{@Helpers.ToCurrencyString((project as Project)?.Potential)}")
                 </DisplayTemplate>
             </DataGridColumn>
             <DataGridDateColumn Field="@nameof(Project.ApprovalByTechDirectorAt)" Caption="@Localization["ProjectApprovalByTechDirectorAtText"]"
-                            Editable="false" Width="15%" CustomFilter="@DataGridFilters.OnDateTimeFilter" Context="project">
+                            Editable="false" Width="15%" CustomFilter="@DataGridFilters.DateTimeFilter" Context="project">
                 <DisplayTemplate>
                     @($"{(project as Project)?.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()}")
                 </DisplayTemplate>
             </DataGridDateColumn>
             <DataGridColumn Field="@nameof(Project.Name)" Caption="@Localization["ProjectNameText"]"
-                        Editable="false" CustomFilter="@DataGridFilters.OnDefaultFilter" />
+                        Editable="false" CustomFilter="@DataGridFilters.DefaultFilter" />
         </DataGridColumns>
         <DetailRowTemplate>
             @{

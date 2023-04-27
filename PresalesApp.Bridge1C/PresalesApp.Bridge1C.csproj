@@ -5,6 +5,10 @@
 		<PlatformTarget>AnyCPU</PlatformTarget>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <None Remove="PresalesApp.Bridge1C.7z" />
+	</ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.52.0" />
     <PackageReference Include="Grpc.AspNetCore.Web" Version="2.52.0" />
@@ -44,5 +48,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+
+  <Target Name="PostPublish" AfterTargets="Publish">
+    <Exec Command="cmd /c deploy.bat" />
+  </Target>
 
 </Project>

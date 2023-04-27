@@ -53,8 +53,8 @@ else
                     <td title="@title_won">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
                     <td title="@title_conversion">@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
                     <td title="@title_loss">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential, "ru-RU")</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit, "ru-RU")</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential)</td>
+                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
                     <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
                     <td title="@title_time_spend">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
                     <td title="@title_avt_time_spend">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
@@ -70,8 +70,8 @@ else
                 <td title="@title_won">@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
                 <td title="@title_conversion">@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
                 <td title="@title_loss">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential, "ru-RU")</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit, "ru-RU")</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential)</td>
+                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
                 <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
                 <td title="@title_time_spend">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
                 <td title="@title_avt_time_spend">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
