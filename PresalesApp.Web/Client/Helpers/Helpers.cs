@@ -15,11 +15,49 @@ namespace PresalesApp.Web.Client.Helpers
 
         public static string ToMinMaxFormatString(DateOnly? value) => $"{value:yyyy-MM-dd}";
 
-        public static string ToCurrencyString(decimal value, string cultureName) => ToCurrencyString(value, false, cultureName);
+        public static string ToCurrencyString(this decimal value, bool allowNegatives = false, CultureInfo? cultureInfo = null)
+        {
+            cultureInfo ??= new CultureInfo("ru-RU");
+            var numberFormat = cultureInfo.NumberFormat;
 
-        public static string ToCurrencyString(decimal value, bool allowNegatives = false, string? cultureName = null) =>
-            string.Format(new CultureInfo(cultureName ?? CultureInfo.CurrentCulture.Name),
-                "{0:C}", allowNegatives ? value : value > 0 ? value : "");
+            string pattern = (value >= decimal.Zero) switch
+            {
+                true => numberFormat.CurrencyPositivePattern switch
+                {
+                    0 => "{0}{1}",
+                    1 => "{1}{0}",
+                    2 => "{0} {1}",
+                    3 => "{1} {0}",
+                    _ => throw new NotImplementedException()
+                },
+                false => allowNegatives switch
+                {
+                    true => numberFormat.CurrencyNegativePattern switch
+                    {
+                        0 => "({0}{1})",
+                        1 => "-{0}{1}",
+                        2 => "{0}-{1}",
+                        3 => "{0}{1}-",
+                        4 => "({1}{0})",
+                        5 => "-{1}{0}",
+                        6 => "{1}-{0}",
+                        7 => "{1}{0}-",
+                        8 => "-{1} {0}",
+                        9 => "-{0} {1}",
+                        10 => "{1} {0}-",
+                        11 => "{0} {1}-",
+                        12 => "{0} -{1}",
+                        13 => "{1}- {0}",
+                        14 => "({0} {1})",
+                        15 => "({1} {0})",
+                        _ => throw new NotImplementedException(),
+                    },
+                    false => ""
+                }
+            };
+
+            return string.Format(cultureInfo, pattern, numberFormat.CurrencySymbol, $"{value:N2}");
+        }
 
         public static string ToPercentString(double value, int digits = 0) =>
             value == 0 ? "" : string.Format($"{{0:P{digits}}}", value);

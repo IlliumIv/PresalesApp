@@ -324,4 +324,13 @@
   <data name="ProjectApprovalByTechDirectorAtText" xml:space="preserve">
     <value>#ProjectApprovalByTechDirectorAtText#</value>
   </data>
+  <data name="TotalText" xml:space="preserve">
+    <value>Total:</value>
+  </data>
+  <data name="ReportText" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="ItemLegendText" xml:space="preserve">
+    <value>Legend</value>
+  </data>
 </root>
