@@ -33,8 +33,4 @@
     <ProjectReference Include="..\Shared\PresalesApp.Web.Shared.csproj" />
   </ItemGroup>
 
-  <Target Name="PostPublish" AfterTargets="Publish">
-    <Exec Command="cmd /c deploy.bat" />
-  </Target>
-
 </Project>
