@@ -12,51 +12,188 @@
     </ComboBox_Months>
     <ComboBox_Years OnSelectCallback="(async (int year) => {this.year = year; await GenerateReport();})">
     </ComboBox_Years>
-    <button @attributes="btn_download_attr" class="btn btn-primary" @onclick="DownloadReport">@Localization["DownloadReportButtonText"]</button>
+    <Button Disabled="@downloadButtonDisabled" Color="Color.Dark" Clicked="DownloadReport">@Localization["DownloadReportButtonText"]</Button>
 </div>
-@if (kpi is not null)
-{
-    <details class="pmspoiler">
-        <summary>Легенда</summary>
-        <p>По игнорируемым <span style="color:red">действиям</span>:</p>
-        <p style="margin-left: 100px">Если действие игнорируется по ошибке, то скорее всего у него <span style="color:red">выбран неправильный тип</span>. Зайдите в проект и поправьте действие. После следующей синхронизации (раз в 10 минут) действие зачтётся.</p>
-        <p>По игнорируемым <span style="color:red">проектам</span>:</p>
-        <p style="margin-left: 100px">Проект игнорируется, если он <span style="color:red">никогда не синхронизировался</span> или в нём <span style="color:red">нет действий</span>, которые можно было бы учесть. Часто это основные проекты у дочерних или старые проекты, по которым прилетел счёт. То есть моему сервису известна только ЦБха и всё, никаких больше подробностей. Чтобы заставить сервис такой проект учитывать, просто добавьте в него любое пустое действие. После следующей синхронизации (раз в 10 минут) весь проект синхронизируется и все действия в нём будут учитываться. После этого пустое действие можно удалить или оставить - как хотите.</p>
-        <p><span style="color:red">Красным</span> выделены те счета, по которым <span style="color:red">есть игнорируемые действия\проекты</span> или <span style="color:red">премия посчитана 0</span>.</p>
-        <p>Сортировка:</p>
-        <p style="margin-left: 100px">
-            Чтобы порядок счетов тут совпадал с порядком счетов в 1С, нужно, чтобы отчёт по чистым группировал данные не по партнёру, а по контрагенту.
-            Для этого можно воспользоваться преднастроенным вариантом отчёта из Органайзера ("Органайзер" > "Отчёты (органайзер)" > "Пресейлы, чистые продажи по контрагенту") или настроить отчёт самостоятельно.
-            Если преднастроенный отчёт не отображается в органайзере, то его нужно включить ("Все действия" > "Настроить" > отметить отчёт галкой > "Сохранить изменения").
-            Инструкция по самостоятельной настройке:
-            <ol style="margin-left: 100px">
-                <li>В отчёте по чистым выбриаем вариант отчёта "ОТЧЕТ: Подразделение\Менеджер\Партнер\Валюта\ЗаказКлиента".</li>
-                <li>Нажимаем "Все действия" > "Изменить вариант".</li>
-                <li>В "Структуре отчёта" в четвёртом варианте группировки два раза тыкаем в "Партнёр":<img style="width: 65%" src="images/partner_example.png"></li>
-                <li>В открывшемся окне два раза тыкаем в "Партнёр" и заменяем на "Контрагент", нажимаем "ОК".</li>
-                <li>Нажимаем "Завершить редактирование" и формируем отчёт.</li>
-            </ol>
-        </p>
-    </details>
-    <Table_Invoices Invoices="kpi.Invoices"></Table_Invoices>
-}
+
+<Tabs RenderMode="TabsRenderMode.LazyReload" SelectedTab="report">
+    <Items>
+        <Tab Name="report">@Localization["ReportText"]</Tab>
+        <Tab Name="description">@Localization["ItemLegendText"]</Tab>
+    </Items>
+    <Content>
+        <TabPanel Name="report">
+            @if (response is not null)
+            {
+                <DataGrid TItem="Invoice"
+                          Data="@response?.Invoices"
+                          DetailRowStartsVisible="false"
+                          Filterable
+                          Sortable="false"
+                          PageSize="int.MaxValue"
+                          RowStyling="@RowStyling"
+                          SelectedRowStyling="@RowStyling"
+                          Responsive>
+                        <DataGridAggregates>
+                            <DataGridAggregate Field="@nameof(Invoice.Date)" Aggregate="DataGridAggregateType.None">
+                                <DisplayTemplate>
+                                    @{ <span style="text-align: right; display: block;">@Localization["TotalText"]</span> }
+                                </DisplayTemplate>
+                            </DataGridAggregate>
+                            <DataGridAggregate Field="@nameof(Invoice.Amount)" Aggregate="DataGridAggregateType.None">
+                                <DisplayTemplate>
+                                    @{ <span style="text-align: right; display: block;">@Helpers.ToCurrencyString(response?.Invoices.Sum(i => i.Amount) ?? 0)</span> }
+                                </DisplayTemplate>
+                            </DataGridAggregate>
+                            <DataGridAggregate Field="@nameof(Invoice.SalesAmount)" Aggregate="DataGridAggregateType.None">
+                                <DisplayTemplate>
+                                    @{ <span style="text-align: right; display: block;">@Helpers.ToCurrencyString(response?.Invoices.Sum(i => i.SalesAmount) ?? 0)</span> }
+                                </DisplayTemplate>
+                            </DataGridAggregate>
+                            <DataGridAggregate Field="@nameof(Invoice.Profit)" Aggregate="DataGridAggregateType.None">
+                                <DisplayTemplate>
+                                    @{ <span style="text-align: right; display: block;">@Helpers.ToCurrencyString(response?.Invoices.Sum(i => i.Profit) ?? 0)</span> }
+                                </DisplayTemplate>
+                            </DataGridAggregate>
+                        </DataGridAggregates>
+                        <DataGridColumns>
+                            <DataGridCommandColumn />
+                            <DataGridColumn Field="@nameof(Invoice.Counterpart)" Caption="@Localization["CounterpartText"]"
+                                            Editable="false" Width="33%" CustomFilter="@DataGridFilters.DefaultFilter" />
+                            <DataGridColumn Field="@nameof(Invoice.Number)" Caption="@Localization["InvoiceNumberText"]"
+                                            Editable="false" Width="9%" CustomFilter="@DataGridFilters.DefaultFilter" />
+                            <DataGridDateColumn Field="@nameof(Invoice.Date)" Caption="@Localization["InvoiceDateText"]"
+                                                Editable="false" Width="12%" CustomFilter="@DataGridFilters.DateTimeFilter" Context="invoice">
+                                <DisplayTemplate>
+                                    @($"{(invoice as Invoice)?.Date.ToDateTime().ToPresaleTime()}")
+                                </DisplayTemplate>
+                            </DataGridDateColumn>
+                            <DataGridColumn Field="@nameof(Invoice.Amount)" Caption="@Localization["InvoiceAmountText"]" CellStyle="@((e) => "text-align: right")"
+                                            Editable="false" Width="11%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="invoice">
+                                <DisplayTemplate>
+                                        @($"{@Helpers.ToCurrencyString((invoice as Invoice)?.Amount)}")
+                                </DisplayTemplate>
+                            </DataGridColumn>
+                            <DataGridColumn Field="@nameof(Invoice.Cost)" Caption="@Localization["InvoiceCostPriceText"]" CellStyle="@((e) => "text-align: right")"
+                                            Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="invoice">
+                                <DisplayTemplate>
+                                        @($"{@Helpers.ToCurrencyString((invoice as Invoice)?.Cost)}")
+                                </DisplayTemplate>
+                            </DataGridColumn>
+                            <DataGridColumn Field="@nameof(Invoice.SalesAmount)" Caption="@Localization["InvoiceProfitText"]" CellStyle="@((e) => "text-align: right")"
+                                            Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="invoice">
+                                <DisplayTemplate>
+                                        @($"{@Helpers.ToCurrencyString((invoice as Invoice)?.SalesAmount)}")
+                                </DisplayTemplate>
+                            </DataGridColumn>
+                            <DataGridColumn Field="@nameof(Invoice.Percent)" Caption="@Localization["PresalePercentText"]" CellStyle="@((e) => "text-align: right")"
+                                            Editable="false" Width="5%"  CustomFilter="@DataGridFilters.PercentFilter" Context="invoice">
+                                <DisplayTemplate>
+                                        @($"{@Helpers.ToPercentString((invoice as Invoice)?.Percent ?? 0, 1)}")
+                                </DisplayTemplate>
+                            </DataGridColumn>
+                            <DataGridColumn Field="@nameof(Invoice.Profit)" Caption="@Localization["PresaleProfitText"]" CellStyle="@((e) => "text-align: right")"
+                                            Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="invoice">
+                                <DisplayTemplate>
+                                        @($"{@Helpers.ToCurrencyString((invoice as Invoice)?.Profit)}")
+                                </DisplayTemplate>
+                            </DataGridColumn>
+                         </DataGridColumns>
+                        <DetailRowTemplate>
+                        @{
+                                var projectsFound = (context as Invoice).ProjectsFound;
+                                if (projectsFound.Any())
+                                {
+                                    <details class="pmspoiler">
+                                        <summary>Найдено проектов при подсчёте рангов: @projectsFound.Count</summary>
+                                        @foreach (var project in projectsFound)
+                                        {
+                                            <p style="margin-bottom: 0">@project.Format(Localization)</p>
+                                        }
+                                    </details>
+                                }
+                                var projectsIgnored = (context as Invoice).ProjectsIgnored;
+                                if (projectsIgnored.Any())
+                                {
+                                    <details class="pmspoiler">
+                                        <summary style="color:red">Проигнорировано проектов при подсчёте рангов: @projectsIgnored.Count</summary>
+                                        @foreach (var project in projectsIgnored)
+                                        {
+                                            <p style="margin-bottom: 0">@project.Format(Localization)</p>
+                                        }
+                                    </details>
+                                }
+                                var actionsTallied = (context as Invoice).ActionsTallied;
+                                if (actionsTallied.Any())
+                                {
+                                    <details class="pmspoiler">
+                                        <summary>Действий учтено при подсчёте рангов: @actionsTallied.Count</summary>
+                                        @foreach (var action in actionsTallied)
+                                        {
+                                            <p style="margin-bottom: 0">@action.Format(Localization)</p>
+                                        }
+                                    </details>
+                                }
+                                var actionsIgnored = (context as Invoice).ActionsIgnored;
+                                if (actionsIgnored.Any())
+                                {
+                                    <details class="pmspoiler">
+                                        <summary style="color:red">Действий проигнорировано при подсчёте рангов: @actionsIgnored.Count</summary>
+                                        @foreach (var action in actionsIgnored)
+                                        {
+                                            <p style="margin-bottom: 0">@action.Format(Localization)</p>
+                                        }
+                                    </details>
+                                }
+                            }
+                        </DetailRowTemplate>
+                    </DataGrid>
+            }
+        </TabPanel>
+        <TabPanel Name="description">
+            <p>По игнорируемым <span style="color:red">действиям</span>:</p>
+            <p style="margin-left: 100px">Если действие игнорируется по ошибке, то скорее всего у него <span style="color:red">выбран неправильный тип</span>. Зайдите в проект и поправьте действие. После следующей синхронизации (раз в 10 минут) действие зачтётся.</p>
+            <p>По игнорируемым <span style="color:red">проектам</span>:</p>
+            <p style="margin-left: 100px">Проект игнорируется, если он <span style="color:red">никогда не синхронизировался</span> или в нём <span style="color:red">нет действий</span>, которые можно было бы учесть. Часто это основные проекты у дочерних или старые проекты, по которым прилетел счёт. То есть моему сервису известна только ЦБха и всё, никаких больше подробностей. Чтобы заставить сервис такой проект учитывать, просто добавьте в него любое пустое действие. После следующей синхронизации (раз в 10 минут) весь проект синхронизируется и все действия в нём будут учитываться. После этого пустое действие можно удалить или оставить - как хотите.</p>
+            <p><span style="color:red">Красным</span> выделены те счета, по которым <span style="color:red">есть игнорируемые действия\проекты</span> или <span style="color:red">премия посчитана 0</span>.</p>
+            <p>Сортировка:</p>
+            <p style="margin-left: 100px">
+                Чтобы порядок счетов тут совпадал с порядком счетов в 1С, нужно, чтобы отчёт по чистым группировал данные не по партнёру, а по контрагенту.
+                Для этого можно воспользоваться преднастроенным вариантом отчёта из Органайзера ("Органайзер" > "Отчёты (органайзер)" > "Пресейлы, чистые продажи по контрагенту") или настроить отчёт самостоятельно.
+                Если преднастроенный отчёт не отображается в органайзере, то его нужно включить ("Все действия" > "Настроить" > отметить отчёт галкой > "Сохранить изменения").
+                Инструкция по самостоятельной настройке:
+                <ol style="margin-left: 100px">
+                    <li>В отчёте по чистым выбриаем вариант отчёта "ОТЧЕТ: Подразделение\Менеджер\Партнер\Валюта\ЗаказКлиента".</li>
+                    <li>Нажимаем "Все действия" > "Изменить вариант".</li>
+                    <li>В "Структуре отчёта" в четвёртом варианте группировки два раза тыкаем в "Партнёр":<img style="width: 65%" src="images/partner_example.png"></li>
+                    <li>В открывшемся окне два раза тыкаем в "Партнёр" и заменяем на "Контрагент", нажимаем "ОК".</li>
+                    <li>Нажимаем "Завершить редактирование" и формируем отчёт.</li>
+                </ol>
+            </p>
+        </TabPanel>
+    </Content>
+</Tabs>
 
 @code {
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
 
+    private bool downloadButtonDisabled = true;
+    
+    private void RowStyling(Invoice invoice, DataGridRowStyling styling) =>
+        styling.Style = $"color: {Helpers.SetColor(invoice)};";
+
     private int month = DateTime.Now.Month;
     private int year = DateTime.Now.Year;
     private string presale_name = string.Empty;
 
-    private Kpi? kpi;
-    private Dictionary<string, object> btn_download_attr { get; set; } = new() {{ "disabled", "disabled" }};
+    private Kpi? response;
 
-    private async Task DownloadReport() => await kpi.Download(js, presale_name, month, year, Localization);
+    private async Task DownloadReport() => await response.Download(js, presale_name, month, year, Localization);
     private async Task GenerateReport()
     {
-        kpi = null;
-        btn_download_attr = new() {{ "disabled", "disabled" }};
+        this.response = null;
+
+        downloadButtonDisabled = true;
 
         if (string.IsNullOrEmpty(presale_name))
         {
@@ -78,8 +215,8 @@
 
         if (response.ResultCase == KpiResponse.ResultOneofCase.Kpi)
         {
-            kpi = response.Kpi;
-            btn_download_attr = new();
+            this.response = response.Kpi;
+            downloadButtonDisabled = false;
         }
 
         (string message, SnackbarColor color) msg = response.ResultCase switch
