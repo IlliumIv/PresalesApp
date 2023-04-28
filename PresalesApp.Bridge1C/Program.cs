@@ -15,7 +15,6 @@ namespace PresalesApp.Bridge1C
             SerilogConfiguration.ConfigureLogger<Program>();
             JsonConvertConfiguration.ConfigureJsonConvert();
 
-            DbController.Start();
             BridgeController.Start<Project>(TimeSpan.Zero);
             BridgeController.Start<CacheLog>(TimeSpan.FromSeconds(5));
             BridgeController.Start<Invoice>(TimeSpan.FromSeconds(10));

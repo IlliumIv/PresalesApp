@@ -19,7 +19,7 @@ namespace PresalesApp.Web.Client.Startup
 
                 if (nav != null && storage != null)
                 {
-                    string token = storage.GetItem<string>(Settings.Default.StorageTokenKey);
+                    string token = storage.GetItem<string>("token");
                     var client = (T?)Activator.CreateInstance(typeof(T), nav.GetAuthChannel(token));
 
                     if (client != null)

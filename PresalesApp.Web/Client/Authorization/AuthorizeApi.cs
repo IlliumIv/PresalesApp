@@ -34,7 +34,7 @@ namespace PresalesApp.Web.Client.Authorization
 
         public async Task Logout()
         {
-            await _localStorage.RemoveItemAsync(Settings.Default.StorageTokenKey);
+            await _localStorage.RemoveItemAsync("token");
             _stateProvider.MarkLogouted();
         }
 
@@ -42,7 +42,7 @@ namespace PresalesApp.Web.Client.Authorization
         {
             if (loginResponse.ResultCase == LoginResponse.ResultOneofCase.UserInfo)
             {
-                await _localStorage.SetItemAsStringAsync(Settings.Default.StorageTokenKey, loginResponse.UserInfo.Token);
+                await _localStorage.SetItemAsStringAsync("token", loginResponse.UserInfo.Token);
                 _stateProvider.MarkUserAsAuthenticated(loginResponse.UserInfo);
                 return true;
             }

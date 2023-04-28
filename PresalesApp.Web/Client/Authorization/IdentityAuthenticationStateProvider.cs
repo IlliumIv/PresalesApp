@@ -23,7 +23,7 @@ namespace PresalesApp.Web.Client.Authorization
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var token = await _localStorage.GetItemAsStringAsync(Settings.Default.StorageTokenKey);
+            var token = await _localStorage.GetItemAsStringAsync("token");
 
             return await IsTokenValid(token)
                 ? JwtTokenExtensions.GetStateFromJwt(token) : new(new ClaimsPrincipal(new ClaimsIdentity()));

@@ -9,6 +9,8 @@ namespace PresalesApp.Bridge1C.Controllers
 {
     public static class BridgeController
     {
+        public static AppSettings _settings { get; private set; }
+        public static void Configure(AppSettings settings) => _settings = settings;
         public static void Start<T>(TimeSpan startDelay) where T : Entity
         {
             if (startDelay.TotalMilliseconds <= 0) startDelay = TimeSpan.FromMilliseconds(1);
@@ -16,12 +18,12 @@ namespace PresalesApp.Bridge1C.Controllers
             new Task(async () =>
             {
                 var periodic_timer = new PeriodicTimer(startDelay);
-                var next_update_delay = Settings.Default.RequestsTimeout;
+                var next_update_delay = _settings.RequestsTimeout;
 
                 while (await periodic_timer.WaitForNextTickAsync())
                 {
                     periodic_timer.Dispose();
-                    next_update_delay = Settings.Default.RequestsTimeout;
+                    next_update_delay = _settings.RequestsTimeout;
                     try
                     {
                         Update update = typeof(T).Name switch
@@ -45,7 +47,7 @@ namespace PresalesApp.Bridge1C.Controllers
 
                         update.Save();
 
-                        if (DateTime.UtcNow - update.SynchronizedTo > Settings.Default.RequestsTimeout)
+                        if (DateTime.UtcNow - update.SynchronizedTo > _settings.RequestsTimeout)
                             next_update_delay = TimeSpan.FromMilliseconds(1);
 
                         Log.Information($"{typeof(T).Name}s has been updated at " +
@@ -70,9 +72,9 @@ namespace PresalesApp.Bridge1C.Controllers
             var (request, period) = DefineVariables<T>(ref update);
 
             var auth = Convert.ToBase64String(Encoding.UTF8.GetBytes(
-                $"{Settings.Default.Username}:{Settings.Default.Password}"));
+                $"{_settings.Username}:{_settings.Password}"));
 
-            var http_client = new HttpClient { BaseAddress = new Uri($"http://{Settings.Default.Host}") };
+            var http_client = new HttpClient { BaseAddress = new Uri($"http://{_settings.Host}") };
 
             var request_uri = $"trade/hs/API/{request}?" +
                 $"begin={period.from.ToLocalTime():yyyy-MM-ddTHH:mm:ss}" +
@@ -137,7 +139,7 @@ namespace PresalesApp.Bridge1C.Controllers
             update.SynchronizedTo = to;
 
             // В 1С включен механизм фоновой записи, запрашиваем обновления проектов с задержкой, чтобы не промахнуться.
-            var delay = typeof(T).Name == nameof(Project) ? Settings.Default.ProjectsUpdateDelay : TimeSpan.Zero;
+            var delay = typeof(T).Name == nameof(Project) ? _settings.ProjectsUpdateDelay : TimeSpan.Zero;
 
             return (from - delay, to - delay);
         }

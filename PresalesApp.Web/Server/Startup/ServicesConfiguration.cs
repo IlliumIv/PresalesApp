@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using PresalesApp.Database.Authorization;
+using PresalesApp.Database;
 using PresalesApp.Database.Entities;
+using PresalesApp.Web.Authorization;
+using PresalesApp.Web.Server.Authorization;
 using Serilog;
 using static PresalesApp.Database.DbController;
 
@@ -11,6 +13,11 @@ namespace PresalesApp.Web.Server.Startup
     {
         public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
         {
+            var appSettings = new AppSettings(builder.Configuration);
+            builder.Services.AddScoped(s => appSettings);
+
+            DbController.Configure(appSettings);
+
             builder.Logging.ClearProviders();
             builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
 
@@ -24,7 +31,7 @@ namespace PresalesApp.Web.Server.Startup
                 .AddEntityFrameworkStores<UsersContext>()
                 .AddDefaultTokenProviders();
 
-            var tokenParams = new Database.TokenParameters();
+            var tokenParams = new TokenParameters(appSettings);
             builder.Services.AddSingleton(tokenParams);
 
             builder.Services.AddAuthentication(options =>

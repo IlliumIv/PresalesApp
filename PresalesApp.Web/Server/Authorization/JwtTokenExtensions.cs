@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using PresalesApp.Database.Entities;
+using PresalesApp.Web.Server;
+using PresalesApp.Web.Server.Authorization;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -9,7 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PresalesApp.Database.Authorization
+namespace PresalesApp.Web.Authorization
 {
     public static class JwtTokenExtensions
     {
