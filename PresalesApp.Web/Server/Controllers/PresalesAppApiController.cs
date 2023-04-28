@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PresalesApp.Database;
 using PresalesApp.Database.Entities;
-using PresalesApp.Database.Authorization;
 using PresalesApp.Web.Shared;
 using System.Security.Authentication;
 using System.Security.Cryptography;
@@ -22,6 +21,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Google.Protobuf;
 using PresalesApp.Database.Enums;
+using PresalesApp.Web.Server.Authorization;
+using PresalesApp.Web.Authorization;
+using PresalesApp.Web.Server;
 
 namespace PresalesApp.Web.Controllers
 {

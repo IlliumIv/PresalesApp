@@ -19,7 +19,7 @@
     private async void OnChanged(object? obj)
     {
         var newCulture = new CultureInfo(obj?.ToString() ?? "ru-RU");
-        await Storage.SetItemAsStringAsync(Settings.Default.StorageCultureKey, newCulture.Name);
+        await Storage.SetItemAsStringAsync("i18nextLng", newCulture.Name);
         Navigation.NavigateTo(Navigation.Uri, true);
     }
 }
