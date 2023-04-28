@@ -25,7 +25,7 @@ namespace PresalesApp.Web.Client.Startup
             builder.Services.AddSingleton(services =>
             {
                 var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-                var channel = GrpcChannel.ForAddress(Settings.Default.Bridge1CAddress, new GrpcChannelOptions { HttpClient = httpClient });
+                var channel = GrpcChannel.ForAddress("http://localhost:33080", new GrpcChannelOptions { HttpClient = httpClient });
                 return new PresalesAppBridge1CApi.PresalesAppBridge1CApiClient(channel);
             });
 
@@ -36,7 +36,7 @@ namespace PresalesApp.Web.Client.Startup
             builder.Services.AddFontAwesomeIcons();
 
             builder.Services.AddBlazoredLocalStorage();
-            builder.Services.AddLocalization(options => options.ResourcesPath = Settings.Default.LocalizationPath);
+            builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
             builder.Services.AddAuthorizationCore();
             builder.Services.AddScoped<AuthorizeApi>();

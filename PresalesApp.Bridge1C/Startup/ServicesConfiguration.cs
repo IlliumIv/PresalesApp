@@ -1,4 +1,6 @@
-﻿using Serilog;
+﻿using PresalesApp.Bridge1C.Controllers;
+using PresalesApp.Database;
+using Serilog;
 
 namespace PresalesApp.Bridge1C.Startup
 {
@@ -6,6 +8,13 @@ namespace PresalesApp.Bridge1C.Startup
     {
         public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
         {
+            var appSettings = new AppSettings(builder.Configuration);
+            builder.Services.AddScoped(s => appSettings);
+
+            BridgeController.Configure(appSettings);
+            DbController.Configure(appSettings);
+            DbController.Start();
+
             builder.Services.AddGrpc();
 
             builder.Services.AddCors(options =>

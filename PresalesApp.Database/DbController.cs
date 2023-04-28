@@ -11,6 +11,8 @@ namespace PresalesApp.Database
     {
         internal static readonly QueriesQueue<Task> Queries = new();
         private readonly static ManualResetEvent _while_queue_empty = new(false);
+        internal static Settings DbSettings { get; private set; }
+        public static void Configure (Settings settings) => DbSettings = settings;
 
         public static void Start()
         {
@@ -45,38 +47,15 @@ namespace PresalesApp.Database
             _while_queue_empty.Set();
         }
 
-        internal static List<T>? Update<T>(this List<T>? itemsA, List<T>? itemsB, ControllerContext dbContext)
-            where T : Entity
-        {
-            if (itemsB == null) return null;
-            if (itemsA != null)
-                foreach (var item in itemsA)
-                {
-                    var equal_item = itemsB.FirstOrDefault(i => i.Equals(item));
-
-                    if (equal_item == null)
-                    {
-                        dbContext.Remove(item);
-                        continue;
-                    }
-                    itemsB.Remove(equal_item);
-                    itemsB.Add(item);
-                }
-
-            return itemsB;
-        }
-
         internal class ControllerContext : ReadOnlyContext
         {
-            public ControllerContext() { }
-
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
-                optionsBuilder.UseNpgsql($"host={Settings.Default.Host};" +
-                    $"port={Settings.Default.Port};" +
-                    $"database={Settings.Default.Database};" +
-                    $"username={Settings.Default.Username};" +
-                    $"password={Settings.Default.Password}");
+                optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
+                    $"port={DbSettings.Port};" +
+                    $"database={DbSettings.Database};" +
+                    $"username={DbSettings.Username};" +
+                    $"password={DbSettings.Password}");
             }
 
             public new int SaveChanges() => base.BaseSaveChanges();
@@ -94,11 +73,11 @@ namespace PresalesApp.Database
         {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
-                optionsBuilder.UseNpgsql($"host={Settings.Default.Host};" +
-                    $"port={Settings.Default.Port};" +
-                    $"database={Settings.Default.Database};" +
-                    $"username={Settings.Default.Username};" +
-                    $"password={Settings.Default.Password};" +
+                optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
+                    $"port={DbSettings.Port};" +
+                    $"database={DbSettings.Database};" +
+                    $"username={DbSettings.Username};" +
+                    $"password={DbSettings.Password};" +
                     $"options=-c default_transaction_read_only=on")
                     // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                     ;
@@ -149,15 +128,13 @@ namespace PresalesApp.Database
 
         public class UsersContext : IdentityDbContext<User>
         {
-            public UsersContext() { }
-
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
-                optionsBuilder.UseNpgsql($"host={Settings.Default.Host};" +
-                    $"port={Settings.Default.Port};" +
-                    $"database={Settings.Default.Database};" +
-                    $"username={Settings.Default.Username};" +
-                    $"password={Settings.Default.Password}");
+                optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
+                    $"port={DbSettings.Port};" +
+                    $"database={DbSettings.Database};" +
+                    $"username={DbSettings.Username};" +
+                    $"password={DbSettings.Password}");
             }
         }
     }
