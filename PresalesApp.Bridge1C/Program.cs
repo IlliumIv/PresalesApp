@@ -15,11 +15,13 @@ namespace PresalesApp.Bridge1C
             SerilogConfiguration.ConfigureLogger<Program>();
             JsonConvertConfiguration.ConfigureJsonConvert();
 
+            var builder = WebApplication.CreateBuilder(args).ConfigureServices();
+            
             BridgeController.Start<Project>(TimeSpan.Zero);
             BridgeController.Start<CacheLog>(TimeSpan.FromSeconds(5));
             BridgeController.Start<Invoice>(TimeSpan.FromSeconds(10));
 
-            WebApplication.CreateBuilder(args).ConfigureServices().Build().ConfigureApplication().Run();
+            builder.Build().ConfigureApplication().Run();
         }
     }
 }
