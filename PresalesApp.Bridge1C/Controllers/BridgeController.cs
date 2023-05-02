@@ -44,7 +44,6 @@ namespace PresalesApp.Bridge1C.Controllers
                             }
                         }
 
-
                         update.Save();
 
                         if (DateTime.UtcNow - update.SynchronizedTo > _settings.RequestsTimeout)
