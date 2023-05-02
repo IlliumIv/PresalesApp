@@ -66,7 +66,7 @@ namespace PresalesApp.Database.Entities.Updates
         {
             using var _dbContext = new ReadOnlyContext();
             var cache_log = _dbContext.CacheLogsHistory.Where(l => l.SynchronizedTo < l.PeriodEnd)
-                .OrderBy(l => l.Timestamp).FirstOrDefault() ?? new CacheLog(DateTime.UtcNow);
+                .OrderByDescending(l => l.Timestamp).FirstOrDefault() ?? new CacheLog(DateTime.UtcNow);
             _dbContext.Dispose();
             return cache_log;
         }
