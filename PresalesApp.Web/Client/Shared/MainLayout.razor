@@ -28,19 +28,4 @@
 @code {
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
-
-    [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationState { get; set; }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            AuthenticationState state = await AuthenticationState;
-            if (state.User.Identity is null || !state.User.Identity.IsAuthenticated)
-            {
-                await messageHandler.Show(Localization["NotAuthenticatedErrorMessage"].Value);
-            }
-        }
-    }
 }
