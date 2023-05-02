@@ -213,6 +213,6 @@ namespace PresalesApp.Web.Client.Helpers
             $"], \"{project.Name}\"";
 
         public static string SetColor(Invoice invoice) =>
-            invoice.ProjectsIgnored.Count > 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
+            invoice.ProjectsIgnored.Any() || invoice.ActionsIgnored.Any() || (decimal)invoice.Profit == 0 ? "red" : "inherit";
     }
 }
