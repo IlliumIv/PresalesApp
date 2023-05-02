@@ -35,7 +35,7 @@ namespace PresalesApp.Web.Controllers
         private readonly TokenParameters _tokenParameters;
         private readonly ILogger<PresalesAppApiController> _logger;
 
-        private readonly decimal plan = 10017608;
+        private readonly decimal plan = 8163862;
         private string _cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Захаров Юрий"", ""Сумма"": 0.0 }, { ""Имя"": ""Вради Константин Вячеславович"", ""Сумма"": 0.0 }, { ""Имя"": ""Юрова Марина Александровна"", ""Сумма"": 0.0 }, { ""Имя"": ""Ширинкин Андрей"", ""Сумма"": 0.0 }, { ""Имя"": ""Шишкина Анна Сергеевна"", ""Сумма"": 0.0 }, { ""Имя"": ""Насыров Марат"", ""Сумма"": 0.0 }, { ""Имя"": ""Копьев Олег"", ""Сумма"": 0.0 }, { ""Имя"": ""Окулов Дмитрий"", ""Сумма"": 0.0 } ] }";
         private ImageResponse _cashedImageGirl = new()
         {
