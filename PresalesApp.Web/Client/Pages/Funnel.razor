@@ -11,19 +11,19 @@
 else
 {
     <DataGrid TItem="Project"
-          Data="@response?.Projects"
-          DetailRowStartsVisible="false"
+            Data="@response?.Projects"
+            DetailRowStartsVisible="false"
+            Editable
             Filterable
-          Sortable="false"
-          RowStyling="@OnRowStyling"
-          SelectedRowStyling="@OnRowStyling"
+            Sortable="false"
+            RowStyling="@OnRowStyling"
+            SelectedRowStyling="@OnRowStyling"
             ShowPager
-          PageSize="15"
+            PageSize="15"
             Responsive>
-    <DataGridColumns>
-        <DataGridCommandColumn />
-        <DataGridColumn Field="@nameof(Project.Presale)" Caption="@Localization["PresaleNameText"]"
-                        Editable="false" Width="15%" CustomFilter="@DataGridFilters.PresaleFilter" Context="project">
+        <DataGridColumns>
+            <DataGridColumn Field="@nameof(Project.Presale)" Editable="false"
+                        Width="15%" CustomFilter="@DataGridFilters.PresaleFilter" Context="project" Caption="@Localization["PresaleNameText"]">
             <DisplayTemplate>
                 @{
                         var name = (project as Project)?.Presale?.Name;
@@ -34,22 +34,47 @@ else
                     @placeholder
                 </DisplayTemplate>
             </DataGridColumn>
-            <DataGridColumn Field="@nameof(Project.Number)" Caption="@Localization["ProjectNumberText"]"
-                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.DefaultFilter" />
-            <DataGridColumn Field="@nameof(Project.Potential)" Caption="@Localization["ProjectPotentialText"]"
-                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="project">
+            <DataGridColumn Field="@nameof(Project.Number)" Editable="false"
+                        Width="10%" CustomFilter="@DataGridFilters.DefaultFilter" Caption="@Localization["ProjectNumberText"]" />
+            <DataGridColumn Field="@nameof(Project.Potential)" Editable="false"
+                        Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="project" Caption="@Localization["ProjectPotentialText"]">
                 <DisplayTemplate>
                     @($"{@Helpers.ToCurrencyString((project as Project)?.Potential)}")
                 </DisplayTemplate>
             </DataGridColumn>
-            <DataGridDateColumn Field="@nameof(Project.ApprovalByTechDirectorAt)" Caption="@Localization["ProjectApprovalByTechDirectorAtText"]"
-                            Editable="false" Width="15%" CustomFilter="@DataGridFilters.DateTimeFilter" Context="project">
+            <DataGridDateColumn Field="@nameof(Project.ApprovalByTechDirectorAt)" Editable="false"
+                            Width="15%" CustomFilter="@DataGridFilters.DateTimeFilter" Context="project" Caption="@Localization["ProjectApprovalByTechDirectorAtText"]">
                 <DisplayTemplate>
                     @($"{(project as Project)?.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()}")
                 </DisplayTemplate>
             </DataGridDateColumn>
-            <DataGridColumn Field="@nameof(Project.Name)" Caption="@Localization["ProjectNameText"]"
-                        Editable="false" CustomFilter="@DataGridFilters.DefaultFilter" />
+            <DataGridColumn Field="@nameof(Project.Name)" Editable="false"
+                        CustomFilter="@DataGridFilters.DefaultFilter" Caption="@Localization["ProjectNameText"]" />
+            <DataGridColumn Field="@nameof(Project.FunnelStage)" Editable
+                        CustomFilter="@DataGridFilters.DefaultFilter" Caption="@Localization["ProjectFunnelStageText"]" >
+                <DisplayTemplate>
+                    <Select TValue="FunnelStage" SelectedValue=@context.FunnelStage SelectedValueChanged="(stage) => OnStageChanged(stage, context)">
+                        @foreach (FunnelStage stage in System.Enum.GetValues(typeof(FunnelStage)))
+                            {
+                                <SelectItem Value="@stage">@stage.GetName(Localization)</SelectItem>
+                            }
+                    </Select>
+                </DisplayTemplate>
+            </DataGridColumn>
+            <DataGridCommandColumn>
+                <NewCommandTemplate />
+                <DeleteCommandTemplate />
+                <ClearFilterCommandTemplate />
+                <EditCommandTemplate>
+                    <Button Color="Color.Dark" Clicked="@context.Clicked">@Localization["ProjectFunnelStageEditButton"]</Button>
+                </EditCommandTemplate>
+                <SaveCommandTemplate>
+                    <Button Color="Color.Success" Clicked="@(() => Console.WriteLine($"Save {context.Item.FunnelStage}"))">@Localization["ProjectFunnelStageEditSaveButton"]</Button>
+                </SaveCommandTemplate>
+                <CancelCommandTemplate>
+                    <Button Color="Color.Danger" Clicked="@context.Clicked">@Localization["ProjectFunnelStageEditCancelButton"]</Button>
+                </CancelCommandTemplate>
+            </DataGridCommandColumn>
         </DataGridColumns>
         <DetailRowTemplate>
             @{
@@ -77,11 +102,17 @@ else
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
 
+    private void OnStageChanged(FunnelStage stage, Project? project)
+    {
+        if (project == null) return;
+        project.FunnelStage = stage;
+    }
+
     private FunnelProjects? response;
 
     private void OnRowStyling(Project project, DataGridRowStyling styling)
     {
-        if (!project.Actions.Any(a => a.SalesFunnel))
+        if (!project.Actions.Any(a => a.SalesFunnel) || project.FunnelStage == FunnelStage.None)
             styling.Style = "color: red;";
     }
 

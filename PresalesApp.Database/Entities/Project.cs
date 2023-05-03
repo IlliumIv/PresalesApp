@@ -49,6 +49,8 @@ namespace PresalesApp.Database.Entities
 
         public virtual List<Invoice>? Invoices { get; set; }
 
+        public FunnelStage FunnelStage { get; set; } = FunnelStage.None;
+
         public Project(string number) => this.Number = number;
 
         internal override Project GetOrAddIfNotExist(ControllerContext dbContext)
