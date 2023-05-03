@@ -333,4 +333,7 @@
   <data name="ItemLegendText" xml:space="preserve">
     <value>Legend</value>
   </data>
+  <data name="ProjectFunnelStageText" xml:space="preserve">
+    <value>Funnel Stage</value>
+  </data>
 </root>

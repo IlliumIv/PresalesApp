@@ -211,6 +211,7 @@ message Project {
 	repeated Invoice invoices = 9;
 	repeated Action actions = 10;
 	custom_types.DecimalValue potential = 11;
+	FunnelStage funnel_stage = 12;
 }
 
 message Action {
@@ -269,4 +270,17 @@ enum ImageOrientation {
 	IMAGEORIENTATION_LANDSCAPE = 0;
 	IMAGEORIENTATION_PORTRAIT = 1;
 	IMAGEORIENTATION_SQUARISH = 2;
+}
+
+enum FunnelStage {
+	FUNNELSTAGE_NONE = 0;
+	FUNNELSTAGE_FIRST = 1;
+	FUNNELSTAGE_SECOND = 2;
+	FUNNELSTAGE_THIRD = 3;
+	FUNNELSTAGE_FOURTH = 4;
+	FUNNELSTAGE_FIFTH = 5;
+	FUNNELSTAGE_SIXTH = 6;
+	FUNNELSTAGE_SEVENTH = 7;
+	FUNNELSTAGE_EIGTH = 8;
+	FUNNELSTAGE_REFUSED = 9;
 }
