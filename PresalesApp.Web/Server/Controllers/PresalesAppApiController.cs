@@ -8,10 +8,11 @@ using PresalesApp.Database.Entities;
 using PresalesApp.Web.Shared;
 using System.Security.Authentication;
 using System.Security.Cryptography;
-using ActionType = PresalesApp.Database.Enums.ActionType;
-using Department = PresalesApp.Database.Enums.Department;
 using Enum = System.Enum;
 using Position = PresalesApp.Database.Enums.Position;
+using Department = PresalesApp.Database.Enums.Department;
+using ActionType = PresalesApp.Database.Enums.ActionType;
+using FunnelStage = PresalesApp.Database.Enums.FunnelStage;
 using ProjectStatus = PresalesApp.Database.Enums.ProjectStatus;
 using Project = PresalesApp.Database.Entities.Project;
 using Presale = PresalesApp.Database.Entities.Presale;
@@ -728,6 +729,7 @@ namespace PresalesApp.Web.Controllers
                 ClosedAt = Timestamp.FromDateTime(project.ClosedAt.ToUniversalTime()),
                 Presale = project.Presale?.Translate(),
                 Status = project.Status.Translate(),
+                FunnelStage = project.FunnelStage.Translate(),
                 Potential = project.PotentialAmount
             };
 
@@ -773,14 +775,17 @@ namespace PresalesApp.Web.Controllers
             SalesFunnel = action.SalesFunnel
         };
 
+        public static Shared.Department Translate(this Department value) =>
+            (Shared.Department)Enum.Parse(typeof(Shared.Department), value.ToString());
+
         public static Department Translate(this Shared.Department value)
         {
             if (value == Shared.Department.Any) return Department.None;
             return (Department)Enum.Parse(typeof(Department), value.ToString());
         }
 
-        public static Shared.Department Translate(this Department value) =>
-            (Shared.Department)Enum.Parse(typeof(Shared.Department), value.ToString());
+        public static Shared.Position Translate(this Position value) =>
+            (Shared.Position)Enum.Parse(typeof(Shared.Position), value.ToString());
 
         public static Position Translate(this Shared.Position value)
         {
@@ -788,8 +793,11 @@ namespace PresalesApp.Web.Controllers
             return (Position)Enum.Parse(typeof(Position), value.ToString());
         }
 
-        public static Shared.Position Translate(this Position value) =>
-            (Shared.Position)Enum.Parse(typeof(Shared.Position), value.ToString());
+        public static Shared.FunnelStage Translate(this FunnelStage value) =>
+            (Shared.FunnelStage)Enum.Parse(typeof(Shared.FunnelStage), value.ToString());
+
+        public static FunnelStage Translate(this Shared.FunnelStage value) =>
+            (FunnelStage)Enum.Parse(typeof(FunnelStage), value.ToString());
 
         public static Shared.ProjectStatus Translate(this ProjectStatus value) =>
             (Shared.ProjectStatus)Enum.Parse(typeof(Shared.ProjectStatus), value.ToString());
