@@ -181,7 +181,7 @@
     <value>#NotAuthenticatedErrorMessage#</value>
   </data>
   <data name="LogoutButtonText" xml:space="preserve">
-    <value>Sing out</value>
+    <value>Log out</value>
   </data>
   <data name="RegisterModalButtonText" xml:space="preserve">
     <value>Sign up</value>
