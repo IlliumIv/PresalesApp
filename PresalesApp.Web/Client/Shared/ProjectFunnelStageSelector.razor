@@ -17,12 +17,7 @@
     private async void OnStageChanged(FunnelStage stage, Project? project)
     {
         if (project == null) return;
-
-        var tempStage = project.FunnelStage;
-        project.FunnelStage = stage;
-
         _disabled = true;
-
         try
         {
             var result = await BridgeApi.SetProjectFunnelStageAsync(new Bridge1C.NewProjectFunnelStage
@@ -31,16 +26,15 @@
                     ProjectNumber = project.Number
                 });
 
-            if (result.IsSuccess) return;
-
-            await messageHandler.Show(result.ErrorMessage);
+            if (!result.IsSuccess) throw new Exception(result.ErrorMessage);
         }
         catch (Exception e)
         {
             await messageHandler.Show(e.Message);
+            stage = project.FunnelStage;
         }
 
-        project.FunnelStage = tempStage;
+        project.FunnelStage = stage;
         _disabled = false;
         StateHasChanged();
     }
