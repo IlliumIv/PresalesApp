@@ -89,7 +89,7 @@ else
     {
         try
         {
-            response = await Api.GetUnpaidProjectsAsync(new UnpaidRequest()
+            response = await AppApi.GetUnpaidProjectsAsync(new UnpaidRequest()
             {
                 IsMainProjectInclude = is_main_project_include,
                 PresaleName = presale_name,

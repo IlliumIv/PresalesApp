@@ -25,12 +25,12 @@ namespace PresalesApp.Web.Server.Startup
             app.UseRouting();
 
             app.UseGrpcWeb();
-            app.UseCors();
+            // app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapGrpcService<PresalesAppApiController>().EnableGrpcWeb().RequireCors("cors_policy");
+            app.MapGrpcService<ApiController>().EnableGrpcWeb(); //.RequireCors("cors_policy");
 
             app.MapRazorPages();
             app.MapControllers();

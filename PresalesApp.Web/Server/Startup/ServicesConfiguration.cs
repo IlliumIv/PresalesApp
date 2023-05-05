@@ -51,6 +51,7 @@ namespace PresalesApp.Web.Server.Startup
                 options.Password.RequireNonAlphanumeric = false;
             });
 
+            /*
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(
@@ -58,12 +59,14 @@ namespace PresalesApp.Web.Server.Startup
                     policy =>
                     {
                         policy
-                        .WithOrigins("http://localhost:45080", "https://127.0.0.1")
+                        // .WithOrigins("http://localhost", "https://localhost", "https://127.0.0.1")
                         // .AllowAnyMethod()
+                        // .AllowAnyOrigin()
                         .AllowAnyHeader() // (Причина: заголовок «access-control-allow-origin» не разрешён согласно заголовку «Access-Control-Allow-Headers» из ответа CORS preflight).
                         ;
                     });
             });
+            //*/
 
             builder.Services.AddAuthorization();
 

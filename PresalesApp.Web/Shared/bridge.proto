@@ -1,0 +1,28 @@
+syntax = "proto3";
+option csharp_namespace = "PresalesApp.Bridge1C";
+package bridge;
+
+import "enums.proto";
+
+service Api {
+  rpc SayHello (HelloRequest) returns (HelloReply);
+  rpc SetProjectFunnelStage(NewProjectFunnelStage) returns (IsActionSuccess);
+}
+
+message NewProjectFunnelStage {
+	string project_number = 1;
+	enums.FunnelStage new_stage = 2;
+}
+
+message IsActionSuccess {
+	bool is_success = 1;
+	string error_message = 2;
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}

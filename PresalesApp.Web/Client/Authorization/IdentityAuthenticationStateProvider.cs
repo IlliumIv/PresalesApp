@@ -3,19 +3,20 @@ using Blazored.LocalStorage;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Components.Authorization;
 using PresalesApp.Web.Shared;
+using AppApi = PresalesApp.Web.Shared.Api.ApiClient;
 
 namespace PresalesApp.Web.Client.Authorization
 {
     public class IdentityAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly ILocalStorageService _localStorage;
-        private readonly PresalesAppApi.PresalesAppApiClient _apiClient;
+        private readonly AppApi _apiClient;
 
         public static UserProfile Profile { get; private set; } = new UserProfile();
 
         public IdentityAuthenticationStateProvider(
             ILocalStorageService localStorage,
-            PresalesAppApi.PresalesAppApiClient apiClient)
+            AppApi apiClient)
         {
             _localStorage = localStorage;
             _apiClient = apiClient;
