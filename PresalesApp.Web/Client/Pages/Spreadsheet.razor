@@ -165,7 +165,7 @@ else
     {
         try
         {
-            overview = await Api.GetOverviewAsync(new OverviewRequest
+            overview = await AppApi.GetOverviewAsync(new OverviewRequest
                 {
                     OnlyActive = only_active,
                     Department = department,

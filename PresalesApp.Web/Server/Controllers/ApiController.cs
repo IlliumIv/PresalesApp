@@ -3,15 +3,16 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using PresalesApp.Database;
+using PresalesApp.Database.Helpers;
 using PresalesApp.Database.Entities;
 using PresalesApp.Web.Shared;
 using System.Security.Authentication;
 using System.Security.Cryptography;
-using ActionType = PresalesApp.Database.Enums.ActionType;
-using Department = PresalesApp.Database.Enums.Department;
 using Enum = System.Enum;
 using Position = PresalesApp.Database.Enums.Position;
+using Department = PresalesApp.Database.Enums.Department;
+using ActionType = PresalesApp.Database.Enums.ActionType;
+using FunnelStage = PresalesApp.Database.Enums.FunnelStage;
 using ProjectStatus = PresalesApp.Database.Enums.ProjectStatus;
 using Project = PresalesApp.Database.Entities.Project;
 using Presale = PresalesApp.Database.Entities.Presale;
@@ -24,16 +25,17 @@ using PresalesApp.Database.Enums;
 using PresalesApp.Web.Server.Authorization;
 using PresalesApp.Web.Authorization;
 using PresalesApp.Web.Server;
+using AppApi = PresalesApp.Web.Shared.Api;
 
 namespace PresalesApp.Web.Controllers
 {
     [Authorize]
-    public class PresalesAppApiController : PresalesAppApi.PresalesAppApiBase
+    public class ApiController : AppApi.ApiBase
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
         private readonly TokenParameters _tokenParameters;
-        private readonly ILogger<PresalesAppApiController> _logger;
+        private readonly ILogger<ApiController> _logger;
 
         private readonly decimal plan = 8163862;
         private string _cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
@@ -66,11 +68,11 @@ namespace PresalesApp.Web.Controllers
             SourceUrl = @"https://unsplash.com/",
         };
 
-        public PresalesAppApiController(
+        public ApiController(
             RoleManager<IdentityRole> roleManager,
             UserManager<User> userManager,
             TokenParameters tokenParameters,
-            ILogger<PresalesAppApiController> logger)
+            ILogger<ApiController> logger)
         {
             _roleManager = roleManager;
             _userManager = userManager;
@@ -176,7 +178,7 @@ namespace PresalesApp.Web.Controllers
             };
         }
 
-        public override Task<KpiResponse> GetKpi(KpiRequest request, ServerCallContext context)
+        public override async Task<KpiResponse> GetKpi(KpiRequest request, ServerCallContext context)
         {
             using var db = new ReadOnlyContext();
 
@@ -188,13 +190,13 @@ namespace PresalesApp.Web.Controllers
                 .Where(i => i.Presale.Name == request.PresaleName)
                 .Include(i => i.Project)
                 .Include(i => i.ProfitPeriods);
-            invQuery.Load();
+            await invQuery.LoadAsync();
 
             var presale = db.Presales
                 .Where(p => p.Name == request.PresaleName).SingleOrDefault();
 
             if (presale == null)
-                return Task.FromResult(new KpiResponse { Error = new Error { Message = "Пресейл не найден в базе данных." } });
+                return new KpiResponse { Error = new Error { Message = "Пресейл не найден в базе данных." } };
 
 
             HashSet<Project> projects = new();
@@ -203,7 +205,7 @@ namespace PresalesApp.Web.Controllers
             presale.SumProfit(from, to, out var invoices);
 
             if (invoices == null || !invoices.Any())
-                return Task.FromResult(new KpiResponse());
+                return new KpiResponse();
 
             var reply = new Kpi();
 
@@ -245,26 +247,26 @@ namespace PresalesApp.Web.Controllers
             }
 
             db.Dispose();
-            return Task.FromResult(new KpiResponse { Kpi = reply });
+            return new KpiResponse { Kpi = reply };
         }
 
-        public override Task<NamesResponse> GetNames(Empty request, ServerCallContext context)
+        public override async Task<NamesResponse> GetNames(Empty request, ServerCallContext context)
         {
             using var db = new ReadOnlyContext();
-            var presalesNames = db.Presales
+            var presalesNames = await db.Presales
                 .Where(p => p.Department != Department.None)
                 .Where(p => p.Position != Position.None && p.Position != Position.Director)
                 .Where(p => p.IsActive)
-                .Select(column => column.Name).ToList();
+                .Select(column => column.Name).ToListAsync();
 
             var reply = new NamesResponse();
             foreach (var name in presalesNames) reply.Names.Add(name);
 
             db.Dispose();
-            return Task.FromResult(reply);
+            return reply;
         }
 
-        public override Task<Overview> GetOverview(OverviewRequest request, ServerCallContext context)
+        public override async Task<Overview> GetOverview(OverviewRequest request, ServerCallContext context)
         {
             var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
             var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
@@ -290,8 +292,8 @@ namespace PresalesApp.Web.Controllers
                     || (department != Shared.Department.Any && i.Presale.Department == department.Translate())))
                 .Include(i => i.ProfitPeriods);
 
-            projQuery.Load();
-            invQuery.Load();
+            await projQuery.LoadAsync();
+            await invQuery.LoadAsync();
 
             var presales = db.Presales
                 .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
@@ -430,11 +432,11 @@ namespace PresalesApp.Web.Controllers
             #endregion
 
             db.Dispose();
-            return Task.FromResult(reply);
+            return reply;
         }
 
         [AllowAnonymous]
-        public override Task<ImageResponse> GetImage(ImageRequest request, ServerCallContext context)
+        public override async Task<ImageResponse> GetImage(ImageRequest request, ServerCallContext context)
         {
             try
             {
@@ -446,13 +448,13 @@ namespace PresalesApp.Web.Controllers
                 var unsplashClient = new HttpClient(clientHandler) { BaseAddress = new Uri("https://api.unsplash.com") };
                 var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random?query={request.Keyword}&orientation={request.Orientation.ToString().ToLower()}");
                 unsplashRequest.Headers.Add("Authorization", "Client-ID zoKHly26A5L5BCYWXdctm0hc9u5JGaqcsMv_znpsIR0");
-                var unsplashResponse = unsplashClient.SendAsync(unsplashRequest).Result;
-                if (!unsplashResponse.IsSuccessStatusCode) return Task.FromResult(_cashedImageGirl);
-                var response = JsonConvert.DeserializeObject<dynamic>(unsplashResponse.Content.ReadAsStringAsync().Result);
+                var unsplashResponse = await unsplashClient.SendAsync(unsplashRequest);
+                if (!unsplashResponse.IsSuccessStatusCode) return _cashedImageGirl;
+                var response = JsonConvert.DeserializeObject<dynamic>(await unsplashResponse.Content.ReadAsStringAsync());
                 if (response == null) return request.Keyword switch
                 {
-                    "happy new year" => Task.FromResult(_cashedImageNY),
-                    _ => Task.FromResult(_cashedImageGirl)
+                    "happy new year" => _cashedImageNY,
+                    _ => _cashedImageGirl
                 };
                 var _img = new ImageResponse
                 {
@@ -477,15 +479,15 @@ namespace PresalesApp.Web.Controllers
                         _cashedImageGirl = _img;
                         break;
                 }
-                return Task.FromResult(_img);
+                return _img;
             }
             catch
             {
-                return Task.FromResult(_cashedImageGirl);
+                return _cashedImageGirl;
             }
         }
 
-        public override Task<MonthProfitOverview> GetMonthProfitOverview(OverviewRequest request, ServerCallContext context)
+        public override async Task<MonthProfitOverview> GetMonthProfitOverview(OverviewRequest request, ServerCallContext context)
         {
             var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
             var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
@@ -502,7 +504,7 @@ namespace PresalesApp.Web.Controllers
                 .Include(i => i.Presale)
                 .Include(i => i.ProfitPeriods);
 
-            invQuery.Load();
+            await invQuery.LoadAsync();
 
             var presales = db.Presales?
                 .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
@@ -512,7 +514,7 @@ namespace PresalesApp.Web.Controllers
                 .ToList();
 
             var reply = new MonthProfitOverview();
-            if (presales == null) return Task.FromResult(reply);
+            if (presales == null) return reply;
 
             foreach (var presale in presales)
             {
@@ -536,10 +538,10 @@ namespace PresalesApp.Web.Controllers
             reply.DeltaDay = profit - profitPrevDay > 0 ? profit - profitPrevDay : 0;
 
             db.Dispose();
-            return Task.FromResult(reply);
+            return reply;
         }
 
-        public override Task<SalesOverview> GetSalesOverview(SalesOverviewRequest request, ServerCallContext context)
+        public override async Task<SalesOverview> GetSalesOverview(SalesOverviewRequest request, ServerCallContext context)
         {
             var prevStartTime = request?.Previous?.From?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
             var prevEndTime = request?.Previous?.To?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
@@ -553,8 +555,8 @@ namespace PresalesApp.Web.Controllers
                 $"&begin2={startTime:yyyy-MM-ddTHH:mm:ss}" +
                 $"&end2={endTime:yyyy-MM-ddTHH:mm:ss}");
             httpRequest.Headers.Add("Authorization", "Basic 0J/QvtC70Y/QutC+0LLQmDpraDk5OFh0Rg==");
-            var httpResponse = httpClient.SendAsync(httpRequest).Result;
-            var result = httpResponse.Content.ReadAsStringAsync().Result;
+            var httpResponse = await httpClient.SendAsync(httpRequest);
+            var result = await httpResponse.Content.ReadAsStringAsync();
             if (!httpResponse.IsSuccessStatusCode) result = _cachedOverview;
             _cachedOverview = result;
 
@@ -571,10 +573,10 @@ namespace PresalesApp.Web.Controllers
                 reply.CurrentSalesTarget = response.План2 is null ? 0 : (decimal)response.План2;
             }
 
-            return Task.FromResult(reply);
+            return reply;
         }
 
-        public override Task<UnpaidProjects> GetUnpaidProjects(UnpaidRequest request, ServerCallContext context)
+        public override async Task<UnpaidProjects> GetUnpaidProjects(UnpaidRequest request, ServerCallContext context)
         {
             var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
             var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
@@ -585,21 +587,21 @@ namespace PresalesApp.Web.Controllers
 
             if (is_main_project_include)
             {
-                db.Projects
+                await db.Projects
                     .Where(p => p.Status == ProjectStatus.Won && p.ClosedAt >= from && p.ClosedAt <= to &&
                         !p.Invoices.Any(i => i.ProfitPeriods.Any()) && p.MainProject != null &&
                         !p.MainProject.Invoices.Any(i => i.ProfitPeriods.Any()))
-                    .Where(p => presale_name != string.Empty ? p.Presale.Name == presale_name : p.Presale.IsActive == true).Load();
+                    .Where(p => presale_name != string.Empty ? p.Presale.Name == presale_name : p.Presale.IsActive == true).LoadAsync();
             }
             else
             {
-                db.Projects
+                await db.Projects
                     .Where(p => p.Status == ProjectStatus.Won && p.ClosedAt >= from && p.ClosedAt <= to &&
                         !p.Invoices.Any(i => i.ProfitPeriods.Any()))
-                    .Where(p => presale_name != string.Empty ? p.Presale.Name == presale_name : p.Presale.IsActive == true).Load();
+                    .Where(p => presale_name != string.Empty ? p.Presale.Name == presale_name : p.Presale.IsActive == true).LoadAsync();
             }
 
-            var presales = db.Presales.Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true).ToList();
+            var presales = await db.Presales.Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true).ToListAsync();
             var reply = new UnpaidProjects();
 
             foreach (var presale in presales)
@@ -610,21 +612,21 @@ namespace PresalesApp.Web.Controllers
             }
 
             db.Dispose();
-            return Task.FromResult(reply);
+            return reply;
         }
 
-        public override Task<FunnelProjects> GetFunnelProjects(Empty request, ServerCallContext context)
+        public override async Task<FunnelProjects> GetFunnelProjects(Empty request, ServerCallContext context)
         {
             using var db = new ReadOnlyContext();
 
-            var projects = db.Projects
+            var projects = await db.Projects
                 .Where(p => p.Status == ProjectStatus.WorkInProgress)
                 .Where(p => p.Presale.Department == Department.Russian)
                 .Where(p => p.PresaleActions.Any(a => a.SalesFunnel) ||
                     (p.PotentialAmount > 2000000 && p.ApprovalBySalesDirectorAt > new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc)))
                 .Include(p => p.PresaleActions)
                 .Include(p => p.Presale)
-                .ToList();
+                .ToListAsync();
 
             var reply = new FunnelProjects();
 
@@ -634,7 +636,7 @@ namespace PresalesApp.Web.Controllers
             }
 
             db.Dispose();
-            return Task.FromResult(reply);
+            return reply;
         }
 
         private static void RecursiveLoad(List<Project>? projects, ReadOnlyContext db, ref HashSet<Project> projectsViewed)
@@ -656,145 +658,5 @@ namespace PresalesApp.Web.Controllers
                 }
             }
         }
-    }
-
-    public static class Extensions
-    {
-        public static Statistic GetStatistic(this Presale presale, DateTime? from = null, DateTime? to = null)
-        {
-            if (from is null || to is null) return new Statistic();
-
-            var _from = (DateTime)from;
-            var _to = (DateTime)to;
-
-            var won = presale.ClosedByStatus(ProjectStatus.Won, _from, _to);
-            var assign = presale.CountProjectsAssigned(_from, _to);
-
-            return new Statistic()
-            {
-                #region Показатели этого периода
-                #region В работе
-                InWork = presale.CountProjectsInWork(_from, _to),
-                #endregion
-                #region Назначено
-                Assign = assign,
-                #endregion
-                #region Выиграно
-                Won = won,
-                #endregion
-                #region Проиграно
-                Loss = presale.ClosedByStatus(ProjectStatus.Loss, _from, _to),
-                #endregion
-                #region Конверсия
-                Conversion = won == 0 || assign == 0 ? 0 : won / (assign == 0 ? 0d : assign),
-                #endregion
-                #region Среднее время реакции
-                AvgTimeToReaction = Duration.FromTimeSpan(presale.AverageTimeToReaction(_from, _to)),
-                #endregion
-                #region Суммарное потраченное время на проекты
-                SumSpend = Duration.FromTimeSpan(presale.SumTimeSpend(_from, _to)),
-                #endregion
-                #region Cреднее время потраченное на проект
-                AvgSpend = Duration.FromTimeSpan(presale.AverageTimeSpend(_from, _to)),
-                #endregion
-                #region Чистые
-                Profit = presale.SumProfit(_from, _to),
-                #endregion
-                #region Потенциал
-                Potential = presale.SumPotential(_from, _to),
-                #endregion
-                #endregion
-                #region Среднее время жизни проекта до выигрыша
-                AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
-                #endregion
-                #region Средний ранг проектов
-                AvgRank = presale.AverageRank(),
-                #endregion
-                #region Количество "брошенных" проектов
-                Abnd = presale.CountProjectsAbandoned(DateTime.UtcNow, 30),
-                #endregion
-            };
-        }
-
-        public static Shared.Project Translate(this Project project)
-        {
-            var proj = new Shared.Project()
-            {
-                Number = project.Number,
-                Name = project.Name ?? "",
-                ApprovalByTechDirectorAt = Timestamp.FromDateTime(project.ApprovalByTechDirectorAt.ToUniversalTime()),
-                ApprovalBySalesDirectorAt = Timestamp.FromDateTime(project.ApprovalBySalesDirectorAt.ToUniversalTime()),
-                PresaleStartAt = Timestamp.FromDateTime(project.PresaleStartAt.ToUniversalTime()),
-                ClosedAt = Timestamp.FromDateTime(project.ClosedAt.ToUniversalTime()),
-                Presale = project.Presale?.Translate(),
-                Status = project.Status.Translate(),
-                Potential = project.PotentialAmount
-            };
-
-            if (project.Invoices != null && project.Invoices.Any())
-                foreach (var invoice in project.Invoices)
-                    proj.Invoices.Add(invoice.Translate());
-
-            if (project.PresaleActions != null && project.PresaleActions.Any())
-                foreach (var action in project.PresaleActions)
-                    proj.Actions.Add(action.Translate());
-
-            return proj;
-        }
-
-        public static Shared.Invoice Translate(this Invoice invoice) => new Shared.Invoice
-            {
-                Counterpart = invoice.Counterpart,
-                Number = invoice.Number,
-                Date = Timestamp.FromDateTime(invoice.Date.ToUniversalTime()),
-                LastPayAt = Timestamp.FromDateTime(invoice.LastPayAt.ToUniversalTime()),
-                LastShipmentAt = Timestamp.FromDateTime(invoice.LastShipmentAt.ToUniversalTime()),
-                Amount = invoice.Amount,
-                Profit = invoice.GetProfit(),
-            };
-
-        public static Shared.Presale Translate(this Presale presale) => new Shared.Presale
-            {
-                Name = presale.Name,
-                Statistics = presale.GetStatistic(),
-                Department = presale.Department.Translate(),
-                Position = presale.Position.Translate(),
-                IsActive = presale.IsActive
-            };
-
-        public static Shared.Action Translate(this PresaleAction action) => new()
-        {
-            ProjectNumber = action.Project?.Number ?? "",
-            Number = action.Number,
-            Date = Timestamp.FromDateTime(action.Date.ToUniversalTime()),
-            Type = action.Type.Translate(),
-            Timespend = Duration.FromTimeSpan(TimeSpan.FromMinutes(action.TimeSpend)),
-            Description = action.Description,
-            SalesFunnel = action.SalesFunnel
-        };
-
-        public static Department Translate(this Shared.Department value)
-        {
-            if (value == Shared.Department.Any) return Department.None;
-            return (Department)Enum.Parse(typeof(Department), value.ToString());
-        }
-
-        public static Shared.Department Translate(this Department value) =>
-            (Shared.Department)Enum.Parse(typeof(Shared.Department), value.ToString());
-
-        public static Position Translate(this Shared.Position value)
-        {
-            if (value == Shared.Position.Any) return Position.None;
-            return (Position)Enum.Parse(typeof(Position), value.ToString());
-        }
-
-        public static Shared.Position Translate(this Position value) =>
-            (Shared.Position)Enum.Parse(typeof(Shared.Position), value.ToString());
-
-        public static Shared.ProjectStatus Translate(this ProjectStatus value) =>
-            (Shared.ProjectStatus)Enum.Parse(typeof(Shared.ProjectStatus), value.ToString());
-
-        public static Shared.ActionType Translate(this ActionType value) =>
-            (Shared.ActionType)Enum.Parse(typeof(Shared.ActionType), value.ToString());
     }
 }

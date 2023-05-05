@@ -1,17 +1,11 @@
 using Grpc.Core;
+using PresalesApp.Database.Entities;
+using PresalesApp.Database.Helpers;
 
 namespace PresalesApp.Bridge1C.Controllers
 {
-    public class ApiController : PresalesAppBridge1CApi.PresalesAppBridge1CApiBase
+    public class ApiController : Api.ApiBase
     {
-        /*
-        private readonly ILogger<GreeterService> _logger;
-        public GreeterService(ILogger<GreeterService> logger)
-        {
-            _logger = logger;
-        }
-        //*/
-
         public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
         {
             Console.WriteLine("SayHello called.");
@@ -19,6 +13,20 @@ namespace PresalesApp.Bridge1C.Controllers
             {
                 Message = "Hello " + request.Name
             });
+        }
+
+        public override async Task<IsActionSuccess> SetProjectFunnelStage(NewProjectFunnelStage request, ServerCallContext context)
+        {
+            var newStage = request.NewStage;
+            var projectNumber = request.ProjectNumber;
+
+            var (IsSuccess, ErrorMessage) = await Project.SetFunnelStageAsync(newStage.Translate(), projectNumber);
+
+            return new IsActionSuccess
+            {
+                IsSuccess = IsSuccess,
+                ErrorMessage = ErrorMessage
+            };
         }
     }
 }

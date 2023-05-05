@@ -1,0 +1,47 @@
+﻿<Select Disabled="@_disabled" TValue="FunnelStage" SelectedValue=@Project.FunnelStage SelectedValueChanged="(stage) => OnStageChanged(stage, Project)">
+    @foreach (FunnelStage stage in System.Enum.GetValues(typeof(FunnelStage)))
+    {
+        <SelectItem Value="@stage">@stage.GetName(Localization)</SelectItem>
+    }
+</Select>
+
+@code {
+    [CascadingParameter]
+    public MessageSnackbar messageHandler { get; set; }
+
+    [Parameter]
+    public Project? Project { get; set; }
+
+    private bool _disabled;
+
+    private async void OnStageChanged(FunnelStage stage, Project? project)
+    {
+        if (project == null) return;
+
+        var tempStage = project.FunnelStage;
+        project.FunnelStage = stage;
+
+        _disabled = true;
+
+        try
+        {
+            var result = await BridgeApi.SetProjectFunnelStageAsync(new Bridge1C.NewProjectFunnelStage
+                {
+                    NewStage = stage,
+                    ProjectNumber = project.Number
+                });
+
+            if (result.IsSuccess) return;
+
+            await messageHandler.Show(result.ErrorMessage);
+        }
+        catch (Exception e)
+        {
+            await messageHandler.Show(e.Message);
+        }
+
+        project.FunnelStage = tempStage;
+        _disabled = false;
+        StateHasChanged();
+    }
+}

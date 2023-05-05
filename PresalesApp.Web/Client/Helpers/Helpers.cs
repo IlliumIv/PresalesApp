@@ -175,6 +175,11 @@ namespace PresalesApp.Web.Client.Helpers
             _ => throw new NotImplementedException()
         };
 
+        public static string GetName(this FunnelStage stage, IStringLocalizer<App> localization) => stage switch
+        {
+            _ => $"{stage}"
+        };
+
         public static string GetName(this Position position, IStringLocalizer<App> localization) => position switch
         {
             Position.None => localization["PositionNoneText"],
