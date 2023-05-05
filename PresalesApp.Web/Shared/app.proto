@@ -1,13 +1,14 @@
 ﻿syntax = "proto3";
 option csharp_namespace = "PresalesApp.Web.Shared";
-package presales_app_api;
+package app;
 
-import "custom_types.proto";
+import "types.proto";
+import "enums.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/duration.proto";
 
-service PresalesAppApi {
+service Api {
 	rpc Login(LoginRequest) returns (LoginResponse);
 	rpc Register(RegisterRequest) returns (LoginResponse);
 	rpc GetUserProfile(google.protobuf.Empty) returns (UserInfoResponse);
@@ -75,28 +76,28 @@ message SalesOverviewRequest {
 }
 
 message SalesOverview {
-	custom_types.DecimalValue previous_actual_profit = 1;
-	custom_types.DecimalValue current_actual_profit = 2;
-	custom_types.DecimalValue current_sales_target = 3;
+	types.DecimalValue previous_actual_profit = 1;
+	types.DecimalValue current_actual_profit = 2;
+	types.DecimalValue current_sales_target = 3;
 	repeated Manager current_top_sales_managers = 4;
 }
 
 message Manager {
 	string name = 1;
-	custom_types.DecimalValue profit = 2;
+	types.DecimalValue profit = 2;
 }
 
 message MonthProfitOverview {
 	repeated Presale presales = 1;
-	custom_types.DecimalValue profit = 2;
-	custom_types.DecimalValue plan = 3;
-	custom_types.DecimalValue left = 4;
-	custom_types.DecimalValue delta_day = 5;
+	types.DecimalValue profit = 2;
+	types.DecimalValue plan = 3;
+	types.DecimalValue left = 4;
+	types.DecimalValue delta_day = 5;
 }
 
 message ImageRequest {
 	string keyword = 1;
-	ImageOrientation orientation = 2;
+	enums.ImageOrientation orientation = 2;
 }
 
 message ImageResponse {
@@ -137,11 +138,11 @@ message Invoice {
 	string counterpart = 1;
 	string number = 2;
 	google.protobuf.Timestamp date = 3;
-	custom_types.DecimalValue amount = 4;
-	custom_types.DecimalValue cost = 5;
-	custom_types.DecimalValue sales_amount = 6;
+	types.DecimalValue amount = 4;
+	types.DecimalValue cost = 5;
+	types.DecimalValue sales_amount = 6;
 	double percent = 7;
-	custom_types.DecimalValue profit = 8;
+	types.DecimalValue profit = 8;
 	repeated Project projects_found = 9;
 	repeated Project projects_ignored = 10;
 	repeated Action actions_tallied = 11;
@@ -161,8 +162,8 @@ message Period {
 
 message OverviewRequest {
 	Period period = 1;
-	Department department = 2;
-	Position position = 3;
+	enums.Department Department = 2;
+	enums.Position Position = 3;
 	bool only_active = 4;
 }
 
@@ -178,8 +179,8 @@ message Overview {
 message Presale {
 	string name = 1;
 	Statistic statistics = 2;
-	Department department = 3;
-	Position position = 4;
+	enums.Department Department = 3;
+	enums.Position Position = 4;
 	bool is_active = 5;
 }
 
@@ -195,8 +196,8 @@ message Statistic {
 	double avg_rank = 9;
 	google.protobuf.Duration avg_spend = 10;
 	google.protobuf.Duration sum_spend = 11;
-	custom_types.DecimalValue profit = 12;
-	custom_types.DecimalValue potential = 13;
+	types.DecimalValue profit = 12;
+	types.DecimalValue potential = 13;
 }
 
 message Project {
@@ -206,81 +207,20 @@ message Project {
 	google.protobuf.Timestamp approval_by_sales_director_at = 4;
 	google.protobuf.Timestamp presale_start_at = 5;
 	Presale presale = 6;
-	ProjectStatus status = 7;
+	enums.ProjectStatus status = 7;
 	google.protobuf.Timestamp closed_at = 8;
 	repeated Invoice invoices = 9;
 	repeated Action actions = 10;
-	custom_types.DecimalValue potential = 11;
-	FunnelStage funnel_stage = 12;
+	types.DecimalValue potential = 11;
+	enums.FunnelStage funnel_stage = 12;
 }
 
 message Action {
 	string project_number = 1;
 	int32 number = 2;
 	google.protobuf.Timestamp date = 3;
-	ActionType type = 4;
+	enums.ActionType type = 4;
 	google.protobuf.Duration timespend = 5;
 	string description = 6;
 	bool sales_funnel = 7;
-}
-
-enum ProjectStatus {
-	PROJECT_STATUS_UNKNOWN = 0;
-	PROJECT_STATUS_WORK_IN_PROGRESS = 1;
-	PROJECT_STATUS_WON = 2;
-	PROJECT_STATUS_LOSS = 3;
-}
-
-enum ActionType {
-	ACTION_TYPE_UNKNOWN = 0;
-	ACTION_TYPE_FULL_SETUP = 1;
-	ACTION_TYPE_SETTINGS_CHECKUP = 2;
-	ACTION_TYPE_PROBLEM_DIAGNOSTICS = 3;
-	ACTION_TYPE_CALCULATION = 4;
-	ACTION_TYPE_SPECIFICATION_CHECKUP = 5;
-	ACTION_TYPE_SPECIFICATION_CREATE_FROM_TEMPLATE = 6;
-	ACTION_TYPE_SPECIFICATION_CREATE = 7;
-	ACTION_TYPE_REQUIREMENTS_CREATE = 8;
-	ACTION_TYPE_CONSULTATION = 9;
-	ACTION_TYPE_NEGOTIATIONS = 10;
-	ACTION_TYPE_PRESENTATION = 11;
-	ACTION_TYPE_DEPARTURE_FULL_SETUP = 12;
-	ACTION_TYPE_DEPARTURE_SETTINGS_CHECKUP = 13;
-	ACTION_TYPE_DEPARTURE_PROBLEM_DIAGNOSIS = 14;
-	ACTION_TYPE_DEPARTURE_PRESENTATION = 15;
-	ACTION_TYPE_DEPARTURE_CONSULTATION = 16;
-}
-
-enum Department {
-	DEPARTMENT_NONE = 0;
-	DEPARTMENT_INTERNATIONAL = 1;
-	DEPARTMENT_RUSSIAN = 2;
-	DEPARTMENT_ANY = 3;
-}
-
-enum Position {
-	POSITION_NONE = 0;
-	POSITION_ENGINEER = 1;
-	POSITION_ACCOUNT = 2;
-	POSITION_DIRECTOR = 3;
-	POSITION_ANY = 4;
-}
-
-enum ImageOrientation {
-	IMAGEORIENTATION_LANDSCAPE = 0;
-	IMAGEORIENTATION_PORTRAIT = 1;
-	IMAGEORIENTATION_SQUARISH = 2;
-}
-
-enum FunnelStage {
-	FUNNELSTAGE_NONE = 0;
-	FUNNELSTAGE_FIRST = 1;
-	FUNNELSTAGE_SECOND = 2;
-	FUNNELSTAGE_THIRD = 3;
-	FUNNELSTAGE_FOURTH = 4;
-	FUNNELSTAGE_FIFTH = 5;
-	FUNNELSTAGE_SIXTH = 6;
-	FUNNELSTAGE_SEVENTH = 7;
-	FUNNELSTAGE_EIGTH = 8;
-	FUNNELSTAGE_REFUSED = 9;
 }

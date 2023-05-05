@@ -129,7 +129,7 @@
     {
         try
         {
-            overview = await Api.GetMonthProfitOverviewAsync(new OverviewRequest
+            overview = await AppApi.GetMonthProfitOverviewAsync(new OverviewRequest
                 {
                     Period = period.Translate(),
                     Department = Department.Any,
@@ -143,7 +143,7 @@
         }
     }
 
-    private async Task UpdateImage() => img = await Api.GetImageAsync(new ImageRequest
+    private async Task UpdateImage() => img = await AppApi.GetImageAsync(new ImageRequest
     {
         Keyword = query,
         Orientation = ImageOrientation.Portrait
