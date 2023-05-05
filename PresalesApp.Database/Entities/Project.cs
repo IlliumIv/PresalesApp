@@ -172,5 +172,28 @@ namespace PresalesApp.Database.Entities
             return time_spend % 60 >= minTimeToRank ?
                 (int)Math.Ceiling(time_spend / 60d) : (int)Math.Round(time_spend / 60d);
         }
+
+        public static async Task<(bool IsSuccess, string ErrorMessage)> SetFunnelStageAsync(FunnelStage newStage, string projectNumber)
+        {
+            var query = new Task<(bool, string)>(() =>
+            {
+                using var _dbContext = new ControllerContext();
+                try
+                {
+                    var project_in_db = _dbContext.Projects.Where(p => p.Number == projectNumber).SingleOrDefault();
+                    project_in_db.FunnelStage = newStage;
+                    _dbContext.SaveChanges();
+                    _dbContext.Dispose();
+                    return (true, "");
+                }
+                catch (Exception e)
+                {
+                    return (false, e.Message);
+                }
+            });
+
+            Queries.Enqueue(query);
+            return await query;
+        }
     }
 }
