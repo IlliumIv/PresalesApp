@@ -150,7 +150,7 @@
     {
         try
         {
-            overview = await Api.GetSalesOverviewAsync(new SalesOverviewRequest
+            overview = await AppApi.GetSalesOverviewAsync(new SalesOverviewRequest
                 {
                     Previous = previous.Translate(),
                     Current = current.Translate()

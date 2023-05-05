@@ -1,6 +1,6 @@
 ﻿syntax = "proto3";
 option csharp_namespace = "PresalesApp.Web.Shared";
-package custom_types;
+package types;
 
 // https://visualrecode.com/blog/csharp-decimals-in-grpc/
 // Adapted from https://github.com/googleapis/googleapis/blob/master/google/type/money.proto

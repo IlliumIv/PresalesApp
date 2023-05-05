@@ -7,8 +7,8 @@ using Grpc.Net.Client;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using PresalesApp.Bridge1C;
-using PresalesApp.Web.Shared;
+using BridgeApi = PresalesApp.Bridge1C.Api;
+using AppApi = PresalesApp.Web.Shared.Api;
 using PresalesApp.Web.Client.Authorization;
 
 namespace PresalesApp.Web.Client.Startup
@@ -24,12 +24,18 @@ namespace PresalesApp.Web.Client.Startup
 
             builder.Services.AddSingleton(services =>
             {
+                string address = "http://localhost:33080";
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                {
+                    address = "https://localhost:33443";
+                }
+
                 var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-                var channel = GrpcChannel.ForAddress("http://localhost:33080", new GrpcChannelOptions { HttpClient = httpClient });
-                return new PresalesAppBridge1CApi.PresalesAppBridge1CApiClient(channel);
+                var channel = GrpcChannel.ForAddress(address, new GrpcChannelOptions { HttpClient = httpClient });
+                return new BridgeApi.ApiClient(channel);
             });
 
-            builder.Services.AddAuthGrpcClient<PresalesAppApi.PresalesAppApiClient>();
+            builder.Services.AddAuthGrpcClient<AppApi.ApiClient>();
 
             builder.Services.AddBlazorise();
             builder.Services.AddBootstrap5Providers();

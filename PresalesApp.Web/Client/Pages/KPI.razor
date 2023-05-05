@@ -202,7 +202,7 @@
         }
 
         var from = new DateOnly(year, month, 1);
-        var response = await Api.GetKpiAsync(new KpiRequest
+        var response = await AppApi.GetKpiAsync(new KpiRequest
             {
                 PresaleName = presale_name,
                 Period = new Period
