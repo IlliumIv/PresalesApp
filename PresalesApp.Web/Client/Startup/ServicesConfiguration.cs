@@ -24,14 +24,8 @@ namespace PresalesApp.Web.Client.Startup
 
             builder.Services.AddSingleton(services =>
             {
-                string address = "http://localhost:33080";
-                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-                {
-                    address = "https://localhost:33443";
-                }
-
                 var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-                var channel = GrpcChannel.ForAddress(address, new GrpcChannelOptions { HttpClient = httpClient });
+                var channel = GrpcChannel.ForAddress("https://127.0.0.1:33443", new GrpcChannelOptions { HttpClient = httpClient });
                 return new BridgeApi.ApiClient(channel);
             });
 
