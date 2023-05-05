@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <None Remove="enums.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.22.3" />
     <PackageReference Include="Grpc.Core.Api" Version="2.52.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.52.0" />
@@ -39,9 +43,10 @@
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
-	<Protobuf Include="presales_app_api.proto" />
-	<Protobuf Include="presales_app_bridge1C_api.proto" />
-	<Protobuf Include="custom_types.proto" />
+    <Protobuf Include="enums.proto" />
+	<Protobuf Include="app.proto" />
+	<Protobuf Include="bridge.proto" />
+	<Protobuf Include="types.proto" />
   </ItemGroup>
 
 </Project>

@@ -1,3 +1,16 @@
-﻿<div class="loader-container">
-    <div class="loader"></div>
+﻿<div class="loader-container" style="@Style">
+    <div class="loader" style="@style"></div>
 </div>
+
+@code {
+    [Parameter]
+    public int Width { get; set; } = 60;
+    
+    [Parameter]
+    public int Height { get; set; } = 60;
+
+    [Parameter]
+    public string Style { get; set; }
+
+    private string style => $"width: {Width}px; height: {Height}px";
+}
