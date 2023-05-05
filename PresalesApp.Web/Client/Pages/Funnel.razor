@@ -13,7 +13,7 @@ else
     <DataGrid TItem="Project"
             Data="@response?.Projects"
             DetailRowStartsVisible="false"
-            Editable
+            Editable="false"
             Filterable
             Sortable="false"
             RowStyling="@OnRowStyling"
@@ -53,28 +53,10 @@ else
             <DataGridColumn Field="@nameof(Project.FunnelStage)" Editable
                         CustomFilter="@DataGridFilters.DefaultFilter" Caption="@Localization["ProjectFunnelStageText"]" >
                 <DisplayTemplate>
-                    <Select TValue="FunnelStage" SelectedValue=@context.FunnelStage SelectedValueChanged="(stage) => OnStageChanged(stage, context)">
-                        @foreach (FunnelStage stage in System.Enum.GetValues(typeof(FunnelStage)))
-                            {
-                                <SelectItem Value="@stage">@stage.GetName(Localization)</SelectItem>
-                            }
-                    </Select>
+                    <ProjectFunnelStageSelector Project="@context" />
                 </DisplayTemplate>
             </DataGridColumn>
-            <DataGridCommandColumn>
-                <NewCommandTemplate />
-                <DeleteCommandTemplate />
-                <ClearFilterCommandTemplate />
-                <EditCommandTemplate>
-                    <Button Color="Color.Dark" Clicked="@context.Clicked">@Localization["ProjectFunnelStageEditButton"]</Button>
-                </EditCommandTemplate>
-                <SaveCommandTemplate>
-                    <Button Color="Color.Success" Clicked="@(() => Console.WriteLine($"Save {context.Item.FunnelStage}"))">@Localization["ProjectFunnelStageEditSaveButton"]</Button>
-                </SaveCommandTemplate>
-                <CancelCommandTemplate>
-                    <Button Color="Color.Danger" Clicked="@context.Clicked">@Localization["ProjectFunnelStageEditCancelButton"]</Button>
-                </CancelCommandTemplate>
-            </DataGridCommandColumn>
+            <DataGridCommandColumn />
         </DataGridColumns>
         <DetailRowTemplate>
             @{
@@ -102,12 +84,6 @@ else
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
 
-    private void OnStageChanged(FunnelStage stage, Project? project)
-    {
-        if (project == null) return;
-        project.FunnelStage = stage;
-    }
-
     private FunnelProjects? response;
 
     private void OnRowStyling(Project project, DataGridRowStyling styling)
@@ -122,7 +98,7 @@ else
     {
         try
         {
-            response = await Api.GetFunnelProjectsAsync(new Empty());
+            response = await AppApi.GetFunnelProjectsAsync(new Empty());
         }
         catch (Exception e)
         {
