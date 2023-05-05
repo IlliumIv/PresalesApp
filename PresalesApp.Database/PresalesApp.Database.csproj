@@ -27,4 +27,8 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.29.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PresalesApp.Web\Shared\PresalesApp.Web.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
