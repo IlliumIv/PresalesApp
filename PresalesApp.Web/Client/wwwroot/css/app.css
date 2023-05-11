@@ -141,3 +141,11 @@ html, body * {
     scrollbar-color: #bfbfbf transparent;
     scrollbar-width: thin;
 }
+
+.rz-group-header {
+    display: initial !important
+}
+
+.top-row {
+    z-index: 10 !important;
+}
