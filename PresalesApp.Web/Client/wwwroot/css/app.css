@@ -149,3 +149,8 @@ html, body * {
 .top-row {
     z-index: 10 !important;
 }
+
+.rz-grid-table thead th .rz-column-title,
+.rz-grid-table td .rz-cell-data {
+    font-size: inherit !important;
+}

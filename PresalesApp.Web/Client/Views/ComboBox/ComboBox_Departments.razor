@@ -3,7 +3,7 @@
 <select title="Направление" value="@department" @onchange="((ChangeEventArgs e) => OnDepartmentChanged(e?.Value))" class="form-select form-select-combobox">
     @foreach (Department dep in Enum.GetValues(typeof(Department)))
     {
-        <option value="@dep">@dep.GetName(Localization)</option>
+        <option value="@dep">@dep.GetLocalizedName(Localization)</option>
     }
 </select>
 
