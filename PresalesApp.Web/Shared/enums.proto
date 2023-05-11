@@ -1,4 +1,4 @@
-﻿syntax = "proto3";
+syntax = "proto3";
 option csharp_namespace = "PresalesApp.Web.Shared";
 package enums;
 
@@ -61,4 +61,5 @@ enum FunnelStage {
 	FUNNELSTAGE_SEVENTH = 7;
 	FUNNELSTAGE_EIGTH = 8;
 	FUNNELSTAGE_REFUSED = 9;
+	FUNNELSTAGE_ANY = 10;
 }
