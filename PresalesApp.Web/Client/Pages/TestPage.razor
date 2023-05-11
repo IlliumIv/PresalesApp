@@ -2,8 +2,8 @@
 @using PresalesApp.Bridge1C
 
 <div class="d-flex">
-    <Button Type="ButtonType.Button" Color="Color.Dark" Clicked="DoSomething">Say Hello</Button>
-    <Button Type="ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
+    <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=DoSomething>Say Hello</RadzenButton>
+    <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
 </div>
 <p>@reply?.Message</p>
 <div style="width: 500px;height: 500px">
