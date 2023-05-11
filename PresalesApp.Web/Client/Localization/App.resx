@@ -336,4 +336,55 @@
   <data name="ProjectFunnelStageText" xml:space="preserve">
     <value>Этап воронки</value>
   </data>
+  <data name="ActionsPlaceholder" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="CollapseAllButtonText" xml:space="preserve">
+    <value>Свернуть все</value>
+  </data>
+  <data name="ExpandAllButtonText" xml:space="preserve">
+    <value>Развернуть все</value>
+  </data>
+  <data name="FunnelStageNone" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="FunnelStageFirst" xml:space="preserve">
+    <value>Первый</value>
+  </data>
+  <data name="FunnelStageSecond" xml:space="preserve">
+    <value>Второй</value>
+  </data>
+  <data name="FunnelStageThird" xml:space="preserve">
+    <value>Третий</value>
+  </data>
+  <data name="FunnelStageFourth" xml:space="preserve">
+    <value>Четвёртый</value>
+  </data>
+  <data name="FunnelStageFifth" xml:space="preserve">
+    <value>Пятый</value>
+  </data>
+  <data name="FunnelStageSixth" xml:space="preserve">
+    <value>Шестой</value>
+  </data>
+  <data name="FunnelStageSeventh" xml:space="preserve">
+    <value>Седьмой</value>
+  </data>
+  <data name="FunnelStageEigth" xml:space="preserve">
+    <value>Восьмой</value>
+  </data>
+  <data name="FunnelStageRefused" xml:space="preserve">
+    <value>Отказ</value>
+  </data>
+  <data name="FunnelStageAny" xml:space="preserve">
+    <value>Любой</value>
+  </data>
+  <data name="ActionNumberText" xml:space="preserve">
+    <value>Номер</value>
+  </data>
+  <data name="ActionDateText" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="ActionDescriptionText" xml:space="preserve">
+    <value>Описание</value>
+  </data>
 </root>

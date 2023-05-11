@@ -4,7 +4,7 @@
 <select title="Должность" value="@position" @onchange="((ChangeEventArgs e) => OnPositionChanged(e?.Value))" class="form-select form-select-combobox">
     @foreach (Position pos in Enum.GetValues(typeof(Position)))
     {
-        <option value="@pos">@pos.GetName(Localization)</option>
+        <option value="@pos">@pos.GetLocalizedName(Localization)</option>
     }
 </select>
 

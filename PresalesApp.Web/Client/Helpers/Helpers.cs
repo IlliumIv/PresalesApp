@@ -151,7 +151,7 @@ namespace PresalesApp.Web.Client.Helpers
 
             foreach(var project in projects.Projects)
             {
-                text += $"{project.Number};{project.Name};{project.Presale?.Name};{project.Status.GetName(localization)};" +
+                text += $"{project.Number};{project.Name};{project.Presale?.Name};{project.Status.GetLocalizedName(localization)};" +
                     $"{project.ApprovalBySalesDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.PresaleStartAt.ToDateTime().ToPresaleTime()};" +
@@ -166,7 +166,7 @@ namespace PresalesApp.Web.Client.Helpers
             await SaveAs(js, $"{(MarkupString)localization["UnpaidReportFileName", DateTime.Now].Value}.csv", Encoding.UTF8.GetBytes(text));
         }
 
-        public static string GetName(this Department department, IStringLocalizer<App> localization) => department switch
+        public static string GetLocalizedName(this Department department, IStringLocalizer<App> localization) => department switch
         {
             Department.None => localization["DepartmentNoneText"],
             Department.Russian => localization["DepartmentRussianText"],
@@ -175,12 +175,23 @@ namespace PresalesApp.Web.Client.Helpers
             _ => throw new NotImplementedException()
         };
 
-        public static string GetName(this FunnelStage stage, IStringLocalizer<App> localization) => stage switch
+        public static string GetLocalizedName(this FunnelStage stage, IStringLocalizer<App> localization) => stage switch
         {
-            _ => $"{stage}"
+            FunnelStage.None => localization["FunnelStageNone"],
+            FunnelStage.First => localization["FunnelStageFirst"],
+            FunnelStage.Second => localization["FunnelStageSecond"],
+            FunnelStage.Third => localization["FunnelStageThird"],
+            FunnelStage.Fourth => localization["FunnelStageFourth"],
+            FunnelStage.Fifth => localization["FunnelStageFifth"],
+            FunnelStage.Sixth => localization["FunnelStageSixth"],
+            FunnelStage.Seventh => localization["FunnelStageSeventh"],
+            FunnelStage.Eigth => localization["FunnelStageEigth"],
+            FunnelStage.Refused => localization["FunnelStageRefused"],
+            FunnelStage.Any => localization["FunnelStageAny"],
+            _ => throw new NotImplementedException()
         };
 
-        public static string GetName(this Position position, IStringLocalizer<App> localization) => position switch
+        public static string GetLocalizedName(this Position position, IStringLocalizer<App> localization) => position switch
         {
             Position.None => localization["PositionNoneText"],
             Position.Account => localization["PositionAccountText"],
@@ -190,7 +201,7 @@ namespace PresalesApp.Web.Client.Helpers
             _ => throw new NotImplementedException()
         };
 
-        public static string GetName(this ProjectStatus status, IStringLocalizer<App> localization) => status switch
+        public static string GetLocalizedName(this ProjectStatus status, IStringLocalizer<App> localization) => status switch
         {
             ProjectStatus.Unknown => localization["ProjectStatusUnknownText"],
             ProjectStatus.WorkInProgress => localization["ProjectStatusWorkInProgressText"],
@@ -213,7 +224,7 @@ namespace PresalesApp.Web.Client.Helpers
             (action.SalesFunnel ? $" ({localization["ActionSalesFunnelMarkText"]})." : ".");
 
         public static string Format(this Project project, IStringLocalizer<App> localization) =>
-            $"{project.Number} [{project.Status.GetName(localization)}" +
+            $"{project.Number} [{project.Status.GetLocalizedName(localization)}" +
             $"{ToDateString(project.ClosedAt, ": ")}" +
             $"], \"{project.Name}\"";
 
