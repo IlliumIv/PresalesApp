@@ -2,108 +2,128 @@
 
 <PageTitle>@Localization["FunnelPage"]</PageTitle>
 
-<h1>@Localization["FunnelPage"]</h1>
-
 @if (response == null)
 {
     <Loader />
 }
 else
 {
-    <DataGrid TItem="Project"
-            Data="@response?.Projects"
-            DetailRowStartsVisible="false"
-            Editable="false"
-            Filterable
-            Sortable="false"
-            RowStyling="@OnRowStyling"
-            SelectedRowStyling="@OnRowStyling"
-            ShowPager
-            PageSize="15"
-            Responsive>
-        <DataGridColumns>
-            <DataGridColumn Field="@nameof(Project.Presale)" Editable="false"
-                        Width="15%" CustomFilter="@DataGridFilters.PresaleFilter" Context="project" Caption="@Localization["PresaleNameText"]">
-            <DisplayTemplate>
-                @{
-                        var name = (project as Project)?.Presale?.Name;
-                        string placeholder = Localization["PresaleNotAssignedYetMessage"];
-                        if (!string.IsNullOrEmpty(name))
-                            placeholder = name;
-                    }
-                    @placeholder
-                </DisplayTemplate>
-            </DataGridColumn>
-            <DataGridColumn Field="@nameof(Project.Number)" Editable="false"
-                        Width="10%" CustomFilter="@DataGridFilters.DefaultFilter" Caption="@Localization["ProjectNumberText"]" />
-            <DataGridColumn Field="@nameof(Project.Potential)" Editable="false"
-                        Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="project" Caption="@Localization["ProjectPotentialText"]">
-                <DisplayTemplate>
-                    @($"{@Helpers.ToCurrencyString((project as Project)?.Potential)}")
-                </DisplayTemplate>
-            </DataGridColumn>
-            <DataGridDateColumn Field="@nameof(Project.ApprovalByTechDirectorAt)" Editable="false"
-                            Width="15%" CustomFilter="@DataGridFilters.DateTimeFilter" Context="project" Caption="@Localization["ProjectApprovalByTechDirectorAtText"]">
-                <DisplayTemplate>
-                    @($"{(project as Project)?.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()}")
-                </DisplayTemplate>
-            </DataGridDateColumn>
-            <DataGridColumn Field="@nameof(Project.Name)" Editable="false"
-                        CustomFilter="@DataGridFilters.DefaultFilter" Caption="@Localization["ProjectNameText"]" />
-            <DataGridColumn Field="@nameof(Project.FunnelStage)" Editable
-                        CustomFilter="@DataGridFilters.DefaultFilter" Caption="@Localization["ProjectFunnelStageText"]" >
-                <DisplayTemplate>
-                    <ProjectFunnelStageSelector Project="@context" />
-                </DisplayTemplate>
-            </DataGridColumn>
-            <DataGridCommandColumn />
-        </DataGridColumns>
-        <DetailRowTemplate>
+    <RadzenDataGrid @ref="grid"
+                TItem="Project"
+                Data="@response.Projects"
+                AllowFiltering="true"
+                FilterMode="Radzen.FilterMode.Simple"
+                AllowSorting="true"
+                FilterDelay="100"
+                FilterCaseSensitivity="Radzen.FilterCaseSensitivity.CaseInsensitive">
+        <HeaderTemplate>
             @{
-                var actions = (context as Project).Actions.Where(a => a.SalesFunnel).OrderBy(a => a.Number);
-                if (!actions.Any()) return;
-                <DataGrid TItem="Web.Shared.Action"
-                  Data="actions"
-                  Sortable="false"
-                  ShowCaptions="false">
-                    <DataGridCommandColumn />
-                    <DataGridNumericColumn Field="@nameof(Web.Shared.Action.Number)" />
-                    <DataGridDateColumn Field="@nameof(Web.Shared.Action.Date)" Context="action" Width="15%">
-                        <DisplayTemplate>
-                            @($"{(action as Web.Shared.Action)?.Date.ToDateTime().ToPresaleTime()}")
-                        </DisplayTemplate>
-                    </DataGridDateColumn>
-                    <DataGridColumn Field="@nameof(Web.Shared.Action.Description)" />
-                </DataGrid>
+                var text = allRowsExpanded ? "Collapse all rows" : "Expand all rows";
+                var icon = allRowsExpanded ? "unfold_less" : "unfold_more";
             }
-        </DetailRowTemplate>
-    </DataGrid>
-}
-
-@code {
-    [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
-
-    private FunnelProjects? response;
-
-    private void OnRowStyling(Project project, DataGridRowStyling styling)
-    {
-        if (!project.Actions.Any(a => a.SalesFunnel) || project.FunnelStage == FunnelStage.None)
-            styling.Style = "color: red;";
-    }
-
-    protected override async Task OnParametersSetAsync() => await UpdateData();
-
-    private async Task UpdateData()
-    {
-        try
-        {
-            response = await AppApi.GetFunnelProjectsAsync(new Empty());
-        }
-        catch (Exception e)
-        {
-            await messageHandler.Show(e.Message);
-        }
-        StateHasChanged();
-    }
+            <div class="datagrid-header d-flex">
+                <RadzenText TagName="TagName.H1" TextStyle="TextStyle.H4" Style="margin-bottom: 0">
+                    @Localization["FunnelPage"]
+                </RadzenText>
+                <RadzenButton ButtonStyle="ButtonStyle.Dark"
+                          Variant="Variant.Text"
+                          Text=@text
+                          Icon=@icon
+                          Click="@(args => ToggleRowsExpand())"
+                              class="datagrid-header-button" />
+            </div>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn TItem=Project Property=Presale.Name Title="Presale">
+                <Template>
+                    <span style="color: var(@SetCellColor(@context))">
+                        @context.Presale?.Name
+                    </span>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem=Project Property=Number Title="Number">
+                <Template>
+                    <span style="color: var(@SetCellColor(@context))">
+                        @context.Number
+                    </span>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem=Project
+                              Property=dPotential
+                              Title="Potential"
+                              FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                <Template>
+                    <span style="color: var(@SetCellColor(@context))">
+                        @context.dPotential.ToCurrencyString()
+                    </span>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem=Project
+                              Property=dtApprovalByTechDirectorAt
+                              Title="ApprovalByTechDirectorAt"
+                              FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals"
+                              FilterValue="@_selectedApprovalByTechDirectorAt">
+                <Template>
+                    <span style="color: var(@SetCellColor(@context))">
+                        @context.dtApprovalByTechDirectorAt.ToPresaleTime()
+                    </span>
+                </Template>
+                <FilterTemplate>
+                    <RadzenDatePicker @bind-Value=@_selectedApprovalByTechDirectorAt ShowTime="true" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem=Project Property=Name Title="Name">
+                <Template>
+                    <span style="color: var(@SetCellColor(@context))">
+                        @context.Name
+                    </span>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem=Project
+                              Property=FunnelStage
+                              Title="FunnelStage"
+                              Filterable="true"
+                              Width="160px"
+                              FilterValue=@_selectedStage>
+                <Template>
+                    <ProjectFunnelStageSelector Project=@context />
+                </Template>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value=@_selectedStage
+                                Style="width: 160px;"
+                                Data="@(System.Enum.GetValues(typeof(FunnelStage)).Cast<FunnelStage?>())"
+                                AllowClear="true" Change="@DropDown0Change" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+        <Template>
+            @{
+                var actions = context.Actions.Where(a => a.SalesFunnel).OrderBy(a => a.Number);
+                if (!actions.Any()) return;
+            }
+            <RadzenText>
+                Actions:
+            </RadzenText>
+            <RadzenDataGrid Data=@actions TItem="Web.Shared.Action" ShowColumnTitleAsTooltip="false">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Web.Shared.Action" Property="Number" Title="Number" Width="10%" />
+                    <RadzenDataGridColumn TItem="Web.Shared.Action"
+                                      Property=dtDate
+                                      Title="Date"
+                                      FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals"
+                                      FilterValue="@_selectedDate"
+                                      Context="action"
+                                      Width="15%">
+                        <Template>
+                            @action.dtDate.ToPresaleTime()
+                        </Template>
+                        <FilterTemplate>
+                            <RadzenDatePicker @bind-Value=@_selectedDate ShowTime="true" />
+                        </FilterTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Web.Shared.Action" Property="Description" Title="Description" />
+                </Columns>
+            </RadzenDataGrid>
+        </Template>
+    </RadzenDataGrid>
 }
