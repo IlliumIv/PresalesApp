@@ -47,7 +47,7 @@ else
             <DataGridColumn Field="@nameof(Project.Status)" Caption="@Localization["ProjectStatusText"]"
                         Editable="false" CustomFilter="@DataGridFilters.DefaultFilter" Context="project" Filterable="false">
                 <DisplayTemplate>
-                    @((project as Project)?.Status.GetName(Localization))
+                    @((project as Project)?.Status.GetLocalizedName(Localization))
                 </DisplayTemplate>
             </DataGridColumn>
             <DataGridColumn Field="@nameof(Project.Potential)" Caption="@Localization["ProjectPotentialText"]"

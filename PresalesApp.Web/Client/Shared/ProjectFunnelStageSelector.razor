@@ -1,41 +1,8 @@
-﻿<Select Disabled="@_disabled" TValue="FunnelStage" SelectedValue=@Project.FunnelStage SelectedValueChanged="(stage) => OnStageChanged(stage)">
-    @foreach (FunnelStage stage in System.Enum.GetValues(typeof(FunnelStage)))
-    {
-        <SelectItem Value="@stage">@stage.GetName(Localization)</SelectItem>
-    }
-</Select>
+﻿@using PresalesApp.Web.Shared
 
-@code {
-    [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
-
-    [Parameter]
-    public Project? Project { get; set; }
-
-    private bool _disabled;
-
-    private async void OnStageChanged(FunnelStage stage)
-    {
-        if (Project == null) return;
-        _disabled = true;
-        try
-        {
-            var result = await BridgeApi.SetProjectFunnelStageAsync(new Bridge1C.NewProjectFunnelStage
-                {
-                    NewStage = stage,
-                    ProjectNumber = Project.Number
-                });
-
-            if (!result.IsSuccess) throw new Exception(result.ErrorMessage);
-        }
-        catch (Exception e)
-        {
-            await messageHandler.Show(e.Message);
-            stage = Project.FunnelStage;
-        }
-
-        Project.FunnelStage = stage;
-        _disabled = false;
-        StateHasChanged();
-    }
-}
+<RadzenDropDown Disabled=@_disabled Data=@_stages @bind-Value=@_selectedStage Change="@DropDown0Change" Style="width: 120px" ClearSearchAfterSelection="true">
+    <Template>
+        <img src="icons/icons8-waiting.gif" width="20px" style="@_imgDisplay">
+        @(((FunnelStage)context).GetLocalizedName(Localization))
+    </Template>
+</RadzenDropDown>

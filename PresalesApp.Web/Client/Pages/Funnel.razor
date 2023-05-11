@@ -9,16 +9,19 @@
 else
 {
     <RadzenDataGrid @ref="grid"
+                Text
                 TItem="Project"
                 Data="@response.Projects"
                 AllowFiltering="true"
                 FilterMode="Radzen.FilterMode.Simple"
                 AllowSorting="true"
                 FilterDelay="100"
-                FilterCaseSensitivity="Radzen.FilterCaseSensitivity.CaseInsensitive">
+                FilterCaseSensitivity="Radzen.FilterCaseSensitivity.CaseInsensitive"
+                AllowMultiColumnSorting="true"
+                ShowMultiColumnSortingIndex="true">
         <HeaderTemplate>
             @{
-                var text = allRowsExpanded ? "Collapse all rows" : "Expand all rows";
+                var text = allRowsExpanded ? Localization["CollapseAllButtonText"] : Localization["ExpandAllButtonText"];
                 var icon = allRowsExpanded ? "unfold_less" : "unfold_more";
             }
             <div class="datagrid-header d-flex">
@@ -34,33 +37,30 @@ else
             </div>
         </HeaderTemplate>
         <Columns>
-            <RadzenDataGridColumn TItem=Project Property=Presale.Name Title="Presale">
+            <RadzenDataGridColumn Property=Presale.Name Title="@Localization["PresaleNameText"]" TItem=Project Width="15%">
                 <Template>
                     <span style="color: var(@SetCellColor(@context))">
                         @context.Presale?.Name
                     </span>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem=Project Property=Number Title="Number">
+            <RadzenDataGridColumn Property=Number Title="@Localization["ProjectNumberText"]" TItem=Project Width="10%">
                 <Template>
                     <span style="color: var(@SetCellColor(@context))">
                         @context.Number
                     </span>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem=Project
-                              Property=dPotential
-                              Title="Potential"
-                              FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+            <RadzenDataGridColumn Property=dPotential Title="@Localization["ProjectPotentialText"]" TItem=Project
+                              FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals" Width="10%">
                 <Template>
                     <span style="color: var(@SetCellColor(@context))">
                         @context.dPotential.ToCurrencyString()
                     </span>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem=Project
-                              Property=dtApprovalByTechDirectorAt
-                              Title="ApprovalByTechDirectorAt"
+            <RadzenDataGridColumn Property=dtApprovalByTechDirectorAt Title="@Localization["ProjectApprovalByTechDirectorAtText"]"
+                              TItem=Project Width="15%"
                               FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals"
                               FilterValue="@_selectedApprovalByTechDirectorAt">
                 <Template>
@@ -72,16 +72,14 @@ else
                     <RadzenDatePicker @bind-Value=@_selectedApprovalByTechDirectorAt ShowTime="true" />
                 </FilterTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem=Project Property=Name Title="Name">
+            <RadzenDataGridColumn Property=Name Title="@Localization["ProjectNameText"]" TItem=Project >
                 <Template>
                     <span style="color: var(@SetCellColor(@context))">
                         @context.Name
                     </span>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem=Project
-                              Property=FunnelStage
-                              Title="FunnelStage"
+            <RadzenDataGridColumn Property=FunnelStage Title="@Localization["ProjectFunnelStageText"]" TItem=Project
                               Filterable="true"
                               Width="160px"
                               FilterValue=@_selectedStage>
@@ -90,9 +88,13 @@ else
                 </Template>
                 <FilterTemplate>
                     <RadzenDropDown @bind-Value=@_selectedStage
-                                Style="width: 160px;"
+                                Style="width: 160px;" Context="stage"
                                 Data="@(System.Enum.GetValues(typeof(FunnelStage)).Cast<FunnelStage?>())"
-                                AllowClear="true" Change="@DropDown0Change" />
+                                AllowClear="true" Change="@DropDown0Change">
+                                    <Template>
+                                        @(((FunnelStage)stage).GetLocalizedName(Localization))
+                                    </Template>
+                    </RadzenDropDown>
                 </FilterTemplate>
             </RadzenDataGridColumn>
         </Columns>
@@ -102,18 +104,15 @@ else
                 if (!actions.Any()) return;
             }
             <RadzenText>
-                Actions:
+                @Localization["ActionsPlaceholder"]:
             </RadzenText>
             <RadzenDataGrid Data=@actions TItem="Web.Shared.Action" ShowColumnTitleAsTooltip="false">
                 <Columns>
-                    <RadzenDataGridColumn TItem="Web.Shared.Action" Property="Number" Title="Number" Width="10%" />
-                    <RadzenDataGridColumn TItem="Web.Shared.Action"
-                                      Property=dtDate
-                                      Title="Date"
-                                      FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals"
-                                      FilterValue="@_selectedDate"
+                    <RadzenDataGridColumn Property="Number" Title="@Localization["ActionNumberText"]" TItem="Web.Shared.Action" Width="10%"/>
+                    <RadzenDataGridColumn Property=dtDate Title="@Localization["ActionDateText"]" TItem="Web.Shared.Action" Width="15%"
                                       Context="action"
-                                      Width="15%">
+                                      FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals"
+                                      FilterValue="@_selectedDate">
                         <Template>
                             @action.dtDate.ToPresaleTime()
                         </Template>
@@ -121,7 +120,7 @@ else
                             <RadzenDatePicker @bind-Value=@_selectedDate ShowTime="true" />
                         </FilterTemplate>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="Web.Shared.Action" Property="Description" Title="Description" />
+                    <RadzenDataGridColumn Property="Description" Title="@Localization["ActionDescriptionText"]" TItem="Web.Shared.Action"/>
                 </Columns>
             </RadzenDataGrid>
         </Template>
