@@ -151,8 +151,11 @@ namespace PresalesApp.Database.Helpers
         public static Shared.FunnelStage Translate(this FunnelStage value) =>
             (Shared.FunnelStage)Enum.Parse(typeof(Shared.FunnelStage), value.ToString());
 
-        public static FunnelStage Translate(this Shared.FunnelStage value) =>
-            (FunnelStage)Enum.Parse(typeof(FunnelStage), value.ToString());
+        public static FunnelStage Translate(this Shared.FunnelStage value)
+        {
+            if (value == Shared.FunnelStage.Any) return FunnelStage.None;
+            return (FunnelStage)Enum.Parse(typeof(FunnelStage), value.ToString());
+        }
 
         public static Shared.ProjectStatus Translate(this ProjectStatus value) =>
             (Shared.ProjectStatus)Enum.Parse(typeof(Shared.ProjectStatus), value.ToString());
