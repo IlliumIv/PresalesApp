@@ -156,80 +156,23 @@
   <data name="SalesDashboardPage" xml:space="preserve">
     <value>Sales dashboard</value>
   </data>
-  <data name="UnpaidPageDescription" xml:space="preserve">
-    <value>#UnpaidPageDescriptionPlaceholder#</value>
-  </data>
   <data name="LoginButtonModalText" xml:space="preserve">
     <value>Sign in</value>
   </data>
   <data name="LoginText" xml:space="preserve">
     <value>Login</value>
   </data>
-  <data name="LoginTextPlaceholder" xml:space="preserve">
-    <value>#LoginTextPlaceholder#</value>
-  </data>
   <data name="PasswordText" xml:space="preserve">
     <value>Password</value>
   </data>
-  <data name="PasswordTextPlaceholder" xml:space="preserve">
-    <value>#PasswordTextPlaceholder#</value>
-  </data>
   <data name="CloseButtonText" xml:space="preserve">
     <value>Close</value>
-  </data>
-  <data name="NotAuthenticatedErrorMessage" xml:space="preserve">
-    <value>#NotAuthenticatedErrorMessage#</value>
   </data>
   <data name="LogoutButtonText" xml:space="preserve">
     <value>Log out</value>
   </data>
   <data name="RegisterModalButtonText" xml:space="preserve">
     <value>Sign up</value>
-  </data>
-  <data name="UsernameText" xml:space="preserve">
-    <value>#UsernameText#</value>
-  </data>
-  <data name="UsernameTextPlaceholder" xml:space="preserve">
-    <value>#UsernameTextPlaceholder#</value>
-  </data>
-  <data name="DepartmentNoneText" xml:space="preserve">
-    <value>#DepartmentNoneText#</value>
-  </data>
-  <data name="DepartmentRussianText" xml:space="preserve">
-    <value>#DepartmentRussianText#</value>
-  </data>
-  <data name="DepartmentInternationalText" xml:space="preserve">
-    <value>#DepartmentInternationalText#</value>
-  </data>
-  <data name="DepartmentAnyText" xml:space="preserve">
-    <value>#DepartmentAnyText#</value>
-  </data>
-  <data name="PositionNoneText" xml:space="preserve">
-    <value>#PositionNoneText#</value>
-  </data>
-  <data name="PositionAccountText" xml:space="preserve">
-    <value>#PositionAccountText#</value>
-  </data>
-  <data name="PositionEngineerText" xml:space="preserve">
-    <value>#PositionEngineerText#</value>
-  </data>
-  <data name="PositionDirectorText" xml:space="preserve">
-    <value>#PositionDirectorText#</value>
-  </data>
-  <data name="PositionAnyText" xml:space="preserve">
-    <value>#PositionAnyText#</value>
-  </data>
-  <data name="ProjectStatusUnknownText" xml:space="preserve">
-    <value>#ProjectStatusUnknownText#</value>
-  </data>
-  <data name="ProjectStatusWorkInProgressText" xml:space="preserve">
-    <value>#ProjectStatusWorkInProgressText#</value>
-  </data>
-  <data name="ProjectStatusWonText" xml:space="preserve">
-    <value>#ProjectStatusWonText#</value>
-  </data>
-  <data name="ProjectStatusLossText" xml:space="preserve">
-    <value>#ProjectStatusLossText#</value>
   </data>
   <data name="OrderNumberText" xml:space="preserve">
     <value>№</value>
@@ -276,35 +219,14 @@
   <data name="ProjectStatusText" xml:space="preserve">
     <value>Project Status</value>
   </data>
-  <data name="ApprovalBySalesDirectorDateText" xml:space="preserve">
-    <value>#ApprovalBySalesDirectorDateText#</value>
-  </data>
-  <data name="ApprovalByTechDirectorDateText" xml:space="preserve">
-    <value>#ApprovalByTechDirectorDateText#</value>
-  </data>
-  <data name="PresaleStartDateText" xml:space="preserve">
-    <value>#PresaleStartDateText#</value>
-  </data>
   <data name="ProjectCloseDateText" xml:space="preserve">
     <value>Project Close Date</value>
-  </data>
-  <data name="ProjectInvoicesCountText" xml:space="preserve">
-    <value>#ProjectInvoicesCountText#</value>
   </data>
   <data name="UnpaidReportFileName" xml:space="preserve">
     <value>Unpaid projects on {0}</value>
   </data>
-  <data name="ActionSalesFunnelMarkText" xml:space="preserve">
-    <value>#ActionSalesFunnelMarkText#</value>
-  </data>
   <data name="DownloadReportButtonText" xml:space="preserve">
     <value>Download report</value>
-  </data>
-  <data name="NeedSelectPresaleMessageText" xml:space="preserve">
-    <value>#NeedSelectPresaleMessageText#</value>
-  </data>
-  <data name="ReportIsDoneMessageText" xml:space="preserve">
-    <value>#ReportIsDoneMessageText#</value>
   </data>
   <data name="NoInvoicesForThisPeriodMessageText" xml:space="preserve">
     <value>No invoices for this period.</value>
@@ -320,9 +242,6 @@
   </data>
   <data name="PresaleNotAssignedYetMessage" xml:space="preserve">
     <value>Presale Not Assigned</value>
-  </data>
-  <data name="ProjectApprovalByTechDirectorAtText" xml:space="preserve">
-    <value>#ProjectApprovalByTechDirectorAtText#</value>
   </data>
   <data name="TotalText" xml:space="preserve">
     <value>Total:</value>

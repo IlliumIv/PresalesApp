@@ -53,7 +53,7 @@ namespace PresalesApp.Web.Authorization
             {
                 return handler.ValidateToken(securityToken, validationParameters, out validatedToken);
             }
-            catch (Exception e)
+            catch
             {
                 validatedToken = new JwtSecurityToken();
                 return new ClaimsPrincipal();

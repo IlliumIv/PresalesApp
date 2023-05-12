@@ -10,8 +10,11 @@ namespace PresalesApp.Database
     public static class DbController
     {
         internal static readonly QueriesQueue<Task> Queries = new();
+
         private readonly static ManualResetEvent _while_queue_empty = new(false);
-        internal static Settings DbSettings { get; private set; }
+
+        internal static Settings? DbSettings { get; private set; }
+
         public static void Configure (Settings settings) => DbSettings = settings;
 
         public static void Start()
@@ -51,6 +54,8 @@ namespace PresalesApp.Database
         {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
+                if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
+
                 optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
                     $"port={DbSettings.Port};" +
                     $"database={DbSettings.Database};" +
@@ -73,6 +78,8 @@ namespace PresalesApp.Database
         {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
+                if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
+
                 optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
                     $"port={DbSettings.Port};" +
                     $"database={DbSettings.Database};" +
@@ -130,6 +137,8 @@ namespace PresalesApp.Database
         {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
+                if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
+
                 optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
                     $"port={DbSettings.Port};" +
                     $"database={DbSettings.Database};" +
