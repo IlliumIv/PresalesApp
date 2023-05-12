@@ -93,7 +93,7 @@ namespace PresalesApp.Database.Helpers
                     proj.Invoices.Add(invoice.Translate());
 
             if (project.PresaleActions != null && project.PresaleActions.Any())
-                foreach (var action in project.PresaleActions)
+                foreach (var action in project.PresaleActions.OrderBy(a => a.Number))
                     proj.Actions.Add(action.Translate());
 
             return proj;
