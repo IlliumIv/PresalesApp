@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Blazorise.Snackbar;
+using Microsoft.AspNetCore.Components;
 using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
+using Radzen.Blazor;
 
 namespace PresalesApp.Web.Client.Shared
 {
@@ -10,8 +12,11 @@ namespace PresalesApp.Web.Client.Shared
         [CascadingParameter]
         public MessageSnackbar messageHandler { get; set; }
 
-        [Parameter]
+        [Parameter, EditorRequired]
         public Project Project { get; set; }
+
+        [Parameter, EditorRequired]
+        public RadzenDataGrid<Project> DataGrid { get; set; }
 
         bool _disabled = false;
 
@@ -29,10 +34,15 @@ namespace PresalesApp.Web.Client.Shared
         async Task DropDown0Change(object stage)
         {
             if ((FunnelStage)stage == FunnelStage.Any) return;
+
+            var isExpanded = DataGrid.IsRowExpanded(Project);
+            if (isExpanded) { await DataGrid.CollapseRows(new Project[] { Project }); }
+
             _disabled = true;
             _imgDisplay = $"display: initial";
+            var message = "Stage updated sucessfully";
+            var color = SnackbarColor.Success;
 
-            // Api
             try
             {
                 var result = await BridgeApi.SetProjectFunnelStageAsync(new Bridge1C.NewProjectFunnelStage
@@ -41,11 +51,13 @@ namespace PresalesApp.Web.Client.Shared
                     ProjectNumber = Project.Number
                 });
 
-                if (!result.IsSuccess) throw new Exception(result.ErrorMessage);
+                if (!result.IsSuccess)
+                    throw new Exception(result.ErrorMessage);
             }
             catch (Exception e)
             {
-                await messageHandler.Show(e.Message);
+                message = e.Message;
+                color = SnackbarColor.Danger;
                 stage = Project.FunnelStage;
             }
 
@@ -53,6 +65,10 @@ namespace PresalesApp.Web.Client.Shared
             Project.FunnelStage = (FunnelStage)stage;
             _selectedStage = Project.FunnelStage;
             _disabled = false;
+
+            await messageHandler.Show(message, color);
+
+            if (isExpanded) { await DataGrid.ExpandRows(new Project[] { Project }); }
         }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
 using Radzen.Blazor;
+using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace PresalesApp.Web.Client.Pages
 {
