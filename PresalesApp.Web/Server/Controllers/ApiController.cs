@@ -187,7 +187,7 @@ namespace PresalesApp.Web.Controllers
 
             var invQuery = db.Invoices
                 .Where(i => i.Date >= from || i.LastPayAt >= from || i.LastShipmentAt >= from)
-                .Where(i => i.Presale.Name == request.PresaleName)
+                .Where(i => i.Presale!.Name == request.PresaleName)
                 .Include(i => i.Project)
                 .Include(i => i.ProfitPeriods);
             await invQuery.LoadAsync();
@@ -276,9 +276,9 @@ namespace PresalesApp.Web.Controllers
 
             using var db = new ReadOnlyContext();
 
-            var projQuery = db.Projects.Where(p => p != null)
-                .Where(p => ((position == Shared.Position.Any && p.Presale.Position != Position.None)
-                    || (position != Shared.Position.Any && p.Presale.Position == position.Translate()))
+            var projQuery = db.Projects // .Where(p => p != null)
+                .Where(p => ((position == Shared.Position.Any && p.Presale!.Position != Position.None)
+                    || (position != Shared.Position.Any && p.Presale!.Position == position.Translate()))
                     && ((department == Shared.Department.Any && p.Presale.Department != Department.None)
                     || (department != Shared.Department.Any && p.Presale.Department == department.Translate())))
                 .Include(p => p.PresaleActions);
@@ -286,8 +286,8 @@ namespace PresalesApp.Web.Controllers
             var invQuery = db.Invoices.Where(i => (i.Date >= from && i.Date <= to)
                     || (i.LastPayAt >= from && i.LastPayAt <= to)
                     || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
-                .Where(i => ((position == Shared.Position.Any && i.Presale.Position != Position.None)
-                    || (position != Shared.Position.Any && i.Presale.Position == position.Translate()))
+                .Where(i => ((position == Shared.Position.Any && i.Presale!.Position != Position.None)
+                    || (position != Shared.Position.Any && i.Presale!.Position == position.Translate()))
                     && ((department == Shared.Department.Any && i.Presale.Department != Department.None)
                     || (department != Shared.Department.Any && i.Presale.Department == department.Translate())))
                 .Include(i => i.ProfitPeriods);
@@ -589,16 +589,16 @@ namespace PresalesApp.Web.Controllers
             {
                 await db.Projects
                     .Where(p => p.Status == ProjectStatus.Won && p.ClosedAt >= from && p.ClosedAt <= to &&
-                        !p.Invoices.Any(i => i.ProfitPeriods.Any()) && p.MainProject != null &&
-                        !p.MainProject.Invoices.Any(i => i.ProfitPeriods.Any()))
-                    .Where(p => presale_name != string.Empty ? p.Presale.Name == presale_name : p.Presale.IsActive == true).LoadAsync();
+                        !p.Invoices!.Any(i => i.ProfitPeriods!.Any()) && p.MainProject != null &&
+                        !p.MainProject!.Invoices!.Any(i => i.ProfitPeriods!.Any()))
+                    .Where(p => presale_name != string.Empty ? p.Presale!.Name == presale_name : p.Presale!.IsActive == true).LoadAsync();
             }
             else
             {
                 await db.Projects
                     .Where(p => p.Status == ProjectStatus.Won && p.ClosedAt >= from && p.ClosedAt <= to &&
-                        !p.Invoices.Any(i => i.ProfitPeriods.Any()))
-                    .Where(p => presale_name != string.Empty ? p.Presale.Name == presale_name : p.Presale.IsActive == true).LoadAsync();
+                        !p.Invoices!.Any(i => i.ProfitPeriods!.Any()))
+                    .Where(p => presale_name != string.Empty ? p.Presale!.Name == presale_name : p.Presale!.IsActive == true).LoadAsync();
             }
 
             var presales = await db.Presales.Where(p => presale_name != string.Empty ? p.Name == presale_name : p.IsActive == true).ToListAsync();
@@ -607,7 +607,7 @@ namespace PresalesApp.Web.Controllers
             foreach (var presale in presales)
             {
                 if (!presale.Projects?.Any() ?? true) continue;
-                foreach (var project in presale.Projects.OrderBy(p => p.ClosedAt).ThenBy(p => p.Number))
+                foreach (var project in presale.Projects!.OrderBy(p => p.ClosedAt).ThenBy(p => p.Number))
                     reply.Projects.Add(project.Translate());
             }
 
@@ -621,10 +621,10 @@ namespace PresalesApp.Web.Controllers
 
             var projects = await db.Projects
                 .Where(p => p.Status == ProjectStatus.WorkInProgress)
-                .Where(p => p.Presale.Department == Department.Russian)
-                .Where(p => p.PresaleActions.Any(a => a.SalesFunnel) ||
+                .Where(p => p.Presale!.Department == Department.Russian)
+                .Where(p => p.PresaleActions!.Any(a => a.SalesFunnel) ||
                     (p.PotentialAmount > 2000000 && p.ApprovalBySalesDirectorAt > new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc)))
-                .Include(p => p.PresaleActions.Where(a=> a.SalesFunnel))
+                .Include(p => p.PresaleActions!.Where(a=> a.SalesFunnel))
                 .Include(p => p.Presale)
                 .ToListAsync();
 
@@ -648,7 +648,7 @@ namespace PresalesApp.Web.Controllers
                 if (projectsViewed.Contains(project)) continue;
                 else projectsViewed.Add(project);
 
-                var some = db.PresaleActions?.Where(a => a.Project.Number == project.Number)?.ToList();
+                var some = db.PresaleActions?.Where(a => a.Project!.Number == project.Number)?.ToList();
 
                 var prj = db.Projects?.Where(p => p.Number == project.Number)?.Include(p => p.MainProject).FirstOrDefault();
                 if (prj?.MainProject?.Number != null)

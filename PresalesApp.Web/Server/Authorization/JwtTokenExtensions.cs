@@ -23,7 +23,7 @@ namespace PresalesApp.Web.Authorization
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
-                new(ClaimsIdentity.DefaultNameClaimType, user.UserName),
+                new(ClaimsIdentity.DefaultNameClaimType, user.UserName ?? string.Empty),
                 // new(ClaimTypes.Name, user.ProfileName),
                 new(ClaimTypes.NameIdentifier, user.Id)
             };
