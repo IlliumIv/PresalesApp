@@ -13,6 +13,7 @@ namespace PresalesApp.Bridge1C.Controllers
         public static void Configure(AppSettings settings) => _settings = settings;
         public static void Start<T>(TimeSpan startDelay) where T : Entity
         {
+            if (!_settings.SynchronizationEnabled) return;
             if (startDelay.TotalMilliseconds <= 0) startDelay = TimeSpan.FromMilliseconds(1);
 
             new Task(async () =>

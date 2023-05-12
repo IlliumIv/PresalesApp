@@ -11,9 +11,9 @@ namespace PresalesApp.Web.Server
             _configuration = configuration;
         }
 
-        public string Issuer { get  { return _configuration.GetValue<string>("TokenParameters:Issuer"); }}
-        public string Audience { get { return _configuration.GetValue<string>("TokenParameters:Audience"); }}
-        public string SecretKey { get { return _configuration.GetValue<string>("TokenParameters:SecretKey"); }}
-        public TimeSpan Expiry { get { return _configuration.GetValue<TimeSpan>("TokenParameters:Expiry"); }}
+        public string Issuer => _configuration.GetValue<string>("TokenParameters:Issuer") ?? string.Empty;
+        public string Audience => _configuration.GetValue<string>("TokenParameters:Audience") ?? string.Empty;
+        public string SecretKey => _configuration.GetValue<string>("TokenParameters:SecretKey") ?? string.Empty;
+        public TimeSpan Expiry => _configuration.GetValue<TimeSpan>("TokenParameters:Expiry");
     }
 }
