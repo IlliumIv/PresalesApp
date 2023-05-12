@@ -181,6 +181,7 @@ namespace PresalesApp.Database.Entities
                 try
                 {
                     var project_in_db = _dbContext.Projects.Where(p => p.Number == projectNumber).SingleOrDefault();
+                    if (project_in_db == null) return (false, "No project found.");
                     project_in_db.FunnelStage = newStage;
                     _dbContext.SaveChanges();
                     _dbContext.Dispose();

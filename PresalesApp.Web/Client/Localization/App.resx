@@ -166,19 +166,19 @@
     <value>Логин</value>
   </data>
   <data name="LoginTextPlaceholder" xml:space="preserve">
-    <value>#LoginTextPlaceholder#</value>
+    <value>Логин...</value>
   </data>
   <data name="PasswordText" xml:space="preserve">
     <value>Пароль</value>
   </data>
   <data name="PasswordTextPlaceholder" xml:space="preserve">
-    <value>#PasswordTextPlaceholder#</value>
+    <value>Пароль...</value>
   </data>
   <data name="CloseButtonText" xml:space="preserve">
     <value>Закрыть</value>
   </data>
   <data name="NotAuthenticatedErrorMessage" xml:space="preserve">
-    <value>#NotAuthenticatedErrorMessage#</value>
+    <value></value>
   </data>
   <data name="LogoutButtonText" xml:space="preserve">
     <value>Выйти</value>
@@ -187,10 +187,10 @@
     <value>Зарегистрироваться</value>
   </data>
   <data name="UsernameText" xml:space="preserve">
-    <value>#UsernameText#</value>
+    <value>Имя пользователя</value>
   </data>
   <data name="UsernameTextPlaceholder" xml:space="preserve">
-    <value>#UsernameTextPlaceholder#</value>
+    <value>Имя пользователя...</value>
   </data>
   <data name="DepartmentNoneText" xml:space="preserve">
     <value>Без направления</value>
