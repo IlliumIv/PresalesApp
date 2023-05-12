@@ -24,7 +24,7 @@ namespace PresalesApp.Bridge1C.Startup
                     policy =>
                     {
                         policy
-                        .WithOrigins("https://localhost", "https://127.0.0.1")
+                        .WithOrigins(appSettings.AllowedOrigins)
                         // .AllowAnyMethod()
                         // .AllowAnyOrigin()
                         .AllowAnyHeader() // (Причина: заголовок «access-control-allow-origin» не разрешён согласно заголовку «Access-Control-Allow-Headers» из ответа CORS preflight).
