@@ -27,7 +27,7 @@ namespace PresalesApp.Web.Client.Shared
 
         FunnelStage _selectedStage;
 
-        readonly IEnumerable<FunnelStage> _stages = Enum.GetValues(typeof(FunnelStage)).Cast<FunnelStage>();
+        readonly IEnumerable<FunnelStage> _stages = Enum.GetValues(typeof(FunnelStage)).Cast<FunnelStage>().Where(i => i != FunnelStage.Any);
 
         protected override void OnParametersSet()
         {
