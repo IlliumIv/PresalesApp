@@ -18,6 +18,9 @@ namespace PresalesApp.Web.Client.Shared
         [Parameter, EditorRequired]
         public RadzenDataGrid<Project> DataGrid { get; set; }
 
+        [Parameter]
+        public EventCallback<FunnelStage> OnChange { get; set; }
+
         bool _disabled = false;
 
         string _imgDisplay = $"display: none";
@@ -69,6 +72,7 @@ namespace PresalesApp.Web.Client.Shared
             await messageHandler.Show(message, color);
 
             if (isExpanded) { await DataGrid.ExpandRows(new Project[] { Project }); }
+            await OnChange.InvokeAsync((FunnelStage)stage);
         }
     }
 }
