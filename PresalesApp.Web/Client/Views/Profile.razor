@@ -3,12 +3,20 @@
 
 <AuthorizeView>
     <Authorized>
-        <Button Type="Blazorise.ButtonType.Button" Color="Color.Light">@_profile.Name</Button>
-        <Button Type="Blazorise.ButtonType.Button" Color="Color.Light" Clicked="@Logout">@Localization["LogoutButtonText"]</Button>
+        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined>
+            @_profile.Name
+            </RadzenButton>
+        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined Click=@Logout>
+            @Localization["LogoutButtonText"]
+            </RadzenButton>
     </Authorized>
     <NotAuthorized>
-        <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="@(() => _registerModal.Show())">@Localization["RegisterModalButtonText"]</Button>
-        <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="@(() => _loginModal.Show())">@Localization["LoginButtonModalText"]</Button>
+        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined Click=@(() => _registerModal.Show())>
+            @Localization["RegisterModalButtonText"]
+            </RadzenButton>
+        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined Click=@(() => _loginModal.Show())>
+            @Localization["LoginButtonModalText"]
+            </RadzenButton>
     </NotAuthorized>
 </AuthorizeView>
 

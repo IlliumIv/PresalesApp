@@ -387,4 +387,7 @@
   <data name="ActionDescriptionText" xml:space="preserve">
     <value>Описание</value>
   </data>
+  <data name="SuggestImprovementsButtonText" xml:space="preserve">
+    <value>Предложить улучшение</value>
+  </data>
 </root>
