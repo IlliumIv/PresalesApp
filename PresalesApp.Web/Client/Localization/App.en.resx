@@ -306,4 +306,7 @@
   <data name="ActionDescriptionText" xml:space="preserve">
     <value>Description</value>
   </data>
+  <data name="SuggestImprovementsButtonText" xml:space="preserve">
+    <value>Suggest improvements</value>
+  </data>
 </root>
