@@ -1,5 +1,6 @@
-﻿@using System.Reflection;
+﻿@using System.Reflection
 @inherits LayoutComponentBase
+@inject IJSRuntime js
 
 <div class="page">
     <div class="sidebar">
@@ -11,6 +12,11 @@
             <Profile />
             <CultureSelector />
             <div>v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
+            <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
+                Click=@(async () => await js.InvokeAsync<object>("open", new object[]
+                    { "https://github.com/IlliumIv/PresalesMonitor/issues/new", "_blank" }))>
+                @Localization["SuggestImprovementsButtonText"]
+                </RadzenButton>
         </div>
         <AuthorizeView>
             <Authorized>
