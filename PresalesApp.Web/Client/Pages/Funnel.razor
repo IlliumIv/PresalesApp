@@ -71,6 +71,19 @@ else
                     <RadzenDatePicker @bind-Value=@_selectedApprovalByTechDirectorAt ShowTime="true" />
                 </FilterTemplate>
             </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property=dtLastActionTime Title="@Localization["ProjectLastFunnelActionText"]"
+                              TItem=Project Width="15%"
+                              FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals"
+                              FilterValue="@_selectedLastAction" >
+                <Template>
+                    <span style="color: var(@SetCellColor(@context))">
+                        @(context.dtLastActionTime == DateTime.MinValue ? "" : context.dtLastActionTime.ToPresaleTime())
+                    </span>
+                </Template>
+                <FilterTemplate>
+                    <RadzenDatePicker @bind-Value=@_selectedLastAction ShowTime="true" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn Property=Name Title="@Localization["ProjectNameText"]" TItem=Project >
                 <Template>
                     <span style="color: var(@SetCellColor(@context))">

@@ -7,5 +7,7 @@ namespace PresalesApp.Web.Shared
         public decimal dPotential => (decimal)Potential;
 
         public DateTime dtApprovalByTechDirectorAt => ApprovalByTechDirectorAt.ToDateTime();
+
+        public DateTime dtLastActionTime => Actions?.LastOrDefault()?.dtDate ?? DateTime.MinValue;
     }
 }

@@ -309,4 +309,7 @@
   <data name="SuggestImprovementsButtonText" xml:space="preserve">
     <value>Suggest improvements</value>
   </data>
+  <data name="ProjectLastFunnelActionText" xml:space="preserve">
+    <value>Last action date</value>
+  </data>
 </root>
