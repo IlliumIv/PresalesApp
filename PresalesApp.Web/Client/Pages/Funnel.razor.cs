@@ -27,6 +27,7 @@ namespace PresalesApp.Web.Client.Pages
         FunnelStage? _selectedStage = null;
 
         DateTime? _selectedApprovalByTechDirectorAt = DateTime.MinValue;
+        DateTime? _selectedLastAction = DateTime.MinValue;
 
         DateTime? _selectedDate = DateTime.MinValue;
 
