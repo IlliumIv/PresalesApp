@@ -419,7 +419,8 @@ namespace PresalesApp.Web.Controllers
             #region Новые проекты
             foreach (var proj in projects
                     .Where(p => p.ApprovalBySalesDirectorAt >= from && p.ApprovalBySalesDirectorAt <= to)
-                    .Where(p => p.ApprovalByTechDirectorAt == DateTime.MinValue))
+                    .Where(p => p.ApprovalByTechDirectorAt == DateTime.MinValue)
+                    .Where(p => p.Status != ProjectStatus.Loss))
                 reply.New.Add(proj.Translate());
             #endregion
             #region Среднее время реакции руководителя
