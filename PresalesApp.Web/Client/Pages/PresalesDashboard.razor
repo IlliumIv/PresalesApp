@@ -43,7 +43,7 @@
         <div style="position: relative">
             @if (overview != null)
             {
-                <div class="percent">@Helpers.ToPercentString((double)(overview.Profit/overview.Plan), 1)</div>
+                <div class="percent">@(overview.Plan != 0 ? Helpers.ToPercentString((double)(overview.Profit / overview.Plan), 1) : "")</div>
                 <div class="left">@Helpers.ToCurrencyString((decimal)overview.Left)</div>
             }
         </div>
@@ -81,10 +81,13 @@
 
     private PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
 
+    private static DateTime firstDay => new(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private static DateTime lastDay => firstDay.AddMonths(1).AddSeconds(-1);
+
     private Period period = new Period
         {
-            From = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1),
-            To = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+            From = DateOnly.FromDateTime(firstDay),
+            To = DateOnly.FromDateTime(lastDay)
         };
 
     private string chart_options => "{\"cutout\":\"30%\",\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
@@ -114,7 +117,8 @@
             if (count > 600)
             {
                 count = 0;
-                period.To = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+                period.From = DateOnly.FromDateTime(firstDay);
+                period.To = DateOnly.FromDateTime(lastDay);
                 await UpdateData(period);
                 await UpdateImage();
                 await RedrawChart();

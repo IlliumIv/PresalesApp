@@ -37,9 +37,10 @@ namespace PresalesApp.Web.Controllers
         private readonly TokenParameters _tokenParameters;
         private readonly ILogger<ApiController> _logger;
 
-        private readonly decimal plan = 8163862;
-        private string _cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
-        private ImageResponse _cashedImageGirl = new()
+        private const decimal _handicap = (decimal)1.3;
+        private static (decimal Value, DateTime CalculationTime) _cachedSalesTarget = (0, DateTime.MinValue);
+        private static string _cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
+        private static ImageResponse _cashedImageGirl = new()
         {
             Raw = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3",
             Full = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?crop=entropy&cs=tinysrgb&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3&q=80",
@@ -53,7 +54,7 @@ namespace PresalesApp.Web.Controllers
             AuthorUrl = @"https://unsplash.com/@ganinph",
             SourceUrl = @"https://unsplash.com/",
         };
-        private ImageResponse _cashedImageNY = new()
+        private static ImageResponse _cashedImageNY = new()
         {
             Raw = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3",
             Full = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?crop=entropy&cs=tinysrgb&fm=jpg&ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3&q=80",
@@ -496,49 +497,26 @@ namespace PresalesApp.Web.Controllers
             var department = request?.Department ?? Shared.Department.Any;
             var onlyActive = request?.OnlyActive ?? false;
 
-            using var db = new ReadOnlyContext();
+            var (profit, dailyIncrease, presales) = await GetProfitStatistic(from, to, position, department, onlyActive);
 
-            var invQuery = db.Invoices
-                .Where(i => (i.Date >= from && i.Date <= to)
-                    || (i.LastPayAt >= from && i.LastPayAt <= to)
-                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
-                .Include(i => i.Presale)
-                .Include(i => i.ProfitPeriods);
-
-            await invQuery.LoadAsync();
-
-            var presales = db.Presales?
-                .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
-                    || (position != Shared.Position.Any && p.Position == position.Translate()))
-                    && ((department == Shared.Department.Any && p.Department != Department.None)
-                    || (department != Shared.Department.Any && p.Department == department.Translate())))
-                .ToList();
-
-            var reply = new MonthProfitOverview();
-            if (presales == null) return reply;
-
-            foreach (var presale in presales)
+            if (_cachedSalesTarget.CalculationTime.Month < DateTime.Now.Month ||
+                _cachedSalesTarget.CalculationTime.Year < DateTime.Now.Year)
             {
-                if (onlyActive && !presale.IsActive) continue;
-                reply.Presales.Add(new Shared.Presale()
-                {
-                    Name = presale.Name,
-                    Statistics = new Statistic()
-                    {
-                        Profit = DecimalValue.FromDecimal(presale.SumProfit(from, to))
-                    }
-                });
+                _cachedSalesTarget.Value = GetProfitStatistic(from.AddYears(-1), to.AddYears(-1), position, department, onlyActive)
+                    .Result.Profit * _handicap;
+                _cachedSalesTarget.CalculationTime = DateTime.Now;
             }
 
-            var profit = presales?.Sum(p => p.SumProfit(from, to)) ?? 0;
-            var profitPrevDay = presales?.Sum(p => p.SumProfit(from, to.AddDays(-1))) ?? 0;
+            var reply = new MonthProfitOverview();
+
+            foreach (var presale in presales)
+                reply.Presales.Add(presale);
 
             reply.Profit = profit;
-            reply.Plan = plan;
-            reply.Left = plan - profit > 0 ? plan - profit : 0;
-            reply.DeltaDay = profit - profitPrevDay > 0 ? profit - profitPrevDay : 0;
+            reply.Plan = _cachedSalesTarget.Value;
+            reply.Left = _cachedSalesTarget.Value - profit > 0 ? _cachedSalesTarget.Value - profit : 0;
+            reply.DeltaDay = dailyIncrease;
 
-            db.Dispose();
             return reply;
         }
 
@@ -658,6 +636,57 @@ namespace PresalesApp.Web.Controllers
                     RecursiveLoad(mainPrjs, db, ref projectsViewed);
                 }
             }
+        }
+
+        private static async Task<(decimal Profit, decimal DailyIncrease, Shared.Presale[] Presales)> GetProfitStatistic(
+            DateTime from, DateTime to,
+            Shared.Position position, Shared.Department department, bool onlyActive)
+        {
+            using var db = new ReadOnlyContext();
+
+            var invQuery = db.Invoices
+                .Where(i => (i.Date >= from && i.Date <= to)
+                    || (i.LastPayAt >= from && i.LastPayAt <= to)
+                    || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
+                .Include(i => i.Presale)
+                .Include(i => i.ProfitPeriods);
+
+            await invQuery.LoadAsync();
+
+            var presalesFromDb = db.Presales?
+                .Where(p => ((position == Shared.Position.Any && p.Position != Position.None)
+                || (position != Shared.Position.Any && p.Position == position.Translate()))
+                    && ((department == Shared.Department.Any && p.Department != Department.None)
+                    || (department != Shared.Department.Any && p.Department == department.Translate())))
+                .ToList();
+
+            var filteredPresales = new HashSet<Shared.Presale>();
+
+            if (presalesFromDb != null)
+            {
+                foreach (var presale in presalesFromDb)
+                {
+                    var presaleProfit = presale.SumProfit(from, to);
+                    if (onlyActive && !presale.IsActive || presaleProfit == 0) continue;
+
+                    filteredPresales.Add(new Shared.Presale()
+                    {
+                        Name = presale.Name,
+                        Statistics = new Statistic()
+                        {
+                            Profit = DecimalValue.FromDecimal(presaleProfit)
+                        }
+                    });
+                }
+            }
+
+            var profit = presalesFromDb?.Sum(p => p.SumProfit(from, to)) ?? 0;
+            var profitPrevDay = presalesFromDb?.Sum(p => p.SumProfit(from, to.AddDays(-1))) ?? 0;
+
+            db.Dispose();
+
+            return (profit, DailyIncrease: profit - profitPrevDay > 0 ?
+                profit - profitPrevDay : 0, Presales: filteredPresales.ToArray());
         }
     }
 }
