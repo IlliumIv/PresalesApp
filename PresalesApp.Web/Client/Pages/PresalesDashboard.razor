@@ -19,7 +19,7 @@
                     {
                         <div>
                             <div style="background: @ChartColor.FromRgba(colors[item.index].R, colors[item.index].G, colors[item.index].B, color_alfa).ToString()"></div>
-                            <p>@item.presale.Name:</p>
+                            <p>@item.presale.Name.GetFirstAndLastName():</p>
                             <p>@Helpers.ToCurrencyString(item.presale.Statistics.Profit)</p>
                         </div>
                     }

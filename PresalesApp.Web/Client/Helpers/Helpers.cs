@@ -5,13 +5,19 @@ using Microsoft.JSInterop;
 using PresalesApp.Web.Shared;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using Action = PresalesApp.Web.Shared.Action;
 
 namespace PresalesApp.Web.Client.Helpers
 {
-    public static class Helpers
+    public static partial class Helpers
     {
         public static string CurMonthName => $"{DateTime.Now:MMMM}";
+
+        [GeneratedRegex("\\s+")]
+        private static partial Regex DeleteMultipleSpaces();
+
+        public static string GetFirstAndLastName(this string name) => string.Join(" ", DeleteMultipleSpaces().Replace(name, " ").Split().Take(2));
 
         public static string ToMinMaxFormatString(DateOnly? value) => $"{value:yyyy-MM-dd}";
 
@@ -132,7 +138,7 @@ namespace PresalesApp.Web.Client.Helpers
             text = encoder.GetString(result);
             await SaveAs(js, $"{(MarkupString)localization["KpiReportFileName",
                         ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(month)),
-                        year, presaleName].Value}.csv", Encoding.UTF8.GetBytes(text));
+                        year, presaleName.GetFirstAndLastName()].Value}.csv", Encoding.UTF8.GetBytes(text));
         }
 
         public async static Task Download(this UnpaidProjects? projects, IJSRuntime js, IStringLocalizer<App> localization)
@@ -151,7 +157,7 @@ namespace PresalesApp.Web.Client.Helpers
 
             foreach(var project in projects.Projects)
             {
-                text += $"{project.Number};{project.Name};{project.Presale?.Name};{project.Status.GetLocalizedName(localization)};" +
+                text += $"{project.Number};{project.Name};{project.Presale?.Name.GetFirstAndLastName()};{project.Status.GetLocalizedName(localization)};" +
                     $"{project.ApprovalBySalesDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()};" +
                     $"{project.PresaleStartAt.ToDateTime().ToPresaleTime()};" +

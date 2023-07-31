@@ -9,7 +9,7 @@ else
         <option selected=""></option>
         @foreach (var name in presales.Names)
         {
-            <option value="@name">@name</option>
+            <option value="@name">@name.GetFirstAndLastName()</option>
         }
     </select>
 }

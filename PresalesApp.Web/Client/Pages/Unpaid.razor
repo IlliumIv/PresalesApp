@@ -39,7 +39,7 @@ else
                         Editable="false" Width="15%" CustomFilter="@DataGridFilters.PresaleFilter" Context="project">
             <DisplayTemplate>
                 @{
-                        var name = (project as Project)?.Presale?.Name;
+                        var name = (project as Project)?.Presale?.Name.GetFirstAndLastName();
                     }
                     @(!string.IsNullOrEmpty(name) ? name : Localization["PresaleNotAssignedYetMessage"])
                 </DisplayTemplate>
