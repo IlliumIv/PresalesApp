@@ -47,7 +47,7 @@ else
             @foreach (var presale in overview.Presales)
             {
                 <tr>
-                    <td>@presale.Name</td>
+                    <td>@presale.Name.GetFirstAndLastName()</td>
                     <td title="@title_in_work">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
                     <td title="@title_assign">@Helpers.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
                     <td title="@title_won">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
@@ -153,7 +153,7 @@ else
         $"{project.Number}, {project.Name}, " +
         $"{Helpers.ToOneDateString(project.ApprovalByTechDirectorAt, project.ApprovalBySalesDirectorAt)}" +
         $"{Helpers.ToDateString(project.PresaleStartAt, " - ")}" +
-        $"{(string.IsNullOrEmpty(project.Presale?.Name) ? "" : $", {project.Presale?.Name}")}";
+        $"{(string.IsNullOrEmpty(project.Presale?.Name.GetFirstAndLastName()) ? "" : $", {project.Presale?.Name.GetFirstAndLastName()}")}";
 
     public void Dispose() => periodic_timer?.Dispose();
     private async void RunTimer()
