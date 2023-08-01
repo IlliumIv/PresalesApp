@@ -14,7 +14,7 @@
             <div>v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
             <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
                 Click=@(async () => await js.InvokeAsync<object>("open", new object[]
-                    { "https://github.com/IlliumIv/PresalesMonitor/issues/new", "_blank" }))>
+                          { "http://127.0.0.1:3000/polyakov/PresalesApp/issues/new", "_blank" }))>
                 @Localization["SuggestImprovementsButtonText"]
                 </RadzenButton>
         </div>
