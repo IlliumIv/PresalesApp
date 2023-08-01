@@ -681,12 +681,11 @@ namespace PresalesApp.Web.Controllers
             }
 
             var profit = presalesFromDb?.Sum(p => p.SumProfit(from, to)) ?? 0;
-            var profitPrevDay = presalesFromDb?.Sum(p => p.SumProfit(from, to.AddDays(-1))) ?? 0;
+            var dailyIncrease = presalesFromDb?.Sum(p => p.SumProfit(DateTime.UtcNow.Date, to)) ?? 0;
 
             db.Dispose();
 
-            return (profit, DailyIncrease: profit - profitPrevDay > 0 ?
-                profit - profitPrevDay : 0, Presales: filteredPresales.ToArray());
+            return (profit, dailyIncrease, Presales: filteredPresales.ToArray());
         }
     }
 }
