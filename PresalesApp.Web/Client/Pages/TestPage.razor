@@ -7,7 +7,7 @@
     <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
 </div>
 <p>@reply?.Message</p>
-<PeriodPicker SelectedPeriod="System.Enum.Parse<PeriodType>(period)" />
+<PeriodPicker />
 <div style="width: 500px;height: 500px">
     <PieChart @ref="pieChart" TItem="double" />
 </div>
@@ -15,9 +15,6 @@
 @code {
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
-
-    [Parameter, SupplyParameterFromQuery(Name = "period")]
-    public string? period { get; set; }
 
     HelloReply? reply;
 

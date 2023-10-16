@@ -1,13 +1,9 @@
 ﻿namespace PresalesApp.Web.Server.Authorization
 {
-    public class TokenParameters
+    public class TokenParameters(AppSettings settings)
     {
-        private readonly AppSettings _settings;
+        private readonly AppSettings _settings = settings;
 
-        public TokenParameters(AppSettings settings)
-        {
-            _settings = settings;
-        }
         public string Issuer => _settings.Issuer; // Издатель
         public string Audience => _settings.Audience; // Подписчик
         public string SecretKey => _settings.SecretKey;
