@@ -1,9 +1,6 @@
-﻿using Blazorise;
-using Microsoft.VisualBasic;
-using PresalesApp.Web.Client.Shared.DropDown;
-using PresalesApp.Web.Client.Helpers;
+﻿using PresalesApp.Web.Client.Shared.DropDown;
 using PresalesApp.Web.Client.Enums;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using PresalesApp.Web.Client.Helpers;
 
 namespace PresalesApp.Web.Client.Shared
 {
@@ -22,7 +19,7 @@ namespace PresalesApp.Web.Client.Shared
 
         List<DropDownItem<DateTime>> items = new();
 
-        CustomRadzenDropDown<DropDownItem<DateTime>> itemsDropDown;
+        CustomRadzenDropDown<DropDownItem<DateTime>?> itemsDropDown;
 
         DropDownItem<DateTime>? selectedItem;
 
