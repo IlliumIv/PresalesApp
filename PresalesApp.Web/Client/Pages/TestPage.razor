@@ -1,12 +1,13 @@
 ﻿@page "/testpage"
 @using PresalesApp.Bridge1C
+@using PresalesApp.Web.Client.Enums
 
 <div class="d-flex">
     <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=DoSomething>Say Hello</RadzenButton>
     <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
 </div>
 <p>@reply?.Message</p>
-<PeriodPicker />
+<PeriodPicker SelectedPeriod="System.Enum.Parse<PeriodType>(period)" />
 <div style="width: 500px;height: 500px">
     <PieChart @ref="pieChart" TItem="double" />
 </div>
@@ -14,6 +15,9 @@
 @code {
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "period")]
+    public string? period { get; set; }
 
     HelloReply? reply;
 

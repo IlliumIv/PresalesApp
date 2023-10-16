@@ -5,6 +5,7 @@ using PresalesApp.Database.Entities;
 using PresalesApp.Web.Authorization;
 using PresalesApp.Web.Server.Authorization;
 using Serilog;
+using System.IdentityModel.Tokens.Jwt;
 using static PresalesApp.Database.DbController;
 
 namespace PresalesApp.Web.Server.Startup
@@ -42,6 +43,7 @@ namespace PresalesApp.Web.Server.Startup
             .AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = true;
+                options.UseSecurityTokenValidators = true;
                 options.SecurityTokenValidators.Add(new JwtTokenValidator(tokenParams));
             });
 
