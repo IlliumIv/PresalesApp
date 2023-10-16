@@ -4,8 +4,10 @@
 <div class="d-flex">
     <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=DoSomething>Say Hello</RadzenButton>
     <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
+    <PeriodPicker/>
 </div>
 <p>@reply?.Message</p>
+<PeriodPicker />
 <div style="width: 500px;height: 500px">
     <PieChart @ref="pieChart" TItem="double" />
 </div>

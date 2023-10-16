@@ -312,4 +312,34 @@
   <data name="ProjectLastFunnelActionText" xml:space="preserve">
     <value>Last action date</value>
   </data>
+  <data name="PreviousWeekText" xml:space="preserve">
+    <value>Previous week</value>
+  </data>
+  <data name="NextWeekText" xml:space="preserve">
+    <value>Next week</value>
+  </data>
+  <data name="QuarterText" xml:space="preserve">
+    <value>{0} quarter {1}</value>
+  </data>
+  <data name="PreviousYearsText" xml:space="preserve">
+    <value>Previous years...</value>
+  </data>
+  <data name="NextYearsText" xml:space="preserve">
+    <value>The following years...</value>
+  </data>
+  <data name="PeriodTypeDayText" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="PeriodTypeMonthText" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="PeriodTypeQuarterText" xml:space="preserve">
+    <value>Quarter</value>
+  </data>
+  <data name="PeriodTypeYearText" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="PeriodTypeArbitraryText" xml:space="preserve">
+    <value>Arbitrary</value>
+  </data>
 </root>
