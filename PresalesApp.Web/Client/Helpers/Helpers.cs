@@ -81,7 +81,7 @@ namespace PresalesApp.Web.Client.Helpers
         public static string ToOneDateString(Timestamp a, Timestamp b) =>
             $"{(a.ToDateTime() == DateTime.MinValue ? b.ToDateTime().ToPresaleTime() : a.ToDateTime().ToPresaleTime())}";
 
-        public static string ToUpperFirstLetterString(string value) => value.Length switch
+        public static string ToUpperFirstLetterString(this string value) => value.Length switch
         {
             0 => value,
             1 => char.ToUpper(value[0]).ToString(),
