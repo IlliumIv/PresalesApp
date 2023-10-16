@@ -2,13 +2,13 @@
 @using PresalesApp.Web.Client.Enums
 @using PresalesApp.Web.Client.Shared.DropDown
 
-<RadzenDropDown Data=@periodTypes @bind-Value=@selectedPeriod Change="DropDown0Change">
+<RadzenDropDown Data=@periodTypes @bind-Value=@SelectedPeriod Change="SelectedPeriodChanged">
     <Template>
         @(((PeriodType)context).GetLocalizedName(Localization))
     </Template>
 </RadzenDropDown>
 @{
-    if (selectedPeriod == PeriodType.Arbitrary)
+    if (SelectedPeriod == PeriodType.Arbitrary)
     {
         <RadzenDatePicker @bind-Value=@begin/>
         <RadzenDatePicker @bind-Value=@end/>
