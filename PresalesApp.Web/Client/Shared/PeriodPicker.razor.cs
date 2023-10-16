@@ -1,6 +1,7 @@
 ﻿using PresalesApp.Web.Client.Shared.DropDown;
 using PresalesApp.Web.Client.Enums;
 using PresalesApp.Web.Client.Helpers;
+using Microsoft.AspNetCore.Components;
 
 namespace PresalesApp.Web.Client.Shared
 {
@@ -11,7 +12,8 @@ namespace PresalesApp.Web.Client.Shared
         static readonly string yearFormat = "yyyy";
         static readonly IEnumerable<PeriodType> periodTypes = Enum.GetValues(typeof(PeriodType)).Cast<PeriodType>();
 
-        static PeriodType selectedPeriod = PeriodType.Arbitrary;
+        [Parameter, EditorRequired]
+        public PeriodType SelectedPeriod { get; set; }
 
         DateTime begin = DateTime.Now;
 
@@ -26,14 +28,14 @@ namespace PresalesApp.Web.Client.Shared
         protected override void OnInitialized()
         {
             selectedItem = new(DateTime.Now, DateTime.Now.ToString(dayFormat).ToUpperFirstLetterString());
-            items = GenerateItems(DateTime.Now, selectedPeriod);
+            items = GenerateItems(DateTime.Now, SelectedPeriod);
         }
 
         protected async Task DropDown1Change(object item)
         {
             if (items.First() == item || items.Last() == item)
             {
-                items = GenerateItems(((DropDownItem<DateTime>)item).Value, selectedPeriod);
+                items = GenerateItems(((DropDownItem<DateTime>)item).Value, SelectedPeriod);
                 selectedItem = null;
                 await itemsDropDown.CustomOpenPopup();
             }
@@ -41,8 +43,6 @@ namespace PresalesApp.Web.Client.Shared
 
         List<DropDownItem<DateTime>> GenerateItems(DateTime start, PeriodType selectedPeriod)
         {
-            Console.WriteLine("GenerateItems");
-
             List<DropDownItem<DateTime>> result = new();
             begin = start;
 
@@ -110,7 +110,7 @@ namespace PresalesApp.Web.Client.Shared
             return result.OrderBy(x => x.Value).ToList();
         }
 
-        protected void DropDown0Change(object args) =>
-            items = GenerateItems(selectedItem?.Value ?? DateTime.Now, selectedPeriod);
+        protected void SelectedPeriodChanged(object args) =>
+            items = GenerateItems(selectedItem?.Value ?? DateTime.Now, SelectedPeriod);
     }
 }

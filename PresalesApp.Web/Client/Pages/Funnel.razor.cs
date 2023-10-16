@@ -10,11 +10,11 @@ namespace PresalesApp.Web.Client.Pages
 {
     public partial class Funnel
     {
-        string SetCellColor(Project project) =>
+        static string SetCellColor(Project project) =>
             !project.Actions.Any(a => a.SalesFunnel) || project.FunnelStage == FunnelStage.None ? "--rz-danger" : "--rz-text-color";
 
         [CascadingParameter]
-        public MessageSnackbar messageHandler { get; set; }
+        public MessageSnackbar MessageHandler { get; set; }
 
         protected override async Task OnParametersSetAsync() => await UpdateData();
 
@@ -61,7 +61,7 @@ namespace PresalesApp.Web.Client.Pages
             }
             catch (Exception e)
             {
-                await messageHandler.Show(e.Message);
+                await MessageHandler.Show(e.Message);
             }
 
             StateHasChanged();
