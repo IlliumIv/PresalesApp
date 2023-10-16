@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
+using PresalesApp.Web.Client.Enums;
 using PresalesApp.Web.Shared;
 using System.Globalization;
 using System.Text;
@@ -213,6 +214,16 @@ namespace PresalesApp.Web.Client.Helpers
             ProjectStatus.WorkInProgress => localization["ProjectStatusWorkInProgressText"],
             ProjectStatus.Won => localization["ProjectStatusWonText"],
             ProjectStatus.Loss => localization["ProjectStatusLossText"],
+            _ => throw new NotImplementedException()
+        };
+
+        public static string GetLocalizedName(this PeriodType periodType, IStringLocalizer<App> localization) => periodType switch
+        {
+            PeriodType.Day => localization["PeriodTypeDayText"],
+            PeriodType.Month => localization["PeriodTypeMonthText"],
+            PeriodType.Quarter => localization["PeriodTypeQuarterText"],
+            PeriodType.Year => localization["PeriodTypeYearText"],
+            PeriodType.Arbitrary => localization["PeriodTypeArbitraryText"],
             _ => throw new NotImplementedException()
         };
 
