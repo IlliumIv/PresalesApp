@@ -1,0 +1,20 @@
+﻿@using System.Globalization
+@using PresalesApp.Web.Client.Enums
+@using PresalesApp.Web.Client.Shared.DropDown
+
+<RadzenDropDown Data=@periodTypes @bind-Value=@selectedPeriod Change="DropDown0Change">
+    <Template>
+        @(((PeriodType)context).GetLocalizedName(Localization))
+    </Template>
+</RadzenDropDown>
+@{
+    if (selectedPeriod == PeriodType.Arbitrary)
+    {
+        <RadzenDatePicker @bind-Value=@begin/>
+        <RadzenDatePicker @bind-Value=@end/>
+    }
+    else
+    {
+        <CustomRadzenDropDown @ref="itemsDropDown" Data=@items @bind-Value=@selectedItem TextProperty="Text" Change="@DropDown1Change" />
+    }
+}

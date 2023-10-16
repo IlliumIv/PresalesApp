@@ -393,4 +393,34 @@
   <data name="ProjectLastFunnelActionText" xml:space="preserve">
     <value>Дата последнего действия</value>
   </data>
+  <data name="PreviousWeekText" xml:space="preserve">
+    <value>Предыдущая неделя</value>
+  </data>
+  <data name="NextWeekText" xml:space="preserve">
+    <value>Следующая неделя</value>
+  </data>
+  <data name="QuarterText" xml:space="preserve">
+    <value>{0} квартал {1}</value>
+  </data>
+  <data name="PreviousYearsText" xml:space="preserve">
+    <value>Предыдущие годы...</value>
+  </data>
+  <data name="NextYearsText" xml:space="preserve">
+    <value>Последующие годы...</value>
+  </data>
+  <data name="PeriodTypeDayText" xml:space="preserve">
+    <value>День</value>
+  </data>
+  <data name="PeriodTypeMonthText" xml:space="preserve">
+    <value>Месяц</value>
+  </data>
+  <data name="PeriodTypeQuarterText" xml:space="preserve">
+    <value>Квартал</value>
+  </data>
+  <data name="PeriodTypeYearText" xml:space="preserve">
+    <value>Год</value>
+  </data>
+  <data name="PeriodTypeArbitraryText" xml:space="preserve">
+    <value>Произвольный</value>
+  </data>
 </root>
