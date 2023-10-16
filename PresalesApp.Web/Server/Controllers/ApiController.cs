@@ -213,7 +213,7 @@ namespace PresalesApp.Web.Controllers
             foreach (var invoice in invoices.OrderBy(i => (int)i.Counterpart[0]).ThenBy(i => i.Counterpart).ThenBy(i => i.Number))
             {
                 HashSet<PresaleAction> actionsIgnored = new(), actionsTallied = new();
-                HashSet<Database.Entities.Project> projectsIgnored = new(), projectsFound = new();
+                HashSet<Project> projectsIgnored = new(), projectsFound = new();
 
                 var percent = invoice.Project?.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound) switch
                 {
