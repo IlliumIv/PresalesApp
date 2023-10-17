@@ -8,68 +8,97 @@ namespace PresalesApp.Web.Client.Shared
 {
     public partial class PeriodPicker
     {
-        static readonly string dayFormat = "ddd, dd MMMM yyyy";
-        static readonly string monthFormat = "MMMM yyyy";
-        static readonly string yearFormat = "yyyy";
-        static readonly IEnumerable<PeriodType> periodTypes = Enum.GetValues(typeof(PeriodType)).Cast<PeriodType>();
+        const string dayFormat = "ddd, dd MMMM yyyy";
+        const string monthFormat = "MMMM yyyy";
+        const string yearFormat = "yyyy";
+        const string queryDateTimeFormat = "yyyy-MM-ddTHH-mm-ss";
+        readonly IEnumerable<PeriodType> periodTypes = Enum.GetValues(typeof(PeriodType)).Cast<PeriodType>();
 
-        [Parameter, SupplyParameterFromQuery]
-        public string? period { get; set; }
-        PeriodType SelectedPeriod { get; set; }
+        [Parameter, EditorRequired]
+        public Dictionary<string, object?> Params { get; set; }
 
-        [Parameter, SupplyParameterFromQuery]
-        public string? from { get; set; }
+        #region From
+        string? from { get; set; }
+
+        [Parameter, EditorRequired]
+        public string FromQueryName { get; set; }
 
         [Parameter]
-        public EventCallback<DateTime> FromChangedCallback { get; set; }
+        public EventCallback<DateTime> FromChanged { get; set; }
 
         public DateTime From
         {
             get
             {
-                return DateTime.TryParse(from, CultureInfo.InvariantCulture, out var result) ? result : DateTime.Now;
+                if (DateTime.TryParseExact(from, queryDateTimeFormat,
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var result)) return result;
+                From = DateTime.Now;
+                return From;
             }
             set
             {
-                from = value.ToString(CultureInfo.InvariantCulture);
-                Navigation.NavigateTo(
-                    Navigation.GetUriWithQueryParameters(
-                        new Dictionary<string, object?>
-                        {
-                            ["from"] = From.ToString(CultureInfo.InvariantCulture),
-                            ["to"] = To.ToString(CultureInfo.InvariantCulture),
-                            ["period"] = SelectedPeriod.ToString(),
-                        }));
-                FromChangedCallback.InvokeAsync(value);
+                from = value.ToString(queryDateTimeFormat);
+                Params[FromQueryName] = from;
+                Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(Params));
+                FromChanged.InvokeAsync(value);
             }
         }
+        #endregion
 
-        [Parameter, SupplyParameterFromQuery]
-        public string? to { get; set; }
+        #region To
+        string? to { get; set; }
+
+        [Parameter, EditorRequired]
+        public string ToQueryName { get; set; }
 
         [Parameter]
-        public EventCallback<DateTime> ToChangedCallback { get; set; }
+        public EventCallback<DateTime> ToChanged { get; set; }
 
         public DateTime To
         {
             get
             {
-                return DateTime.TryParse(to, CultureInfo.InvariantCulture, out var result) ? result : DateTime.Now;
+                if (DateTime.TryParseExact(to, queryDateTimeFormat,
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var result)) return result;
+                To = DateTime.Now;
+                return To;
             }
             set
             {
-                to = value.ToString(CultureInfo.InvariantCulture);
-                Navigation.NavigateTo(
-                    Navigation.GetUriWithQueryParameters(
-                        new Dictionary<string, object?>
-                        {
-                            ["from"] = From.ToString(CultureInfo.InvariantCulture),
-                            ["to"] = To.ToString(CultureInfo.InvariantCulture),
-                            ["period"] = SelectedPeriod.ToString(),
-                        }));
-                ToChangedCallback.InvokeAsync(value);
+                to = value.ToString(queryDateTimeFormat);
+                Params[ToQueryName] = to;
+                Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(Params));
+                ToChanged.InvokeAsync(value);
             }
         }
+        #endregion
+
+        #region Period
+        string? period { get; set; }
+
+        [Parameter, EditorRequired]
+        public string PeriodQueryName { get; set; }
+
+        [Parameter]
+        public EventCallback<PeriodType> PeriodChanged { get; set; }
+
+        public PeriodType Period
+        {
+            get
+            {
+                if (Enum.TryParse(period, out PeriodType type)) return type;
+                Period = PeriodType.Arbitrary;
+                return Period;
+            }
+            set
+            {
+                period = value.ToString();
+                Params[PeriodQueryName] = period;
+                Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(Params));
+                PeriodChanged.InvokeAsync(value);
+            }
+        }
+        #endregion
 
         List<DropDownItem<DateTime>> items = [];
         CustomRadzenDropDown<DropDownItem<DateTime>?> itemsDropDown;
@@ -77,9 +106,8 @@ namespace PresalesApp.Web.Client.Shared
 
         protected override void OnInitialized()
         {
-            SelectedPeriod = Enum.TryParse(period, out PeriodType type) ? type : PeriodType.Arbitrary;
             selectedItem = new(DateTime.Now, DateTime.Now.ToString(dayFormat).ToUpperFirstLetterString());
-            items = GenerateItems(From, SelectedPeriod);
+            items = GenerateItems(From, Period);
         }
 
         protected async Task DropDown1Change(object item)
@@ -87,7 +115,7 @@ namespace PresalesApp.Web.Client.Shared
             if (items.First() == item || items.Last() == item)
                 await itemsDropDown.CustomOpenPopup();
 
-            items = GenerateItems(((DropDownItem<DateTime>)item).Value, SelectedPeriod);
+            items = GenerateItems(((DropDownItem<DateTime>)item).Value, Period);
         }
 
         List<DropDownItem<DateTime>> GenerateItems(DateTime start, PeriodType selectedPeriod)
@@ -168,7 +196,7 @@ namespace PresalesApp.Web.Client.Shared
 
         protected void SelectedPeriodChanged()
         {
-            items = GenerateItems(selectedItem?.Value ?? From, SelectedPeriod);
+            items = GenerateItems(selectedItem?.Value ?? From, Period);
         }
     }
 }

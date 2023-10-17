@@ -9,6 +9,7 @@
 
 @code {
     private int year = DateTime.Now.Year;
+
     private void OnYearChanged(object? obj)
     {
         if (int.TryParse(obj?.ToString(), out year))
