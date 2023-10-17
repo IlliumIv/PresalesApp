@@ -1,15 +1,9 @@
 ﻿namespace PresalesApp.Web.Client.Shared.DropDown
 {
-    public class DropDownItem<T>
+    public class DropDownItem<T>(T value, string text)
     {
-        public T Value { get; set; }
+        public T Value { get; set; } = value;
 
-        public string Text { get; set; }
-
-        public DropDownItem(T value, string text)
-        {
-            Value = value;
-            Text = text;
-        }
+        public string Text { get; set; } = text;
     }
 }

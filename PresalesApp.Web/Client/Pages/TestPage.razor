@@ -7,7 +7,11 @@
     <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
 </div>
 <p>@reply?.Message</p>
-<PeriodPicker />
+<PeriodPicker @ref=picker1 FromQueryName="from1" ToQueryName="to1" PeriodQueryName="period1" Params="Params" />
+<br>
+<PeriodPicker @ref=picker2 FromQueryName="from2" ToQueryName="to2" PeriodQueryName="period2" Params="Params" />
+<br>
+<Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="DoSmt">Log Values</Button>
 <div style="width: 500px;height: 500px">
     <PieChart @ref="pieChart" TItem="double" />
 </div>
@@ -16,7 +20,30 @@
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
 
+    PeriodPicker picker1;
+    PeriodPicker picker2;
+
+    void DoSmt()
+    {
+        Console.WriteLine(picker1.From);
+        Console.WriteLine(picker1.To);
+        Console.WriteLine(picker1.Period);
+        Console.WriteLine(picker2.From);
+        Console.WriteLine(picker2.To);
+        Console.WriteLine(picker2.Period);
+    }
+
     HelloReply? reply;
+
+    Dictionary<string, object?> Params = new()
+        {
+            ["from1"] = null,
+            ["from2"] = null,
+            ["to1"] = null,
+            ["to2"] = null,
+            ["period1"] = null,
+            ["period2"] = null,
+        };
 
     async void DoSomething() => await HandleSayHello();
     protected override async Task OnAfterRenderAsync(bool firstRender)
