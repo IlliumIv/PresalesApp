@@ -1,51 +1,107 @@
 ﻿@page "/testpage"
 @using PresalesApp.Bridge1C
 @using PresalesApp.Web.Client.Enums
+@using System.Globalization
+@using Period = PresalesApp.Web.Client.Helpers.Period
 
 <div class="d-flex">
     <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=DoSomething>Say Hello</RadzenButton>
     <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
 </div>
 <p>@reply?.Message</p>
-<PeriodPicker @ref=picker1 FromQueryName="from1" ToQueryName="to1" PeriodQueryName="period1" Params="Params" />
-<br>
-<PeriodPicker @ref=picker2 FromQueryName="from2" ToQueryName="to2" PeriodQueryName="period2" Params="Params" />
-<br>
-<Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="DoSmt">Log Values</Button>
+<p>@Period.Start - @Period.End, @Period.Type --- @counter</p>
+<PeriodPicker Period="@Period" PeriodChanged="OnPeriodChanged" />
+<RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=CleanStorage>Clean Storage</RadzenButton>
 <div style="width: 500px;height: 500px">
     <PieChart @ref="pieChart" TItem="double" />
 </div>
 
 @code {
+    HelloReply? reply;
+
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
 
-    PeriodPicker picker1;
-    PeriodPicker picker2;
+    int counter = 0;
 
-    void DoSmt()
+    const string queryFrom = "from";
+
+    [SupplyParameterFromQuery(Name = queryFrom)]
+    public string? from { get; set; }
+
+    const string queryTo = "to";
+
+    [SupplyParameterFromQuery(Name = queryTo)]
+    public string? to { get; set; }
+
+    const string queryPeriod = "period";
+
+    [SupplyParameterFromQuery(Name = queryPeriod)]
+    public string? period { get; set; }
+
+    public Period Period = new(DateTime.Now, PeriodType.Arbitrary);
+
+    void CleanStorage()
     {
-        Console.WriteLine(picker1.From);
-        Console.WriteLine(picker1.To);
-        Console.WriteLine(picker1.Period);
-        Console.WriteLine(picker2.From);
-        Console.WriteLine(picker2.To);
-        Console.WriteLine(picker2.Period);
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}");
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}");
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}");
     }
 
-    HelloReply? reply;
+    async void DoSomething() => await HandleSayHello();
 
-    Dictionary<string, object?> Params = new()
+    Dictionary<string, object?> queryKeyValues => new()
         {
-            ["from1"] = null,
-            ["from2"] = null,
-            ["to1"] = null,
-            ["to2"] = null,
-            ["period1"] = null,
-            ["period2"] = null,
+            [queryPeriod] = Period.Type.ToString(),
+            [queryFrom] = Period.Start.ToString(Helpers.UriDateTimeFormat),
+            [queryTo] = Period.End.ToString(Helpers.UriDateTimeFormat),
         };
 
-    async void DoSomething() => await HandleSayHello();
+    void OnPeriodChanged(Period period)
+    {
+        Period = period;
+
+        Storage.SetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}", Period.Start);
+        Storage.SetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}", Period.End);
+        Storage.SetItem<PeriodType>($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}", Period.Type);
+
+        counter++;
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(queryKeyValues));
+    }
+
+    protected override void OnInitialized()
+    {
+        if (DateTime.TryParseExact(from, Helpers.UriDateTimeFormat,
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
+        {
+            Period.Start = dt;
+            Storage.SetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}", Period.Start);
+        }
+        else if (Storage.ContainKey($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}"))
+            Period.Start = Storage.GetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}");
+
+        if (DateTime.TryParseExact(to, Helpers.UriDateTimeFormat,
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+        {
+            Period.End = dt;
+            Storage.SetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}", Period.End);
+        }
+        else if (Storage.ContainKey($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}"))
+            Period.End = Storage.GetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}");
+
+        if (System.Enum.TryParse<PeriodType>(period, out var pt))
+        {
+            Period.Type = pt;
+            Storage.SetItem<PeriodType>($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}", Period.Type);
+        }
+        else if (Storage.ContainKey($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}"))
+            Period.Type = Storage.GetItem<PeriodType>($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}");
+
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(queryKeyValues));
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -87,7 +143,7 @@
                 // CubicInterpolationMode = "monotone",
             };
     }
-     
+
     string[] Labels = { "Red", "Blue", "Yellow", "Green", "Purple", "Orange" };
     List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
     List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
@@ -95,12 +151,14 @@
     {
         var r = new Random(DateTime.Now.Millisecond);
 
-        return new List<double> {
+        return new List<double>
+        {
             r.Next( 3, 50 ) * r.NextDouble(),
             r.Next( 3, 50 ) * r.NextDouble(),
             r.Next( 3, 50 ) * r.NextDouble(),
             r.Next( 3, 50 ) * r.NextDouble(),
             r.Next( 3, 50 ) * r.NextDouble(),
-            r.Next( 3, 50 ) * r.NextDouble() };
+            r.Next( 3, 50 ) * r.NextDouble()
+        };
     }
 }

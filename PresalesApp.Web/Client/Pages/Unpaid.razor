@@ -8,7 +8,7 @@
 <p>@Localization["UnpaidPageDescription"]</p>
 <div class="d-flex">
     <ComboBox_PresalesNames OnSelectCallback="@(async (string name) => { presale_name = name; await UpdateData();})" />
-    <DateOnly_Period Period="period" OnPeriodChangedCallback="(async (Period period) => { this.period = period; await UpdateData();})" />
+    <PeriodPicker Period="@Period" PeriodChanged="@(async (period) => { Period = period; await UpdateData(); } )" />
     <input title="Учитывать счета в основных проектах" type="checkbox"
             id="lookAtMains" value="@is_main_project_include"
             @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
@@ -74,12 +74,7 @@ else
     private string presale_name = string.Empty;
     private bool is_main_project_include = false;
 
-    private static readonly DateOnly first_day = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
-    private Period period = new Period
-        {
-            From = first_day,
-            To = first_day.AddMonths(1).AddDays(-1)
-        };
+    Period Period = new Period(new(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
 
     private Dictionary<string, object> downloadBtnAttrs { get; set; } = new() { { "disabled", "disabled" } };
 
@@ -93,7 +88,7 @@ else
             {
                 IsMainProjectInclude = is_main_project_include,
                 PresaleName = presale_name,
-                Period = period.Translate()
+                Period = Period.Translate()
             });
             downloadBtnAttrs = new();
         }
