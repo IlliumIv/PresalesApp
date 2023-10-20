@@ -10,7 +10,7 @@
 <div class="overview">
     <div class="legend">
         <fieldset class="salesTarget">
-            <legend>План @Format(current.From) - @Format(current.To)</legend>
+            <legend>План @Format(Current.Start) - @Format(Current.End)</legend>
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.CurrentSalesTarget)
@@ -18,7 +18,7 @@
                 }</p>
         </fieldset>
         <fieldset class="actualProfit">
-            <legend>Факт @Format(current.From) - @Format(current.To)</legend>
+            <legend>Факт @Format(Current.Start) - @Format(Current.End)</legend>
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.CurrentActualProfit)
@@ -26,7 +26,7 @@
                 }</p>
         </fieldset>
         <fieldset class="previousActualProfit">
-            <legend>Факт @Format(previous.From) - @Format(previous.To)</legend>
+            <legend>Факт @Format(Previous.Start) - @Format(Previous.End)</legend>
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.PreviousActualProfit)
@@ -84,18 +84,16 @@
 <div class="params d-flex">
     <div class="@class_hide">
         <label>Предыдущий период:</label>
-        <DateOnly_Period Period="previous"
-                         OnPeriodChangedCallback="(async (Period period) => {previous = period; await HandleRedrawChart();})">
-        </DateOnly_Period>
+        <PeriodPicker Period="@Previous" PeriodChanged="(async (period) => { Previous = period; await HandleRedrawChart(); })" />
+        <p />
         <label>Текущий период:</label>
-        <DateOnly_Period Period="current"
-                         OnPeriodChangedCallback="(async (Period period) => {current = period; await HandleRedrawChart();})">
-        </DateOnly_Period>
+        <PeriodPicker Period="@Current" PeriodChanged="(async (period) => { Current = period; await HandleRedrawChart(); })" />
+        <p />
         <button class="btn btn-primary" title="@title_pin" @onclick="PinParams">
-            <span class="oi oi-pin @class_rotatePin"></span>
+            <span class="oi oi-pin @class_rotatePin" />
         </button>
         <button class="btn btn-primary" title="Обновить данные" @onclick="HandleRedrawChart">
-            <span class="oi oi-reload"></span>
+            <span class="oi oi-reload" />
         </button>
     </div>
 </div>
@@ -110,23 +108,13 @@
     private SalesOverview? overview;
     private static List<string> dataset_сolors = new() { };
 
-    private static readonly DateOnly first_day = new DateOnly(DateTime.Now.Year, ((DateTime.Now.Month - 1) / 3 + 1) * 3 - 2, 1);
-
-    private static Period current = new Period
-        {
-            From = first_day,
-            To = first_day.AddMonths(3).AddDays(-1)
-        };
-
-    private static Period previous = new Period
-        {
-            From = first_day.AddYears(-1),
-            To = first_day.AddYears(-1).AddMonths(3).AddDays(-1)
-        };
+    static DateTime first_day = new DateTime(DateTime.Now.Year, ((DateTime.Now.Month - 1) / 3 + 1) * 3 - 2, 1);
+    private static Period Current = new(first_day, Enums.PeriodType.Quarter);
+    private static Period Previous = new(first_day.AddYears(-1), Enums.PeriodType.Quarter);
 
     PieChart<decimal> profitChart;
 
-    private string Format(DateOnly date) => $"{date:dd.MM.yyyy}";
+    private string Format(DateTime date) => $"{date:dd.MM.yyyy}";
 
     private void PinParams()
     {
@@ -152,8 +140,8 @@
         {
             overview = await AppApi.GetSalesOverviewAsync(new SalesOverviewRequest
                 {
-                    Previous = previous.Translate(),
-                    Current = current.Translate()
+                    Previous = Previous.Translate(),
+                    Current = Current.Translate()
                 });
         }
         catch
@@ -181,14 +169,14 @@
 
     async Task HandleRedrawChart()
     {
-        if (previous.From > previous.To)
+        if (Previous.Start > Previous.End)
         {
             await messageHandler.Show("Начало предыдущего периода должно быть меньше окончания!");
             StateHasChanged();
             return;
         }
 
-        if (current.From > current.To)
+        if (Current.Start > Current.End)
         {
             await messageHandler.Show("Начало текущего периода должно быть меньше окончания!");
             StateHasChanged();

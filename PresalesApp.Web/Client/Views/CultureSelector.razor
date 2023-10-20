@@ -16,10 +16,10 @@
             new CultureInfo("en-US")
     };
 
-    private async void OnChanged(object? obj)
+    private void OnChanged(object? obj)
     {
         var newCulture = new CultureInfo(obj?.ToString() ?? "ru-RU");
-        await Storage.SetItemAsStringAsync("i18nextLng", newCulture.Name);
+        Storage.SetItemAsString("i18nextLng", newCulture.Name);
         Navigation.NavigateTo(Navigation.Uri, true);
     }
 }

@@ -83,12 +83,7 @@
 
     private static DateTime firstDay => new(DateTime.Now.Year, DateTime.Now.Month, 1);
     private static DateTime lastDay => firstDay.AddMonths(1).AddSeconds(-1);
-
-    private Period period = new Period
-        {
-            From = DateOnly.FromDateTime(firstDay),
-            To = DateOnly.FromDateTime(lastDay)
-        };
+    private Period period = new(firstDay, lastDay);
 
     private string chart_options => "{\"cutout\":\"30%\",\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
 
@@ -117,8 +112,8 @@
             if (count > 600)
             {
                 count = 0;
-                period.From = DateOnly.FromDateTime(firstDay);
-                period.To = DateOnly.FromDateTime(lastDay);
+                period.Start = firstDay;
+                period.End = lastDay;
                 await UpdateData(period);
                 await UpdateImage();
                 await RedrawChart();

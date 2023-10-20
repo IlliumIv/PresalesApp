@@ -8,7 +8,7 @@
 
 <h1>@Localization["SpreadsheetPage"]</h1>
 <div class="d-flex">
-    <DateOnly_Period Period="period" OnPeriodChangedCallback="(async (Period period) => {this.period = period; await UpdateData();})" />
+    <PeriodPicker Period="@Period" PeriodChanged="@(async (period) => { Period = period; await UpdateData(); } )" />
     <ComboBox_Departments OnSelectCallback="(async (Department department) => {this.department = department; await UpdateData();})" />
     <ComboBox_Positions OnSelectCallback="(async (Position position) => {this.position = position; await UpdateData();})" />
     <input title="Только действующие" type="checkbox" id="onlyActive" value="@only_active"
@@ -25,7 +25,7 @@ else
         <thead class="pmthead">
             <tr>
                 <th rowspan="2" style="width:11%">Пресейл</th>
-                <th colspan="10">@Helpers.ToUpperFirstLetterString(period_name)</th>
+                <th colspan="10">@Period.GetLocalizedPeriodName(Localization)</th>
                 <th rowspan="2" style="width:5%" title="@title_abandoned">Abnd</th>
                 <th rowspan="2" style="width:6%" title="@title_avg_time_to_win">AvgTTW</th>
                 <th rowspan="2" style="width:5%" title="@title_avg_rank">AvgR</th>
@@ -122,12 +122,7 @@ else
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
 
-    private static readonly DateOnly first_day = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
-    private Period period = new Period
-        {
-            From = first_day,
-            To = first_day.AddMonths(1).AddDays(-1)
-        };
+    private Period Period = new(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
 
     private Department department = Department.Any;
     private Position position = Position.Any;
@@ -135,7 +130,7 @@ else
     private bool only_active = true;
     private PeriodicTimer periodic_timer = new(TimeSpan.FromMinutes(10));
     #region Descriptions
-    private string title_in_work => $"В работе (есть действия за {period_name})";
+    private string title_in_work => $"В работе (есть действия за {Period.GetLocalizedPeriodName(Localization)})";
     private readonly string title_assign = "Назначено";
     private readonly string title_won = "Выиграно";
     private readonly string title_loss = "Проиграно";
@@ -146,7 +141,6 @@ else
     private readonly string title_avg_rank = "Средний ранг проектов";
     private readonly string title_time_spend = "Потрачено времени на проекты, суммарно в часах";
     private readonly string title_avt_time_spend = "Потрачено времени на проекты, в среднем в часах";
-    private string period_name => period.From >= first_day && period.To <= first_day.AddMonths(1).AddDays(-1) ? Helpers.CurMonthName : "выбранный период";
     #endregion
 
     private string Format(Project project) =>
@@ -170,7 +164,7 @@ else
                     OnlyActive = only_active,
                     Department = department,
                     Position = position,
-                    Period = period.Translate()
+                    Period = Period.Translate()
                 });
             StateHasChanged();
         }
