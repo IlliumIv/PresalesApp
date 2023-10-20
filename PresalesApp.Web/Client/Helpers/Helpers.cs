@@ -13,6 +13,10 @@ namespace PresalesApp.Web.Client.Helpers
 {
     public static partial class Helpers
     {
+        public const string DayFormat = "ddd, dd MMMM yyyy";
+        public const string MonthFormat = "MMMM yyyy";
+        public const string YearFormat = "yyyy";
+        public const string UriDateTimeFormat = "yyyyMMddTHHmmss"; // ISO_8601
         public static string CurMonthName => $"{DateTime.Now:MMMM}";
 
         [GeneratedRegex("\\s+")]
@@ -20,7 +24,7 @@ namespace PresalesApp.Web.Client.Helpers
 
         public static string GetFirstAndLastName(this string name) => string.Join(" ", DeleteMultipleSpaces().Replace(name, " ").Split().Take(2));
 
-        public static string ToMinMaxFormatString(DateOnly? value) => $"{value:yyyy-MM-dd}";
+        public static string ToMinMaxFormatString(DateTime? value) => $"{value:yyyy-MM-dd}";
 
         public static string ToCurrencyString(this decimal value, bool allowNegatives = false, CultureInfo? cultureInfo = null)
         {
@@ -102,7 +106,7 @@ namespace PresalesApp.Web.Client.Helpers
                 Convert.ToBase64String(data));
         }
 
-        public async static Task Download(this Kpi? kpi, IJSRuntime js, string presaleName, int month, int year, IStringLocalizer<App> localization)
+        public async static Task Download(this Kpi? kpi, IJSRuntime js, string presaleName, Period period, IStringLocalizer<App> localization)
         {
             if (kpi == null) return;
 
@@ -129,17 +133,17 @@ namespace PresalesApp.Web.Client.Helpers
                 {
                     text += $"{project.Number}, ";
                 }
-                if (invoice.ProjectsFound.Any()) text = text[..^2];
+                if (invoice.ProjectsFound.Count != 0) text = text[..^2];
                 text += "\n";
             }
 
             byte[] bytes = Encoding.UTF8.GetBytes(text);
-            byte[] result = Encoding.UTF8.GetPreamble().Concat(bytes).ToArray();
+            byte[] result = [.. Encoding.UTF8.GetPreamble(), .. bytes];
             UTF8Encoding encoder = new(true);
             text = encoder.GetString(result);
-            await SaveAs(js, $"{(MarkupString)localization["KpiReportFileName",
-                        ToUpperFirstLetterString(DateTimeFormatInfo.CurrentInfo.GetMonthName(month)),
-                        year, presaleName.GetFirstAndLastName()].Value}.csv", Encoding.UTF8.GetBytes(text));
+
+            await SaveAs(js, $"{(MarkupString)localization["KpiReportFileName", period.GetLocalizedPeriodName(localization),
+                presaleName.GetFirstAndLastName()].Value}.csv", Encoding.UTF8.GetBytes(text));
         }
 
         public async static Task Download(this UnpaidProjects? projects, IJSRuntime js, IStringLocalizer<App> localization)
@@ -167,11 +171,29 @@ namespace PresalesApp.Web.Client.Helpers
             }
 
             byte[] bytes = Encoding.UTF8.GetBytes(text);
-            byte[] result = Encoding.UTF8.GetPreamble().Concat(bytes).ToArray();
+            byte[] result = [.. Encoding.UTF8.GetPreamble(), .. bytes];
             UTF8Encoding encoder = new(true);
             text = encoder.GetString(result);
             await SaveAs(js, $"{(MarkupString)localization["UnpaidReportFileName", DateTime.Now].Value}.csv", Encoding.UTF8.GetBytes(text));
         }
+
+        public static string GetLocalizedPeriodName(this Period period, IStringLocalizer<App> localization) => period.Type switch
+        {
+            PeriodType.Day => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization),
+            PeriodType.Month => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization),
+            PeriodType.Quarter => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization),
+            PeriodType.Year => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization),
+            _ => $"{period.Start} - {period.End}".ToUpperFirstLetterString()
+        };
+
+        public static string GetLocalizedDateNameByPeriodType(this DateTime dt, PeriodType periodType, IStringLocalizer<App> localization) => periodType switch
+        {
+            PeriodType.Day => dt.ToString(DayFormat).ToUpperFirstLetterString(),
+            PeriodType.Month => dt.ToString(MonthFormat).ToUpperFirstLetterString(),
+            PeriodType.Quarter => $"{localization["QuarterText", (dt.Month - 1) / 3 + 1, dt.Year].Value}".ToUpperFirstLetterString(),
+            PeriodType.Year => dt.ToString(YearFormat).ToUpperFirstLetterString(),
+            _ => $"{dt}"
+        };
 
         public static string GetLocalizedName(this Department department, IStringLocalizer<App> localization) => department switch
         {
@@ -246,6 +268,6 @@ namespace PresalesApp.Web.Client.Helpers
             $"], \"{project.Name}\"";
 
         public static string SetColor(Invoice invoice) =>
-            invoice.ProjectsIgnored.Any() || invoice.ActionsIgnored.Any() || (decimal)invoice.Profit == 0 ? "red" : "inherit";
+            invoice.ProjectsIgnored.Count != 0 || invoice.ActionsIgnored.Count != 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
     }
 }
