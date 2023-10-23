@@ -298,7 +298,7 @@ namespace PresalesApp.Web.Client.Helpers
 
         public static void SetFromQueryOrStorage(string? value, string query, string uri, ISyncLocalStorageService storage, ref string param)
         {
-            if (value is not null && value.IsNullOrEmpty())
+            if (value is not null && !value.IsNullOrEmpty())
             {
                 param = value;
                 storage.SetItemAsString($"{new Uri(uri).LocalPath}.{query}", param);
