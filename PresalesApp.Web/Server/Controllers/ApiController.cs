@@ -30,13 +30,17 @@ using AppApi = PresalesApp.Web.Shared.Api;
 namespace PresalesApp.Web.Controllers
 {
     [Authorize]
-    public class ApiController : AppApi.ApiBase
+    public class ApiController(
+        RoleManager<IdentityRole> roleManager,
+        UserManager<User> userManager,
+        TokenParameters tokenParameters,
+        ILogger<ApiController> logger) : AppApi.ApiBase
     {
         private readonly bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly UserManager<User> _userManager;
-        private readonly TokenParameters _tokenParameters;
-        private readonly ILogger<ApiController> _logger;
+        private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+        private readonly UserManager<User> _userManager = userManager;
+        private readonly TokenParameters _tokenParameters = tokenParameters;
+        private readonly ILogger<ApiController> _logger = logger;
 
         private const decimal _handicap = (decimal)1.3;
         private static readonly Dictionary<(DateTime Start, DateTime End), (decimal Value, DateTime CalculationTime)> _salesTargetCache = [];
@@ -55,6 +59,8 @@ namespace PresalesApp.Web.Controllers
             SourceName = "Unsplash",
             AuthorUrl = @"https://unsplash.com/@ganinph",
             SourceUrl = @"https://unsplash.com/",
+            Liked = false,
+            Id = "wGENt52EEnU"
         };
         private static ImageResponse _cashedImageNY = new()
         {
@@ -70,18 +76,6 @@ namespace PresalesApp.Web.Controllers
             AuthorUrl = @"https://unsplash.com/@mero_dnt",
             SourceUrl = @"https://unsplash.com/",
         };
-
-        public ApiController(
-            RoleManager<IdentityRole> roleManager,
-            UserManager<User> userManager,
-            TokenParameters tokenParameters,
-            ILogger<ApiController> logger)
-        {
-            _roleManager = roleManager;
-            _userManager = userManager;
-            _tokenParameters = tokenParameters;
-            _logger = logger;
-        }
 
         [AllowAnonymous]
         public override async Task<LoginResponse> Register(RegisterRequest request, ServerCallContext context)
@@ -462,6 +456,7 @@ namespace PresalesApp.Web.Controllers
                     "happy new year" => _cashedImageNY,
                     _ => _cashedImageGirl
                 };
+
                 var _img = new ImageResponse
                 {
                     Raw = response.urls.raw,
@@ -475,7 +470,10 @@ namespace PresalesApp.Web.Controllers
                     AuthorUrl = $"{response.user.links.html}",
                     SourceName = "Unsplash",
                     SourceUrl = @"https://unsplash.com/",
+                    Liked = response.liked_by_user,
+                    Id = response.id
                 };
+
                 switch (request.Keyword)
                 {
                     case "happy new year":
@@ -485,6 +483,7 @@ namespace PresalesApp.Web.Controllers
                         _cashedImageGirl = _img;
                         break;
                 }
+
                 return _img;
             }
             catch
