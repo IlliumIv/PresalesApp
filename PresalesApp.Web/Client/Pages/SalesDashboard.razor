@@ -120,7 +120,7 @@
     [SupplyParameterFromQuery(Name = q_curr_end)] public string? curr_end { get; set; }
 
     const string q_curr_period_type = "cPeriod";
-    [SupplyParameterFromQuery(Name = q_curr_end)] public string? curr_period_type { get; set; }
+    [SupplyParameterFromQuery(Name = q_curr_period_type)] public string? curr_period_type { get; set; }
 
     Dictionary<string, object?> queryKeyValues => new()
         {
