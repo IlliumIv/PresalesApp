@@ -69,9 +69,9 @@
 
     protected override void OnInitialized()
     {
-        Helpers.SetFromQueryOrStorage(query: from, queryName: queryFrom, uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
-        Helpers.SetFromQueryOrStorage(query: to, queryName: queryTo, uri: Navigation.Uri, storage: Storage, param: ref Period.End);
-        Helpers.SetFromQueryOrStorage(query: period, queryName: queryPeriod, uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
+        Helpers.SetFromQueryOrStorage(value: from, query: queryFrom, uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
+        Helpers.SetFromQueryOrStorage(value: to, query: queryTo, uri: Navigation.Uri, storage: Storage, param: ref Period.End);
+        Helpers.SetFromQueryOrStorage(value: period, query: queryPeriod, uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(queryKeyValues));
     }

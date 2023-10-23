@@ -203,13 +203,13 @@
 
     protected override void OnInitialized()
     {
-        Helpers.SetFromQueryOrStorage(query: prev_start, queryName: q_prev_start, uri: Navigation.Uri, storage: Storage, param: ref Previous.Start);
-        Helpers.SetFromQueryOrStorage(query: prev_end, queryName: q_prev_end, uri: Navigation.Uri, storage: Storage, param: ref Previous.End);
-        Helpers.SetFromQueryOrStorage(query: prev_period_type, queryName: q_prev_period_type, uri: Navigation.Uri, storage: Storage, param: ref Previous.Type);
+        Helpers.SetFromQueryOrStorage(value: prev_start, query: q_prev_start, uri: Navigation.Uri, storage: Storage, param: ref Previous.Start);
+        Helpers.SetFromQueryOrStorage(value: prev_end, query: q_prev_end, uri: Navigation.Uri, storage: Storage, param: ref Previous.End);
+        Helpers.SetFromQueryOrStorage(value: prev_period_type, query: q_prev_period_type, uri: Navigation.Uri, storage: Storage, param: ref Previous.Type);
 
-        Helpers.SetFromQueryOrStorage(query: curr_start, queryName: q_curr_start, uri: Navigation.Uri, storage: Storage, param: ref Current.Start);
-        Helpers.SetFromQueryOrStorage(query: curr_end, queryName: q_curr_end, uri: Navigation.Uri, storage: Storage, param: ref Current.End);
-        Helpers.SetFromQueryOrStorage(query: curr_period_type, queryName: q_curr_period_type, uri: Navigation.Uri, storage: Storage, param: ref Current.Type);
+        Helpers.SetFromQueryOrStorage(value: curr_start, query: q_curr_start, uri: Navigation.Uri, storage: Storage, param: ref Current.Start);
+        Helpers.SetFromQueryOrStorage(value: curr_end, query: q_curr_end, uri: Navigation.Uri, storage: Storage, param: ref Current.End);
+        Helpers.SetFromQueryOrStorage(value: curr_period_type, query: q_curr_period_type, uri: Navigation.Uri, storage: Storage, param: ref Current.Type);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(queryKeyValues));
 

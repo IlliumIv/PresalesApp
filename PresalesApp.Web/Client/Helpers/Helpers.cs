@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using Blazorise.Extensions;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
@@ -271,28 +272,39 @@ namespace PresalesApp.Web.Client.Helpers
         public static string SetColor(Invoice invoice) =>
             invoice.ProjectsIgnored.Count != 0 || invoice.ActionsIgnored.Count != 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
 
-        public static void SetFromQueryOrStorage(string? query, string queryName, string uri, ISyncLocalStorageService storage, ref DateTime param)
+        public static void SetFromQueryOrStorage(string? value, string query, string uri, ISyncLocalStorageService storage, ref DateTime param)
         {
-            if (DateTime.TryParseExact(query, UriDateTimeFormat,
+            if (DateTime.TryParseExact(value, UriDateTimeFormat,
                     CultureInfo.InvariantCulture, DateTimeStyles.None, out var p))
             {
                 param = p;
-                storage.SetItem($"{new Uri(uri).LocalPath}.{queryName}", param);
+                storage.SetItem($"{new Uri(uri).LocalPath}.{query}", param);
             }
-            else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{queryName}"))
-                param = storage.GetItem<DateTime>($"{new Uri(uri).LocalPath}.{queryName}");
+            else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{query}"))
+                param = storage.GetItem<DateTime>($"{new Uri(uri).LocalPath}.{query}");
         }
 
-        public static void SetFromQueryOrStorage<TEnum>(string? query, string queryName, string uri, ISyncLocalStorageService storage, ref TEnum param)
+        public static void SetFromQueryOrStorage<TEnum>(string? value, string query, string uri, ISyncLocalStorageService storage, ref TEnum param)
             where TEnum : struct
         {
-            if (System.Enum.TryParse(query, out TEnum p))
+            if (System.Enum.TryParse(value, out TEnum p))
             {
                 param = p;
-                storage.SetItem($"{new Uri(uri).LocalPath}.{queryName}", param);
+                storage.SetItem($"{new Uri(uri).LocalPath}.{query}", param);
             }
-            else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{queryName}"))
-                param = storage.GetItem<TEnum>($"{new Uri(uri).LocalPath}.{queryName}");
+            else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{query}"))
+                param = storage.GetItem<TEnum>($"{new Uri(uri).LocalPath}.{query}");
+        }
+
+        public static void SetFromQueryOrStorage(string? value, string query, string uri, ISyncLocalStorageService storage, ref string param)
+        {
+            if (value is not null && value.IsNullOrEmpty())
+            {
+                param = value;
+                storage.SetItemAsString($"{new Uri(uri).LocalPath}.{query}", param);
+            }
+            else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{query}"))
+                param = storage.GetItemAsString($"{new Uri(uri).LocalPath}.{query}");
         }
     }
 }
