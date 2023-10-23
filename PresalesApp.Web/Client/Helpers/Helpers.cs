@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Blazored.LocalStorage;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
@@ -177,22 +178,22 @@ namespace PresalesApp.Web.Client.Helpers
             await SaveAs(js, $"{(MarkupString)localization["UnpaidReportFileName", DateTime.Now].Value}.csv", Encoding.UTF8.GetBytes(text));
         }
 
-        public static string GetLocalizedPeriodName(this Period period, IStringLocalizer<App> localization) => period.Type switch
+        public static string GetLocalizedPeriodName(this Period period, IStringLocalizer<App> localization, bool showTime = true) => period.Type switch
         {
-            PeriodType.Day => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization),
-            PeriodType.Month => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization),
-            PeriodType.Quarter => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization),
-            PeriodType.Year => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization),
-            _ => $"{period.Start} - {period.End}".ToUpperFirstLetterString()
+            PeriodType.Day => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization, showTime),
+            PeriodType.Month => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization, showTime),
+            PeriodType.Quarter => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization, showTime),
+            PeriodType.Year => GetLocalizedDateNameByPeriodType(period.Start, period.Type, localization, showTime),
+            _ => $"{(showTime ? $"{period.Start}" : $"{period.Start:d}")} - {(showTime ? $"{period.End}" : $"{period.End:d}")}".ToUpperFirstLetterString()
         };
 
-        public static string GetLocalizedDateNameByPeriodType(this DateTime dt, PeriodType periodType, IStringLocalizer<App> localization) => periodType switch
+        public static string GetLocalizedDateNameByPeriodType(this DateTime dt, PeriodType periodType, IStringLocalizer<App> localization, bool showTime = true) => periodType switch
         {
             PeriodType.Day => dt.ToString(DayFormat).ToUpperFirstLetterString(),
             PeriodType.Month => dt.ToString(MonthFormat).ToUpperFirstLetterString(),
             PeriodType.Quarter => $"{localization["QuarterText", (dt.Month - 1) / 3 + 1, dt.Year].Value}".ToUpperFirstLetterString(),
             PeriodType.Year => dt.ToString(YearFormat).ToUpperFirstLetterString(),
-            _ => $"{dt}"
+            _ => $"{(showTime ? $"{dt}" : $"{dt:d}")}"
         };
 
         public static string GetLocalizedName(this Department department, IStringLocalizer<App> localization) => department switch
@@ -269,5 +270,29 @@ namespace PresalesApp.Web.Client.Helpers
 
         public static string SetColor(Invoice invoice) =>
             invoice.ProjectsIgnored.Count != 0 || invoice.ActionsIgnored.Count != 0 || (decimal)invoice.Profit == 0 ? "red" : "inherit";
+
+        public static void SetFromQueryOrStorage(string? query, string queryName, string uri, ISyncLocalStorageService storage, ref DateTime param)
+        {
+            if (DateTime.TryParseExact(query, UriDateTimeFormat,
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var p))
+            {
+                param = p;
+                storage.SetItem($"{new Uri(uri).LocalPath}.{queryName}", param);
+            }
+            else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{queryName}"))
+                param = storage.GetItem<DateTime>($"{new Uri(uri).LocalPath}.{queryName}");
+        }
+
+        public static void SetFromQueryOrStorage<TEnum>(string? query, string queryName, string uri, ISyncLocalStorageService storage, ref TEnum param)
+            where TEnum : struct
+        {
+            if (System.Enum.TryParse(query, out TEnum p))
+            {
+                param = p;
+                storage.SetItem($"{new Uri(uri).LocalPath}.{queryName}", param);
+            }
+            else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{queryName}"))
+                param = storage.GetItem<TEnum>($"{new Uri(uri).LocalPath}.{queryName}");
+        }
     }
 }

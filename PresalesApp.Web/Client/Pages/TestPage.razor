@@ -24,20 +24,23 @@
 
     int counter = 0;
 
+    #region UriQuery
     const string queryFrom = "from";
-
-    [SupplyParameterFromQuery(Name = queryFrom)]
-    public string? from { get; set; }
+    [SupplyParameterFromQuery(Name = queryFrom)] public string? from { get; set; }
 
     const string queryTo = "to";
-
-    [SupplyParameterFromQuery(Name = queryTo)]
-    public string? to { get; set; }
+    [SupplyParameterFromQuery(Name = queryTo)] public string? to { get; set; }
 
     const string queryPeriod = "period";
+    [SupplyParameterFromQuery(Name = queryPeriod)] public string? period { get; set; }
 
-    [SupplyParameterFromQuery(Name = queryPeriod)]
-    public string? period { get; set; }
+    Dictionary<string, object?> queryKeyValues => new()
+        {
+            [queryFrom] = Period.Start.ToString(Helpers.UriDateTimeFormat),
+            [queryTo] = Period.End.ToString(Helpers.UriDateTimeFormat),
+            [queryPeriod] = Period.Type.ToString(),
+        };
+    # endregion
 
     public Period Period = new(DateTime.Now, PeriodType.Arbitrary);
 
@@ -50,20 +53,13 @@
 
     async void DoSomething() => await HandleSayHello();
 
-    Dictionary<string, object?> queryKeyValues => new()
-        {
-            [queryPeriod] = Period.Type.ToString(),
-            [queryFrom] = Period.Start.ToString(Helpers.UriDateTimeFormat),
-            [queryTo] = Period.End.ToString(Helpers.UriDateTimeFormat),
-        };
-
     void OnPeriodChanged(Period period)
     {
         Period = period;
 
-        Storage.SetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}", Period.Start);
-        Storage.SetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}", Period.End);
-        Storage.SetItem<PeriodType>($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}", Period.Type);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}", Period.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}", Period.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}", Period.Type);
 
         counter++;
 
@@ -72,42 +68,16 @@
 
     protected override void OnInitialized()
     {
-        if (DateTime.TryParseExact(from, Helpers.UriDateTimeFormat,
-                CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
-        {
-            Period.Start = dt;
-            Storage.SetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}", Period.Start);
-        }
-        else if (Storage.ContainKey($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}"))
-            Period.Start = Storage.GetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}");
-
-        if (DateTime.TryParseExact(to, Helpers.UriDateTimeFormat,
-                CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
-        {
-            Period.End = dt;
-            Storage.SetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}", Period.End);
-        }
-        else if (Storage.ContainKey($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}"))
-            Period.End = Storage.GetItem<DateTime>($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}");
-
-        if (System.Enum.TryParse<PeriodType>(period, out var pt))
-        {
-            Period.Type = pt;
-            Storage.SetItem<PeriodType>($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}", Period.Type);
-        }
-        else if (Storage.ContainKey($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}"))
-            Period.Type = Storage.GetItem<PeriodType>($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}");
-
+        Helpers.SetFromQueryOrStorage(query: from, queryName: queryFrom, uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
+        Helpers.SetFromQueryOrStorage(query: to, queryName: queryTo, uri: Navigation.Uri, storage: Storage, param: ref Period.End);
+        Helpers.SetFromQueryOrStorage(query: period, queryName: queryPeriod, uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(queryKeyValues));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            await HandleRedraw();
-        }
+        if (firstRender) await HandleRedraw();
     }
 
     async Task HandleSayHello()

@@ -5,9 +5,9 @@ namespace PresalesApp.Web.Client.Helpers
 {
     public class Period(DateTime start, DateTime end, PeriodType periodType = PeriodType.Arbitrary)
     {
-        public DateTime Start { get; set; } = start;
-        public DateTime End { get; set; } = end;
-        public PeriodType Type { get; set; } = periodType;
+        public DateTime Start = start;
+        public DateTime End = end;
+        public PeriodType Type = periodType;
 
         public Period(DateTime start, PeriodType periodType)
             : this(start, periodType switch
