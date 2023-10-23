@@ -1,0 +1,26 @@
+﻿@using System.Reflection
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject IJSRuntime js
+
+<div class="page" style="display: flex">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex">
+            <Profile />
+            <CultureSelector />
+            <div>v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
+            <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
+                          Click=@(async () => await js.InvokeAsync<object>("open", new []
+                          { "https://git.127.0.0.1/polyakov/PresalesApp/issues/new", "_blank" }))>
+                @Localization["SuggestImprovementsButtonText"]
+                </RadzenButton>
+        </div>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
