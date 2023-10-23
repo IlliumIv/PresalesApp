@@ -196,20 +196,20 @@ namespace PresalesApp.Web.Controllers
                 return new KpiResponse { Error = new Error { Message = "Пресейл не найден в базе данных." } };
 
 
-            HashSet<Project> projects = new();
+            HashSet<Project> projects = [];
             RecursiveLoad(presale.Projects?.ToList(), db, ref projects);
 
             presale.SumProfit(from, to, out var invoices);
 
-            if (invoices == null || !invoices.Any())
+            if (invoices == null || invoices.Count == 0)
                 return new KpiResponse();
 
             var reply = new Kpi();
 
             foreach (var invoice in invoices.OrderBy(i => (int)i.Counterpart[0]).ThenBy(i => i.Counterpart).ThenBy(i => i.Number))
             {
-                HashSet<PresaleAction> actionsIgnored = new(), actionsTallied = new();
-                HashSet<Project> projectsIgnored = new(), projectsFound = new();
+                HashSet<PresaleAction> actionsIgnored = [], actionsTallied = [];
+                HashSet<Project> projectsIgnored = [], projectsFound = [];
 
                 var percent = invoice.Project?.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound) switch
                 {
@@ -299,7 +299,7 @@ namespace PresalesApp.Web.Controllers
                     || (department != Shared.Department.Any && p.Department == department.Translate())))
                 .ToList();
 
-            List<Project> projects = new();
+            List<Project> projects = [];
             foreach (var presale in presales)
                 if (presale.Projects != null)
                     projects.AddRange(presale.Projects);
@@ -573,15 +573,15 @@ namespace PresalesApp.Web.Controllers
             {
                 await db.Projects
                     .Where(p => p.Status == ProjectStatus.Won && p.ClosedAt >= from && p.ClosedAt <= to &&
-                        !p.Invoices!.Any(i => i.ProfitPeriods!.Any()) && p.MainProject != null &&
-                        !p.MainProject!.Invoices!.Any(i => i.ProfitPeriods!.Any()))
+                        !p.Invoices!.Any(i => i.ProfitPeriods!.Count != 0) && p.MainProject != null &&
+                        !p.MainProject!.Invoices!.Any(i => i.ProfitPeriods!.Count != 0))
                     .Where(p => presale_name != string.Empty ? p.Presale!.Name == presale_name : p.Presale!.IsActive == true).LoadAsync();
             }
             else
             {
                 await db.Projects
                     .Where(p => p.Status == ProjectStatus.Won && p.ClosedAt >= from && p.ClosedAt <= to &&
-                        !p.Invoices!.Any(i => i.ProfitPeriods!.Any()))
+                        !p.Invoices!.Any(i => i.ProfitPeriods!.Count != 0))
                     .Where(p => presale_name != string.Empty ? p.Presale!.Name == presale_name : p.Presale!.IsActive == true).LoadAsync();
             }
 
@@ -629,8 +629,7 @@ namespace PresalesApp.Web.Controllers
             foreach (var project in projects)
             {
                 if (project == null) continue;
-                if (projectsViewed.Contains(project)) continue;
-                else projectsViewed.Add(project);
+                if (!projectsViewed.Add(project)) continue;
 
                 var some = db.PresaleActions?.Where(a => a.Project!.Number == project.Number)?.ToList();
 
