@@ -32,13 +32,15 @@ namespace PresalesApp.Web.Controllers
     [Authorize]
     public class ApiController : AppApi.ApiBase
     {
+        private readonly bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
         private readonly TokenParameters _tokenParameters;
         private readonly ILogger<ApiController> _logger;
 
         private const decimal _handicap = (decimal)1.3;
-        private static (decimal Value, DateTime CalculationTime) _cachedSalesTarget = (0, DateTime.MinValue);
+        private static readonly Dictionary<(DateTime Start, DateTime End), (decimal Value, DateTime CalculationTime)> _salesTargetCache = [];
+
         private static string _cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
         private static ImageResponse _cashedImageGirl = new()
         {
@@ -440,6 +442,8 @@ namespace PresalesApp.Web.Controllers
         [AllowAnonymous]
         public override async Task<ImageResponse> GetImage(ImageRequest request, ServerCallContext context)
         {
+            if (isDevelopment) return _cashedImageGirl;
+
             try
             {
                 var clientHandler = new HttpClientHandler()
@@ -499,12 +503,14 @@ namespace PresalesApp.Web.Controllers
 
             var (profit, dailyIncrease, presales) = await GetProfitStatistic(from, to, position, department, onlyActive);
 
-            if (_cachedSalesTarget.CalculationTime.Month < DateTime.Now.Month ||
-                _cachedSalesTarget.CalculationTime.Year < DateTime.Now.Year)
+            if (!_salesTargetCache.TryGetValue((from, to), out var value)
+                || value.CalculationTime.Month < DateTime.Now.Month
+                || value.CalculationTime.Year < DateTime.Now.Year)
             {
-                _cachedSalesTarget.Value = GetProfitStatistic(from.AddYears(-1), to.AddYears(-1), position, department, onlyActive)
-                    .Result.Profit * _handicap;
-                _cachedSalesTarget.CalculationTime = DateTime.Now;
+                _salesTargetCache[(from, to)] = (Value: GetProfitStatistic(
+                        from.AddYears(-1), to.AddYears(-1), position, department, onlyActive)
+                    .Result.Profit * _handicap,
+                    CalculationTime: DateTime.Now);
             }
 
             var reply = new MonthProfitOverview();
@@ -513,8 +519,8 @@ namespace PresalesApp.Web.Controllers
                 reply.Presales.Add(presale);
 
             reply.Profit = profit;
-            reply.Plan = _cachedSalesTarget.Value;
-            reply.Left = _cachedSalesTarget.Value - profit > 0 ? _cachedSalesTarget.Value - profit : 0;
+            reply.Plan = _salesTargetCache[(from, to)].Value;
+            reply.Left = _salesTargetCache[(from, to)].Value - profit > 0 ? _salesTargetCache[(from, to)].Value - profit : 0;
             reply.DeltaDay = dailyIncrease;
 
             return reply;
