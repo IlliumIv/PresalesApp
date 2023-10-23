@@ -96,7 +96,7 @@ else
                               Width="160px"
                               FilterValue=@_selectedStage>
                 <Template>
-                    <ProjectFunnelStageSelector Project=@context DataGrid=@grid OnChange="(() => StateHasChanged())" />
+                    <FunnelStagePicker Project=@context DataGrid=@grid OnChange="(() => StateHasChanged())" />
                 </Template>
                 <FilterTemplate>
                     <RadzenDropDown @bind-Value=@_selectedStage
