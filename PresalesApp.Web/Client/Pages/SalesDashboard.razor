@@ -1,6 +1,7 @@
 ﻿@page "/sales-dashboard"
 @using System.Threading
 @using Period = PresalesApp.Web.Client.Helpers.Period
+@using System.Globalization
 @implements IDisposable
 @layout InfographicsLayout
 @inject IJSRuntime js
@@ -10,7 +11,7 @@
 <div class="overview">
     <div class="legend">
         <fieldset class="salesTarget">
-            <legend>План @Format(Current.Start) - @Format(Current.End)</legend>
+            <legend>План @(Current.GetLocalizedPeriodName(Localization, false))</legend>
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.CurrentSalesTarget)
@@ -18,7 +19,7 @@
                 }</p>
         </fieldset>
         <fieldset class="actualProfit">
-            <legend>Факт @Format(Current.Start) - @Format(Current.End)</legend>
+            <legend>Факт @(Current.GetLocalizedPeriodName(Localization, false))</legend>
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.CurrentActualProfit)
@@ -26,7 +27,7 @@
                 }</p>
         </fieldset>
         <fieldset class="previousActualProfit">
-            <legend>Факт @Format(Previous.Start) - @Format(Previous.End)</legend>
+            <legend>Факт @(Previous.GetLocalizedPeriodName(Localization, false))</legend>
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.PreviousActualProfit)
@@ -69,7 +70,7 @@
                         {
                             var manager = item.manager;
                             <tr>
-                                <td><div style="background:@dataset_сolors[item.index]">&nbsp;</div></td>
+                                <td><div style="background:@dataset_colors[item.index]">&nbsp;</div></td>
                                 <td>@(item.index + 1). </td>
                                 <td>@manager.Name</td>
                                 <td>@Helpers.ToCurrencyString(manager.Profit)</td>
@@ -84,10 +85,10 @@
 <div class="params d-flex">
     <div class="@class_hide">
         <label>Предыдущий период:</label>
-        <PeriodPicker Period="@Previous" PeriodChanged="(async (period) => { Previous = period; await HandleRedrawChart(); })" />
+        <PeriodPicker Period="@Previous" PeriodChanged="(async (period) => { Previous = period; await OnPeriodChanged(); })" />
         <p />
         <label>Текущий период:</label>
-        <PeriodPicker Period="@Current" PeriodChanged="(async (period) => { Current = period; await HandleRedrawChart(); })" />
+        <PeriodPicker Period="@Current" PeriodChanged="(async (period) => { Current = period; await OnPeriodChanged(); })" />
         <p />
         <button class="btn btn-primary" title="@title_pin" @onclick="PinParams">
             <span class="oi oi-pin @class_rotatePin" />
@@ -102,11 +103,42 @@
     [CascadingParameter]
     public MessageSnackbar messageHandler { get; set; }
 
+    #region UriQuery
+    const string q_prev_start = "pStart";
+    [SupplyParameterFromQuery(Name = q_prev_start)] public string? prev_start { get; set; }
+
+    const string q_prev_end = "pEnd";
+    [SupplyParameterFromQuery(Name = q_prev_end)] public string? prev_end { get; set; }
+
+    const string q_prev_period_type = "pPeriod";
+    [SupplyParameterFromQuery(Name = q_prev_period_type)] public string? prev_period_type { get; set; }
+
+    const string q_curr_start = "cStart";
+    [SupplyParameterFromQuery(Name = q_curr_start)] public string? curr_start { get; set; }
+
+    const string q_curr_end = "cEnd";
+    [SupplyParameterFromQuery(Name = q_curr_end)] public string? curr_end { get; set; }
+
+    const string q_curr_period_type = "cPeriod";
+    [SupplyParameterFromQuery(Name = q_curr_end)] public string? curr_period_type { get; set; }
+
+    Dictionary<string, object?> queryKeyValues => new()
+        {
+            [q_prev_start] = Previous.Start.ToString(Helpers.UriDateTimeFormat),
+            [q_prev_end] = Previous.End.ToString(Helpers.UriDateTimeFormat),
+            [q_prev_period_type] = Previous.Type.ToString(),
+            [q_curr_start] = Current.Start.ToString(Helpers.UriDateTimeFormat),
+            [q_curr_end] = Current.End.ToString(Helpers.UriDateTimeFormat),
+            [q_curr_period_type] = Current.Type.ToString(),
+        };
+    #endregion
+
     private string title_pin = "Закрепить";
     private string class_hide = "hide";
     private string class_rotatePin = "rotatePin";
     private SalesOverview? overview;
-    private static List<string> dataset_сolors = new() { };
+    List<string> dataset_colors = new() { };
+    List<string> border_colors = new() { };
 
     static DateTime first_day = new DateTime(DateTime.Now.Year, ((DateTime.Now.Month - 1) / 3 + 1) * 3 - 2, 1);
     private static Period Current = new(first_day, Enums.PeriodType.Quarter);
@@ -114,7 +146,21 @@
 
     PieChart<decimal> profitChart;
 
-    private string Format(DateTime date) => $"{date:dd.MM.yyyy}";
+    async Task OnPeriodChanged()
+    {
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_prev_start}", Previous.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_prev_end}", Previous.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_prev_period_type}", Previous.Type);
+
+        
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_start}", Current.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_end}", Current.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_period_type}", Current.Type);
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(queryKeyValues));
+
+        await HandleRedrawChart();
+    }
 
     private void PinParams()
     {
@@ -154,7 +200,20 @@
 
     // private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = "happy new year", Orientation = ImageOrientation.Landscape });
 
-    protected override void OnInitialized() => RunTimer();
+    protected override void OnInitialized()
+    {
+        Helpers.SetFromQueryOrStorage(query: prev_start, queryName: q_prev_start, uri: Navigation.Uri, storage: Storage, param: ref Previous.Start);
+        Helpers.SetFromQueryOrStorage(query: prev_end, queryName: q_prev_end, uri: Navigation.Uri, storage: Storage, param: ref Previous.End);
+        Helpers.SetFromQueryOrStorage(query: prev_period_type, queryName: q_prev_period_type, uri: Navigation.Uri, storage: Storage, param: ref Previous.Type);
+
+        Helpers.SetFromQueryOrStorage(query: curr_start, queryName: q_curr_start, uri: Navigation.Uri, storage: Storage, param: ref Current.Start);
+        Helpers.SetFromQueryOrStorage(query: curr_end, queryName: q_curr_end, uri: Navigation.Uri, storage: Storage, param: ref Current.End);
+        Helpers.SetFromQueryOrStorage(query: curr_period_type, queryName: q_curr_period_type, uri: Navigation.Uri, storage: Storage, param: ref Current.Type);
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(queryKeyValues));
+
+        RunTimer();
+    }
     public void Dispose() => periodic_timer?.Dispose();
 
     string pieChartOptions => "{\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
@@ -187,7 +246,9 @@
         if (overview == null) return;
 
         await profitChart.Clear();
-        dataset_сolors = new List<string>();
+        dataset_colors = new List<string>();
+        border_colors = new List<string>();
+        float colors_alfa = 0.5f;
 
         var dataset = new List<decimal>();
         var rnd = new Random();
@@ -195,27 +256,36 @@
         foreach (var manager in overview.CurrentTopSalesManagers)
         {
             dataset.Add(manager.Profit);
-            dataset_сolors.Add(ChartColor.FromRgba(Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), 1));
+            var r = rnd.Next(255);
+            var g = rnd.Next(255);
+            var b = rnd.Next(255);
+            dataset_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), colors_alfa));
+            border_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), 1));
         }
 
         var sum = overview.CurrentTopSalesManagers.Sum(m => m.Profit);
         if (overview.CurrentActualProfit > sum)
         {
             dataset.Add(overview.CurrentActualProfit - sum);
-            dataset_сolors.Add(ChartColor.FromRgba(Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), Convert.ToByte(rnd.Next(255)), 1));
+            var r = rnd.Next(255);
+            var g = rnd.Next(255);
+            var b = rnd.Next(255);
+            dataset_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), colors_alfa));
+            border_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), 1));
         }
 
         if (overview.CurrentSalesTarget > overview.CurrentActualProfit)
         {
             dataset.Add(overview.CurrentSalesTarget - overview.CurrentActualProfit);
-            dataset_сolors.Add(ChartColor.FromRgba(240, 240, 240, 0));
+            dataset_colors.Add(ChartColor.FromRgba(240, 240, 240, colors_alfa));
+            border_colors.Add(ChartColor.FromRgba(240, 240, 240, 1));
         }
 
         await profitChart.AddDatasetsAndUpdate(new PieChartDataset<decimal>()
             {
                 Data = dataset,
-                BackgroundColor = dataset_сolors,
-                // BorderColor = ChartColor.FromRgba(0, 0, 0, 1),
+                BackgroundColor = dataset_colors,
+                BorderColor = border_colors
                 // BorderAlign = "center",
                 // BorderWidth = 1,
             });
