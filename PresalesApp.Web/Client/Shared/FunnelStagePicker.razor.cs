@@ -6,7 +6,7 @@ using Radzen.Blazor;
 
 namespace PresalesApp.Web.Client.Shared
 {
-    public partial class ProjectFunnelStageSelector
+    public partial class FunnelStagePicker
     {
 
         [CascadingParameter]
