@@ -32,10 +32,10 @@ namespace PresalesApp.Web.Client.Shared
         {
             switch (Period.Type)
             {
-                case PeriodType.Day: GenerateDaysSet(selectedItemDT); break;
-                case PeriodType.Month: GenerateMonthsSet(selectedItemDT); break;
-                case PeriodType.Quarter: GenerateQuartersSet(selectedItemDT); break;
-                case PeriodType.Year: GenerateYearsSet(selectedItemDT); break;
+                case PeriodType.Day: GenerateDaysSet(selectedItemDT, shoudInvokeCallback); break;
+                case PeriodType.Month: GenerateMonthsSet(selectedItemDT, shoudInvokeCallback); break;
+                case PeriodType.Quarter: GenerateQuartersSet(selectedItemDT, shoudInvokeCallback); break;
+                case PeriodType.Year: GenerateYearsSet(selectedItemDT, shoudInvokeCallback); break;
                 case PeriodType.Arbitrary: if (shoudInvokeCallback) PeriodChanged.InvokeAsync(Period); break;
                 default: break;
             }
