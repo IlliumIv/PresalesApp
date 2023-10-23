@@ -2,14 +2,9 @@
 
 namespace PresalesApp.Web.Server
 {
-    public class AppSettings : Settings
+    public class AppSettings(IConfiguration configuration) : Settings(configuration)
     {
-        private readonly IConfiguration _configuration;
-
-        public AppSettings(IConfiguration configuration) : base(configuration)
-        {
-            _configuration = configuration;
-        }
+        private readonly IConfiguration _configuration = configuration;
 
         public string Issuer => _configuration.GetValue<string>("TokenParameters:Issuer") ?? string.Empty;
         public string Audience => _configuration.GetValue<string>("TokenParameters:Audience") ?? string.Empty;
