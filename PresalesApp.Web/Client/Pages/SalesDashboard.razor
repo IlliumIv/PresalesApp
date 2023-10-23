@@ -9,7 +9,17 @@
 <PageTitle>@Localization["SalesDashboardPage"]</PageTitle>
 
 <div class="overview">
-    <div class="legend">
+        <div class="legend">
+            <fieldset class="previousActualProfit">
+                <legend>Факт @(Previous.GetLocalizedPeriodName(Localization, false))</legend>
+                <p>
+                    @if (overview != null)
+                {
+                    @Helpers.ToCurrencyString(overview.PreviousActualProfit)
+                    ;
+                }
+            </p>
+        </fieldset>
         <fieldset class="salesTarget">
             <legend>План @(Current.GetLocalizedPeriodName(Localization, false))</legend>
             <p>@if (overview != null)
@@ -23,14 +33,6 @@
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.CurrentActualProfit)
-                    ;
-                }</p>
-        </fieldset>
-        <fieldset class="previousActualProfit">
-            <legend>Факт @(Previous.GetLocalizedPeriodName(Localization, false))</legend>
-            <p>@if (overview != null)
-                {
-                    @Helpers.ToCurrencyString(overview.PreviousActualProfit)
                     ;
                 }</p>
         </fieldset>
@@ -152,7 +154,6 @@
         Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_prev_end}", Previous.End);
         Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_prev_period_type}", Previous.Type);
 
-        
         Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_start}", Current.Start);
         Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_end}", Current.End);
         Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_period_type}", Current.Type);
