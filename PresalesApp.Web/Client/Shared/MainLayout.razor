@@ -13,8 +13,8 @@
             <CultureSelector />
             <div>v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
             <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
-                Click=@(async () => await js.InvokeAsync<object>("open", new object[]
-                          { "http://127.0.0.1:3000/polyakov/PresalesApp/issues/new", "_blank" }))>
+                Click=@(async () => await js.InvokeAsync<object>("open", new []
+                          { "https://git.127.0.0.1/polyakov/PresalesApp/issues/new", "_blank" }))>
                 @Localization["SuggestImprovementsButtonText"]
                 </RadzenButton>
         </div>
