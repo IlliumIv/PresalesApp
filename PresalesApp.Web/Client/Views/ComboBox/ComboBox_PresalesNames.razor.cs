@@ -6,14 +6,16 @@ namespace PresalesApp.Web.Client.Views.ComboBox
 {
     partial class ComboBox_PresalesNames
     {
-        [Parameter]
-        public EventCallback<string> OnSelectCallback { get; set; }
-
         [CascadingParameter]
         public MessageSnackbar GlobalMsgHandler { get; set; }
 
+        [Parameter]
+        public EventCallback<string> OnSelectCallback { get; set; }
+
+        [Parameter]
+        public string SelectedPresale {  get; set; } = string.Empty;
+
         private NamesResponse? presales;
-        private string selectedName = string.Empty;
 
         protected override async Task OnInitializedAsync()
         {
@@ -29,8 +31,8 @@ namespace PresalesApp.Web.Client.Views.ComboBox
 
         private void OnPresaleChanged(object? obj)
         {
-            selectedName = obj?.ToString() ?? string.Empty;
-            OnSelectCallback.InvokeAsync(selectedName);
+            SelectedPresale = obj?.ToString() ?? string.Empty;
+            OnSelectCallback.InvokeAsync(SelectedPresale);
         }
     }
 }

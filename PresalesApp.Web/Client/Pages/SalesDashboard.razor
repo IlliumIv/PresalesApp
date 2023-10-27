@@ -15,7 +15,6 @@
                     @if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.PreviousActualProfit)
-                    ;
                 }
             </p>
         </fieldset>
@@ -24,7 +23,6 @@
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.CurrentSalesTarget)
-                    ;
                 }</p>
         </fieldset>
         <fieldset class="actualProfit">
@@ -32,7 +30,6 @@
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.CurrentActualProfit)
-                    ;
                 }</p>
         </fieldset>
         <fieldset class="increase">
@@ -40,7 +37,6 @@
             <p>@if (overview != null)
                 {
                     @Helpers.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true)
-                    ;
                 }</p>
         </fieldset>
     </div>
@@ -56,7 +52,6 @@
                     @if (overview != null)
                     {
                         @Helpers.ToPercentString(overview.CurrentSalesTarget != 0 ? decimal.ToDouble(overview.CurrentActualProfit / overview.CurrentSalesTarget) : 0)
-                        ;
                     }
                 </p>
             </div>
