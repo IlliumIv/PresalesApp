@@ -10,7 +10,7 @@ namespace PresalesApp.Web.Client.Shared
     {
 
         [CascadingParameter]
-        public MessageSnackbar messageHandler { get; set; }
+        public MessageSnackbar GlobalMsgHandler { get; set; }
 
         [Parameter, EditorRequired]
         public Project Project { get; set; }
@@ -69,7 +69,7 @@ namespace PresalesApp.Web.Client.Shared
             _selectedStage = Project.FunnelStage;
             _disabled = false;
 
-            await messageHandler.Show(message, color);
+            await GlobalMsgHandler.Show(message, color);
 
             if (isExpanded) { await DataGrid.ExpandRows(new Project[] { Project }); }
             await OnChange.InvokeAsync((FunnelStage)stage);

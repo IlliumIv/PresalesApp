@@ -8,32 +8,34 @@
     </div>
 
     <main>
-        <div class="top-row px-4 d-flex">
-            <Profile />
-            <CultureSelector />
-            <div>v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
-            <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
-                Click=@(async () => await js.InvokeAsync<object>("open", new []
-                          { "https://git.127.0.0.1/polyakov/PresalesApp/issues/new", "_blank" }))>
-                @Localization["SuggestImprovementsButtonText"]
+        <CascadingValue Value="@GlobalMsgHandler">
+            <MessageSnackbar @ref=GlobalMsgHandler />
+            <div class="top-row px-4 d-flex">
+                <Profile />
+                <CultureSelector />
+                <div>v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
+                <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
+                              Click=@(async () => await js.InvokeAsync<object>("open", new []
+                              { "https://git.127.0.0.1/polyakov/PresalesApp/issues/new", "_blank" }))>
+                    @Localization["SuggestImprovementsButtonText"]
                 </RadzenButton>
-        </div>
-        <AuthorizeView>
-            <Authorized>
-                <article class="content px-4">
-                    @Body
-                </article>
-            </Authorized>
-            <NotAuthorized>
-                <article class="content px-4">
-                    <PresalesApp.Web.Client.Pages.Index />
-                </article>
-            </NotAuthorized>
-        </AuthorizeView>
+            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <article class="content px-4">
+                        @Body
+                    </article>
+                </Authorized>
+                <NotAuthorized>
+                    <article class="content px-4">
+                        <PresalesApp.Web.Client.Pages.Index />
+                    </article>
+                </NotAuthorized>
+            </AuthorizeView>
+        </CascadingValue>
     </main>
 </div>
 
 @code {
-    [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    private MessageSnackbar GlobalMsgHandler = new();
 }

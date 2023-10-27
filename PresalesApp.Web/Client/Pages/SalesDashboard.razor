@@ -103,7 +103,7 @@
 
 @code {
     [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    public MessageSnackbar GlobalMsgHandler { get; set; }
 
     #region UriQuery
     const string q_prev_start = "pStart";
@@ -193,7 +193,7 @@
         }
         catch
         {
-            await messageHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+            await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
             StateHasChanged();
             return;
         }
@@ -231,14 +231,14 @@
     {
         if (Previous.Start > Previous.End)
         {
-            await messageHandler.Show("Начало предыдущего периода должно быть меньше окончания!");
+            await GlobalMsgHandler.Show("Начало предыдущего периода должно быть меньше окончания!");
             StateHasChanged();
             return;
         }
 
         if (Current.Start > Current.End)
         {
-            await messageHandler.Show("Начало текущего периода должно быть меньше окончания!");
+            await GlobalMsgHandler.Show("Начало текущего периода должно быть меньше окончания!");
             StateHasChanged();
             return;
         }
