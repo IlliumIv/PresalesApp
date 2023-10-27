@@ -1,22 +1,7 @@
 ﻿@inherits LayoutComponentBase
-@inject NavigationManager Navigation
 
 <AuthorizeView>
     <main>
         @Body
     </main>
 </AuthorizeView>
-
-@code {
-    [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationState { get; set; }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        AuthenticationState state = await AuthenticationState;
-        if (state.User.Identity is null || !state.User.Identity.IsAuthenticated)
-        {
-            Navigation.NavigateTo(Navigation.BaseUri, true);
-        }
-    }
-}

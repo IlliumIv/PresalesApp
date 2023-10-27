@@ -19,7 +19,7 @@ namespace PresalesApp.Web.Client.Helpers
         public const string MonthFormat = "MMMM yyyy";
         public const string YearFormat = "yyyy";
         public const string UriDateTimeFormat = "yyyyMMddTHHmmss"; // ISO_8601
-        public static string CurMonthName => $"{DateTime.Now:MMMM}";
+        public static string GetLocalizedCurrentMonthName() => $"{DateTime.Now:MMMM}";
 
         [GeneratedRegex("\\s+")]
         private static partial Regex DeleteMultipleSpaces();

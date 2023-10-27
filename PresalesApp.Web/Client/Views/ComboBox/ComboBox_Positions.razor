@@ -7,16 +7,3 @@
         <option value="@pos">@pos.GetLocalizedName(Localization)</option>
     }
 </select>
-
-@code {
-    private Position position = Position.Any;
-
-    private void OnPositionChanged(object? obj)
-    {
-        if (Enum.TryParse<Position>(obj?.ToString(), out position))
-            OnSelectCallback.InvokeAsync(position);
-    }
-
-    [Parameter]
-    public EventCallback<Position> OnSelectCallback { get; set; }
-}

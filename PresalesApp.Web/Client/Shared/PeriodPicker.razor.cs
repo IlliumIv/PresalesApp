@@ -8,9 +8,9 @@ namespace PresalesApp.Web.Client.Shared
 {
     public partial class PeriodPicker
     {
-        List<DropDownItem<DateTime>> items_set = [];
-        CustomRadzenDropDown<DropDownItem<DateTime>?> select;
-        DropDownItem<DateTime>? selected_item;
+        private List<DropDownItem<DateTime>> items_set = [];
+        private CustomRadzenDropDown<DropDownItem<DateTime>?> select;
+        private DropDownItem<DateTime>? selected_item;
 
         [Parameter, EditorRequired]
         public Period Period { get; set; }
@@ -28,7 +28,7 @@ namespace PresalesApp.Web.Client.Shared
             GenerateItemsSet(((DropDownItem<DateTime>)item).Value);
         }
 
-        void GenerateItemsSet(DateTime selectedItemDT, bool shoudInvokeCallback = true)
+        private void GenerateItemsSet(DateTime selectedItemDT, bool shoudInvokeCallback = true)
         {
             switch (Period.Type)
             {
@@ -41,9 +41,9 @@ namespace PresalesApp.Web.Client.Shared
             }
         }
 
-        void ClearSet() => items_set.Clear();
+        private void ClearSet() => items_set.Clear();
 
-        void GenerateDaysSet(DateTime dt, bool shoudInvokeCallback = true)
+        private void GenerateDaysSet(DateTime dt, bool shoudInvokeCallback = true)
         {
             List<DropDownItem<DateTime>> result = [];
 
@@ -75,7 +75,7 @@ namespace PresalesApp.Web.Client.Shared
             if (shoudInvokeCallback) PeriodChanged.InvokeAsync(Period);
         }
 
-        void GenerateMonthsSet(DateTime dt, bool shoudInvokeCallback = true)
+        private void GenerateMonthsSet(DateTime dt, bool shoudInvokeCallback = true)
         {
             List<DropDownItem<DateTime>> result = [];
 
@@ -95,7 +95,7 @@ namespace PresalesApp.Web.Client.Shared
             if (shoudInvokeCallback) PeriodChanged.InvokeAsync(Period);
         }
 
-        void GenerateQuartersSet(DateTime dt, bool shoudInvokeCallback = true)
+        private void GenerateQuartersSet(DateTime dt, bool shoudInvokeCallback = true)
         {
             List<DropDownItem<DateTime>> result = [];
 
@@ -116,7 +116,7 @@ namespace PresalesApp.Web.Client.Shared
             if (shoudInvokeCallback) PeriodChanged.InvokeAsync(Period);
         }
 
-        void GenerateYearsSet(DateTime dt, bool shoudInvokeCallback = true)
+        private void GenerateYearsSet(DateTime dt, bool shoudInvokeCallback = true)
         {
             List<DropDownItem<DateTime>> result = [];
 
@@ -137,10 +137,10 @@ namespace PresalesApp.Web.Client.Shared
             if (shoudInvokeCallback) PeriodChanged.InvokeAsync(Period);
         }
 
-        void SelectedPeriodChanged() => GenerateItemsSet(selected_item?.Value ?? Period.Start);
+        private void SelectedPeriodChanged() => GenerateItemsSet(selected_item?.Value ?? Period.Start);
 
-        void OnFromChangedByPicker() => PeriodChanged.InvokeAsync(Period);
+        private void OnFromChangedByPicker() => PeriodChanged.InvokeAsync(Period);
 
-        void OnToChangedByPicker() => PeriodChanged.InvokeAsync(Period);
+        private void OnToChangedByPicker() => PeriodChanged.InvokeAsync(Period);
     }
 }

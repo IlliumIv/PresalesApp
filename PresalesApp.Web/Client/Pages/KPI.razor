@@ -1,5 +1,4 @@
 ﻿@page "/kpi"
-@using Period = PresalesApp.Web.Client.Helpers.Period
 @inject IJSRuntime js
 
 <PageTitle>@Localization["KpiPage"]</PageTitle>
@@ -26,8 +25,8 @@
                             Filterable
                            Sortable="false"
                            PageSize="int.MaxValue"
-                           RowStyling="@RowStyling"
-                           SelectedRowStyling="@RowStyling"
+                           RowStyling="@GetRowStyle"
+                           SelectedRowStyling="@GetRowStyle"
                             Responsive>
                  <DataGridAggregates>
                      <DataGridAggregate Field="@nameof(Invoice.Date)" Aggregate="DataGridAggregateType.None">
@@ -66,7 +65,7 @@
                         <DataGridColumn Field="@nameof(Invoice.Number)" Caption="@Localization["InvoiceNumberText"]"
                                         Editable="false" Width="9%" CustomFilter="@DataGridFilters.DefaultFilter" />
                         <DataGridDateColumn Field="@nameof(Invoice.Date)" Caption="@Localization["InvoiceDateText"]"
-                                            Editable="false" Width="12%" CustomFilter="@DataGridFilters.DateTimeFilter" Context="invoice">
+                                            Editable="false" Width="12%" CustomFilter="@DataGridFilters.GetDateTimeFilter" Context="invoice">
                             <DisplayTemplate>
                                 @($"{(invoice as Invoice)?.Date.ToDateTime().ToPresaleTime()}")
                             </DisplayTemplate>
@@ -176,58 +175,3 @@
         </TabPanel>
     </Content>
 </Tabs>
-
-@code {
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
-
-    private bool downloadButtonDisabled = true;
-
-    private void RowStyling(Invoice invoice, DataGridRowStyling styling) =>
-        styling.Style = $"color: {Helpers.SetColor(invoice)};";
-
-    Period Period = new Period(DateTime.Now, Enums.PeriodType.Month);
-
-    private string presale_name = string.Empty;
-
-    private Kpi? response;
-
-    private async Task DownloadReport() => await response.Download(js, presale_name, Period, Localization);
-
-    private async Task GenerateReport()
-    {
-        this.response = null;
-
-        downloadButtonDisabled = true;
-
-        if (string.IsNullOrEmpty(presale_name))
-        {
-            await GlobalMsgHandler.Show($"{Localization["NeedSelectPresaleMessageText"]}");
-            return;
-        }
-
-        var response = await AppApi.GetKpiAsync(new KpiRequest
-            {
-                PresaleName = presale_name,
-                Period = Period.Translate()
-            }
-        );
-
-        if (response.ResultCase == KpiResponse.ResultOneofCase.Kpi)
-        {
-            this.response = response.Kpi;
-            downloadButtonDisabled = false;
-        }
-
-        (string message, SnackbarColor color) msg = response.ResultCase switch
-        {
-            KpiResponse.ResultOneofCase.Error => (response.Error.Message, SnackbarColor.Danger),
-            KpiResponse.ResultOneofCase.Kpi => ($"{Localization["ReportIsDoneMessageText"]}", SnackbarColor.Success),
-            KpiResponse.ResultOneofCase.None => ($"{Localization["NoInvoicesForThisPeriodMessageText"]}", SnackbarColor.Success),
-            _ => ($"{Localization["UnknownServerResponseMessageText"]}", SnackbarColor.Danger)
-        };
-
-        await GlobalMsgHandler.Show(msg.message, msg.color);
-        StateHasChanged();
-    }
-}
