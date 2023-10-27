@@ -5,21 +5,14 @@ using AppApi = PresalesApp.Web.Shared.Api.ApiClient;
 
 namespace PresalesApp.Web.Client.Authorization
 {
-    public class AuthorizeApi
+    public class AuthorizeApi(
+        AuthenticationStateProvider stateProvider,
+        ILocalStorageService storage,
+        AppApi presalesAppApiClient)
     {
-        private readonly ILocalStorageService _localStorage;
-        private readonly AppApi _apiClient;
-        private readonly IdentityAuthenticationStateProvider _stateProvider;
-
-        public AuthorizeApi(
-            AuthenticationStateProvider stateProvider,
-            ILocalStorageService storage,
-            AppApi presalesAppApiClient)
-        {
-            _stateProvider = (IdentityAuthenticationStateProvider) stateProvider;
-            _localStorage = storage;
-            _apiClient = presalesAppApiClient;
-        }
+        private readonly ILocalStorageService _localStorage = storage;
+        private readonly AppApi _apiClient = presalesAppApiClient;
+        private readonly IdentityAuthenticationStateProvider _stateProvider = (IdentityAuthenticationStateProvider)stateProvider;
 
         public async Task<bool> TryRegister(RegisterRequest registerRequest)
         {

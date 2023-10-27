@@ -21,20 +21,20 @@ namespace PresalesApp.Web.Client.Shared
         [Parameter]
         public EventCallback<FunnelStage> OnChange { get; set; }
 
-        bool _disabled = false;
+        private bool _disabled = false;
 
-        string _imgDisplay = $"display: none";
+        private string _imgDisplay = $"display: none";
 
-        FunnelStage _selectedStage;
+        private FunnelStage _selectedStage;
 
-        readonly IEnumerable<FunnelStage> _stages = Enum.GetValues(typeof(FunnelStage)).Cast<FunnelStage>().Where(i => i != FunnelStage.Any);
+        private readonly IEnumerable<FunnelStage> _stages = Enum.GetValues(typeof(FunnelStage)).Cast<FunnelStage>().Where(i => i != FunnelStage.Any);
 
         protected override void OnParametersSet()
         {
             _selectedStage = Project.FunnelStage;
         }
 
-        async Task DropDown0Change(object stage)
+        private async Task DropDown0Change(object stage)
         {
             if ((FunnelStage)stage == FunnelStage.Any) return;
 

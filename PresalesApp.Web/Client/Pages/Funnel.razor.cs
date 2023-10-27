@@ -8,7 +8,7 @@ namespace PresalesApp.Web.Client.Pages
 {
     public partial class Funnel
     {
-        static string SetCellColor(Project project) =>
+        private static string SetCellColor(Project project) =>
             !project.Actions.Any(a => a.SalesFunnel) || project.FunnelStage == FunnelStage.None ? "--rz-danger" : "--rz-text-color";
 
         [CascadingParameter]
@@ -16,20 +16,20 @@ namespace PresalesApp.Web.Client.Pages
 
         protected override async Task OnParametersSetAsync() => await UpdateData();
 
-        FunnelProjects? response;
+        private FunnelProjects? response;
 
-        RadzenDataGrid<Project> grid;
+        private RadzenDataGrid<Project> grid;
 
-        bool allRowsExpanded = false;
+        private bool allRowsExpanded = false;
 
-        FunnelStage? _selectedStage = null;
+        private FunnelStage? _selectedStage = null;
 
-        DateTime? _selectedApprovalByTechDirectorAt = DateTime.MinValue;
-        DateTime? _selectedLastAction = DateTime.MinValue;
+        private DateTime? _selectedApprovalByTechDirectorAt = DateTime.MinValue;
+        private DateTime? _selectedLastAction = DateTime.MinValue;
 
-        DateTime? _selectedDate = DateTime.MinValue;
+        private DateTime? _selectedDate = DateTime.MinValue;
 
-        void DropDown0Change(object args)
+        private void DropDown0Change(object args)
         {
             if (_selectedStage == FunnelStage.Any)
             {
@@ -37,7 +37,7 @@ namespace PresalesApp.Web.Client.Pages
             }
         }
 
-        async Task ToggleRowsExpand()
+        private async Task ToggleRowsExpand()
         {
             allRowsExpanded = !allRowsExpanded;
 
@@ -51,7 +51,7 @@ namespace PresalesApp.Web.Client.Pages
             }
         }
 
-        async Task UpdateData()
+        private async Task UpdateData()
         {
             try
             {

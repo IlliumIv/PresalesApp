@@ -1,10 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using Grpc.Core;
-using Grpc.Net.Client.Web;
-using Grpc.Net.Client;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using System.Globalization;
 
 namespace PresalesApp.Web.Client.Startup
 {

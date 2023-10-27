@@ -14,6 +14,7 @@ namespace PresalesApp.Web.Client.Helpers
             }
             return true;
         }
+
         public static bool DecimalValueFilter(object decimalValue, object searchValue)
         {
             var @decimal = (decimal)(DecimalValue)decimalValue;
@@ -31,7 +32,7 @@ namespace PresalesApp.Web.Client.Helpers
             return presale?.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? true;
         }
 
-        public static bool DateTimeFilter(object itemValue, object searchValue) =>
+        public static bool GetDateTimeFilter(object itemValue, object searchValue) =>
             DefaultFilter(((Timestamp)itemValue).ToDateTime().ToPresaleTime(), searchValue);
 
         public static bool DefaultFilter(object itemValue, object searchValue)
