@@ -5,8 +5,8 @@
 
 <h1>@Localization["KpiPage"]</h1>
 <div class="d-flex">
-    <ComboBox_PresalesNames SelectedPresale="@_presale_name" OnSelectCallback=OnPresaleChanged />
-    <PeriodPicker Period="@_period" PeriodChanged=OnPeriodChanged />
+    <ComboBox_PresalesNames SelectedPresale="@_presale_name" OnSelectCallback="OnPresaleChanged" />
+    <PeriodPicker Period="@_period" PeriodChanged="OnPeriodChanged" />
     <Button Disabled="@_is_btn_disabled" Color="Color.Dark" Clicked="DownloadReport">@Localization["DownloadReportButtonText"]</Button>
 </div>
 

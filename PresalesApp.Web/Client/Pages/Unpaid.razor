@@ -6,24 +6,24 @@
 <h1>@Localization["UnpaidPage"]</h1>
 <p>@Localization["UnpaidPageDescription"]</p>
 <div class="d-flex">
-    <ComboBox_PresalesNames OnSelectCallback="@(async (string name) => { presale_name = name; await UpdateData();})" />
-    <PeriodPicker Period="@Period" PeriodChanged="@(async (period) => { Period = period; await UpdateData(); } )" />
+    <ComboBox_PresalesNames SelectedPresale="@_presale_name" OnSelectCallback="OnPresaleChanged" />
+    <PeriodPicker Period="@_period" PeriodChanged="OnPeriodChanged" />
     <input title="Учитывать счета в основных проектах" type="checkbox"
-            id="lookAtMains" value="@is_main_project_include"
+            id="lookAtMains" value="@_is_main_project_include"
             @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
             unchecked class="inline-check" style="cursor: help;" />
 
-    <Button @attributes="DownloadBtnAttrs" Color="Color.Dark" Clicked="DownloadFile">@Localization["DownloadReportButtonText"]</Button>
+    <Button @attributes="_btn_attrs" Color="Color.Dark" Clicked="DownloadFile">@Localization["DownloadReportButtonText"]</Button>
 </div>
 
-@if (response == null)
+@if (_response == null)
 {
     <Loader />
 }
 else
 {
     <DataGrid TItem="Project"
-          Data="@response?.Projects"
+          Data="@_response?.Projects"
             Filterable
           Sortable="false"
           PageSize="@int.MaxValue"
