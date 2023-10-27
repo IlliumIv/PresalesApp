@@ -62,9 +62,9 @@
     </ModalContent>
 </Modal>
 
-    @code {
+@code {
     [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    public MessageSnackbar GlobalMsgHandler { get; set; }
 
     private UserProfile _profile => IdentityAuthenticationStateProvider.Profile;
 
@@ -98,7 +98,7 @@
         }
         catch (Exception e)
         {
-            await messageHandler.Show(e.Message);
+            await GlobalMsgHandler.Show(e.Message);
         }
         _registerDisabled = false;
     }
@@ -120,7 +120,7 @@
         }
         catch (Exception e)
         {
-            // await messageHandler.Show(e.Message);
+            await GlobalMsgHandler.Show(e.Message);
         }
         _loginDisabled = false;
     }
@@ -131,4 +131,3 @@
         Navigation.NavigateTo(Navigation.Uri, true);
     }
 }
-
