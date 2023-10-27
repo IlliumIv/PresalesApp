@@ -11,7 +11,7 @@
     <input title="Учитывать счета в основных проектах" type="checkbox"
             id="lookAtMains" value="@_is_main_project_include"
             @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
-            unchecked class="inline-check" style="cursor: help;" />
+            unchecked class="inline-check inline-check-big" style="cursor: help;" />
 
     <Button @attributes="_btn_attrs" Color="Color.Dark" Clicked="DownloadFile">@Localization["DownloadReportButtonText"]</Button>
 </div>

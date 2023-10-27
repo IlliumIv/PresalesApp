@@ -8,14 +8,14 @@
 
 <h1>@Localization["SpreadsheetPage"]</h1>
 <div class="d-flex">
-    <PeriodPicker Period="@Period" PeriodChanged="@(async (period) => { Period = period; await UpdateData(); } )" />
-    <ComboBox_Departments OnSelectCallback="(async (Department department) => {this.department = department; await UpdateData();})" />
-    <ComboBox_Positions OnSelectCallback="(async (Position position) => {this.position = position; await UpdateData();})" />
-    <input title="Только действующие" type="checkbox" id="onlyActive" value="@only_active"
-            @onchange="((ChangeEventArgs e) => OnStatusChanged(e?.Value))"
+    <PeriodPicker Period="@_period" PeriodChanged="OnPeriodChanged" />
+    <ComboBox_Departments Department="@_department" OnSelectCallback="OnDepartmentChange" />
+    <ComboBox_Positions Position="@_position" OnSelectCallback="OnPositionChange" />
+    <input title="Только действующие" type="checkbox" id="onlyActive" value="@_only_active_ones"
+            @onchange="OnStatusChange"
             checked class="inline-check inline-check-big" style="cursor: help;" />
 </div>
-@if (overview == null)
+@if (_overview == null)
 {
     <Loader />
 }
@@ -25,7 +25,7 @@ else
         <thead class="pmthead">
             <tr>
                 <th rowspan="2" style="width:11%">Пресейл</th>
-                <th colspan="10">@Period.GetLocalizedPeriodName(Localization)</th>
+                <th colspan="10">@_period.GetLocalizedPeriodName(Localization)</th>
                 <th rowspan="2" style="width:5%" title="@title_abandoned">Abnd</th>
                 <th rowspan="2" style="width:6%" title="@title_avg_time_to_win">AvgTTW</th>
                 <th rowspan="2" style="width:5%" title="@title_avg_rank">AvgR</th>
@@ -44,7 +44,7 @@ else
             </tr>
         </thead>
         <tbody class="pmtbody">
-            @foreach (var presale in overview.Presales)
+            @foreach (var presale in _overview.Presales)
             {
                 <tr>
                     <td>@presale.Name.GetFirstAndLastName()</td>
@@ -65,52 +65,52 @@ else
             }
             <tr>
                 <td>Всего</td>
-                <td title="@GetTitleInWork()">@Helpers.ToEmptyIfZeroString(overview.Statistics.InWork)</td>
-                <td title="@title_assign">@Helpers.ToEmptyIfZeroString(overview.Statistics.Assign)</td>
-                <td title="@title_won">@Helpers.ToEmptyIfZeroString(overview.Statistics.Won)</td>
-                <td title="@title_conversion">@Helpers.ToPercentString(overview.Statistics.Conversion)</td>
-                <td title="@title_loss">@Helpers.ToEmptyIfZeroString(overview.Statistics.Loss)</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Potential)</td>
-                <td>@Helpers.ToCurrencyString(overview.Statistics.Profit)</td>
-                <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
-                <td title="@title_time_spend">@Helpers.ToHoursString(overview.Statistics.SumSpend.ToTimeSpan())</td>
-                <td title="@title_avt_time_spend">@Helpers.ToHoursString(overview.Statistics.AvgSpend.ToTimeSpan())</td>
-                <td title="@title_abandoned">@Helpers.ToEmptyIfZeroString(overview.Statistics.Abnd)</td>
-                <td title="@title_avg_time_to_win">@Helpers.ToDaysString(overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
-                <td title="@title_avg_rank">@Math.Round(overview.Statistics.AvgRank, 1)</td>
+                <td title="@GetTitleInWork()">@Helpers.ToEmptyIfZeroString(_overview.Statistics.InWork)</td>
+                <td title="@title_assign">@Helpers.ToEmptyIfZeroString(_overview.Statistics.Assign)</td>
+                <td title="@title_won">@Helpers.ToEmptyIfZeroString(_overview.Statistics.Won)</td>
+                <td title="@title_conversion">@Helpers.ToPercentString(_overview.Statistics.Conversion)</td>
+                <td title="@title_loss">@Helpers.ToEmptyIfZeroString(_overview.Statistics.Loss)</td>
+                <td>@Helpers.ToCurrencyString(_overview.Statistics.Potential)</td>
+                <td>@Helpers.ToCurrencyString(_overview.Statistics.Profit)</td>
+                <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(_overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                <td title="@title_time_spend">@Helpers.ToHoursString(_overview.Statistics.SumSpend.ToTimeSpan())</td>
+                <td title="@title_avt_time_spend">@Helpers.ToHoursString(_overview.Statistics.AvgSpend.ToTimeSpan())</td>
+                <td title="@title_abandoned">@Helpers.ToEmptyIfZeroString(_overview.Statistics.Abnd)</td>
+                <td title="@title_avg_time_to_win">@Helpers.ToDaysString(_overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                <td title="@title_avg_rank">@Math.Round(_overview.Statistics.AvgRank, 1)</td>
             </tr>
         </tbody>
     </table>
 
-    @if (overview.AvgDirectorTimeToReaction.Seconds > 0)
+    @if (_overview.AvgDirectorTimeToReaction.Seconds > 0)
     {
-        <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helpers.ToMinutesString(overview.AvgDirectorTimeToReaction.ToTimeSpan())</p>
+        <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helpers.ToMinutesString(_overview.AvgDirectorTimeToReaction.ToTimeSpan())</p>
     }
-    @if (overview.Escalations.Count > 0)
+    @if (_overview.Escalations.Count > 0)
     {
         <details class="pmspoiler">
-            <summary>Проекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): @overview.Escalations.Count</summary>
-            @foreach (var project in overview.Escalations)
+            <summary>Проекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): @_overview.Escalations.Count</summary>
+            @foreach (var project in _overview.Escalations)
             {
                 <p>@Format(project)</p>
             }
         </details>
     }
-    @if (overview.Forgotten.Count > 0)
+    @if (_overview.Forgotten.Count > 0)
     {
         <details class="pmspoiler">
-            <summary>Проекты без отметки начала работы пресейлом (забытые): @overview.Forgotten.Count</summary>
-            @foreach (var project in overview.Forgotten)
+            <summary>Проекты без отметки начала работы пресейлом (забытые): @_overview.Forgotten.Count</summary>
+            @foreach (var project in _overview.Forgotten)
             {
                 <p>@Format(project)</p>
             }
         </details>
     }
-    @if (overview.New.Count > 0)
+    @if (_overview.New.Count > 0)
     {
         <details class="pmspoiler">
-            <summary>Новые проекты (ожидают распределения): @overview.New.Count</summary>
-            @foreach (var project in overview.New)
+            <summary>Новые проекты (ожидают распределения): @_overview.New.Count</summary>
+            @foreach (var project in _overview.New)
             {
                 <p>@Format(project)</p>
             }

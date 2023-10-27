@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-	<Version>1.2.11.5</Version>
+	<Version>1.2.11.6</Version>
 	<PlatformTarget>AnyCPU</PlatformTarget>
 	<Configurations>Debug;Release</Configurations>
 	<Platforms>AnyCPU</Platforms>
