@@ -1,5 +1,5 @@
-﻿using Department = PresalesApp.Web.Shared.Department;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+using Department = PresalesApp.Web.Shared.Department;
 
 namespace PresalesApp.Web.Client.Views.ComboBox
 {
@@ -8,12 +8,16 @@ namespace PresalesApp.Web.Client.Views.ComboBox
         [Parameter]
         public EventCallback<Department> OnSelectCallback { get; set; }
 
-        private Department department = Department.Any;
+        [Parameter]
+        public Department Department { get; set; } = Department.Any;
 
         private void OnDepartmentChanged(object? obj)
         {
-            if (Enum.TryParse<Department>(obj?.ToString(), out department))
-                OnSelectCallback.InvokeAsync(department);
+            if (Enum.TryParse<Department>(obj?.ToString(), out var _d))
+            {
+                Department = _d;
+                OnSelectCallback.InvokeAsync(Department);
+            }
         }
     }
 }

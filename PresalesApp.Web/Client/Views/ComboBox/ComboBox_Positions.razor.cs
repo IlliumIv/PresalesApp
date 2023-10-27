@@ -8,12 +8,16 @@ namespace PresalesApp.Web.Client.Views.ComboBox
         [Parameter]
         public EventCallback<Position> OnSelectCallback { get; set; }
 
-        private Position position = Position.Any;
+        [Parameter]
+        public Position Position { get; set; } = Position.Any;
 
         private void OnPositionChanged(object? obj)
         {
-            if (Enum.TryParse(obj?.ToString(), out position))
-                OnSelectCallback.InvokeAsync(position);
+            if (Enum.TryParse<Position>(obj?.ToString(), out var _p))
+            {
+                Position = _p;
+                OnSelectCallback.InvokeAsync(Position);
+            }
         }
     }
 }
