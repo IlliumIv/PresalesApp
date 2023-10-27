@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
 
-namespace PresalesApp.Web.Client.Views
+namespace PresalesApp.Web.Client.Views.Pickers
 {
-    partial class CultureSelector
+    partial class CulturePicker
     {
         private readonly CultureInfo[] _supportedCultures =
         [

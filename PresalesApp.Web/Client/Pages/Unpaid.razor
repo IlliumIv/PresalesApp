@@ -6,7 +6,7 @@
 <h1>@Localization["UnpaidPage"]</h1>
 <p>@Localization["UnpaidPageDescription"]</p>
 <div class="d-flex">
-    <ComboBox_PresalesNames SelectedPresale="@_presale_name" OnSelectCallback="OnPresaleChanged" />
+    <PresalePicker SelectedPresale="@_presale_name" OnSelectCallback="OnPresaleChanged" />
     <PeriodPicker Period="@_period" PeriodChanged="OnPeriodChanged" />
     <input title="Учитывать счета в основных проектах" type="checkbox"
             id="lookAtMains" value="@_is_main_project_include"

@@ -4,7 +4,7 @@ using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
 using Radzen.Blazor;
 
-namespace PresalesApp.Web.Client.Shared
+namespace PresalesApp.Web.Client.Views.Pickers
 {
     public partial class FunnelStagePicker
     {

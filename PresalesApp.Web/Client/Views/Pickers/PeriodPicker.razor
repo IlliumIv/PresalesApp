@@ -1,6 +1,6 @@
 ﻿@using System.Globalization
 @using PresalesApp.Web.Client.Enums
-@using PresalesApp.Web.Client.Shared.DropDown
+@using PresalesApp.Web.Client.Views.Pickers.DropDown
 
 <RadzenDropDown Data=@(System.Enum.GetValues(typeof(PeriodType)).Cast<PeriodType>())
                 @bind-Value=@(Period.Type) Change="SelectedPeriodChanged">

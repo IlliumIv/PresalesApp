@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Components;
 using PresalesApp.Web.Shared;
 
-namespace PresalesApp.Web.Client.Views.ComboBox
+namespace PresalesApp.Web.Client.Views.Pickers
 {
-    partial class ComboBox_PresalesNames
+    partial class PresalePicker
     {
         [CascadingParameter]
         public MessageSnackbar GlobalMsgHandler { get; set; }
@@ -29,9 +29,9 @@ namespace PresalesApp.Web.Client.Views.ComboBox
             }
         }
 
-        private void OnPresaleChanged(object? obj)
+        private void OnPresaleChanged(ChangeEventArgs e)
         {
-            SelectedPresale = obj?.ToString() ?? string.Empty;
+            SelectedPresale = e?.Value?.ToString() ?? string.Empty;
             OnSelectCallback.InvokeAsync(SelectedPresale);
         }
     }

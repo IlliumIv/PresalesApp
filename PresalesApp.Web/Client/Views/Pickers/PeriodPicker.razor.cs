@@ -2,9 +2,9 @@
 using PresalesApp.Web.Client.Helpers;
 using Microsoft.AspNetCore.Components;
 using Period = PresalesApp.Web.Client.Helpers.Period;
-using PresalesApp.Web.Client.Shared.DropDown;
+using PresalesApp.Web.Client.Views.Pickers.DropDown;
 
-namespace PresalesApp.Web.Client.Shared
+namespace PresalesApp.Web.Client.Views.Pickers
 {
     public partial class PeriodPicker
     {

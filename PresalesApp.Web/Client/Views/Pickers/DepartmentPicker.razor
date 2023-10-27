@@ -1,7 +1,7 @@
 ﻿@using Enum = System.Enum
 @using Department = PresalesApp.Web.Shared.Department
 
-<select title="Направление" value="@Department" @onchange="((ChangeEventArgs e) => OnDepartmentChanged(e?.Value))" class="form-select form-select-combobox">
+<select title="Направление" value="@Department" @onchange="OnDepartmentChanged" class="form-select form-select-combobox">
     <option selected="@Department"></option>
     @foreach (Department dep in Enum.GetValues(typeof(Department)))
     {
