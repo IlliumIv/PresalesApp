@@ -298,6 +298,17 @@ namespace PresalesApp.Web.Client.Helpers
                 param = storage.GetItem<TEnum>($"{new Uri(uri).LocalPath}.{query}");
         }
 
+        public static void SetFromQueryOrStorage(string? value, string query, string uri, ISyncLocalStorageService storage, ref bool param)
+        {
+            if (bool.TryParse(value, out bool p))
+            {
+                param = p;
+                storage.SetItem($"{new Uri(uri).LocalPath}.{query}", param);
+            }
+            else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{query}"))
+                param = storage.GetItem<bool>($"{new Uri(uri).LocalPath}.{query}");
+        }
+
         public static void SetFromQueryOrStorage(string? value, string query, string uri, ISyncLocalStorageService storage, ref string param)
         {
             if (value is not null && !value.IsNullOrEmpty())
