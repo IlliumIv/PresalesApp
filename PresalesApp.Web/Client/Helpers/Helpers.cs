@@ -144,8 +144,10 @@ namespace PresalesApp.Web.Client.Helpers
             UTF8Encoding encoder = new(true);
             text = encoder.GetString(result);
 
-            await SaveAs(js, $"{(MarkupString)localization["KpiReportFileName", period.GetLocalizedPeriodName(localization),
-                presaleName.GetFirstAndLastName()].Value}.csv", Encoding.UTF8.GetBytes(text));
+            await SaveAs(js, $"{localization["KpiReportFileName",
+                period.GetLocalizedPeriodName(localization, false),
+                presaleName.GetFirstAndLastName()]
+                .Value}.csv", Encoding.UTF8.GetBytes(text));
         }
 
         public async static Task Download(this UnpaidProjects? projects, IJSRuntime js, IStringLocalizer<App> localization)
