@@ -67,7 +67,7 @@
 
 @code {
     [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    public MessageSnackbar GlobalMsgHandler { get; set; }
 
     private TimeSpan time_left = new (0, 10, 0);
 
@@ -165,7 +165,7 @@
         }
         catch
         {
-            await messageHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+            await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
             return;
         }
     }

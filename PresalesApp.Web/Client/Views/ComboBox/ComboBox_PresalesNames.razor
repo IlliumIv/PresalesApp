@@ -19,7 +19,7 @@ else
     public EventCallback<string> OnSelectCallback { get; set; }
 
     [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    public MessageSnackbar GlobalMsgHandler { get; set; }
 
     private NamesResponse? presales;
     private string selectedName = string.Empty;
@@ -32,7 +32,7 @@ else
         }
         catch (Exception e)
         {
-            await messageHandler.Show(e.Message);
+            await GlobalMsgHandler.Show(e.Message);
         }
     }
 

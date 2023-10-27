@@ -12,7 +12,7 @@ namespace PresalesApp.Web.Client.Pages
             !project.Actions.Any(a => a.SalesFunnel) || project.FunnelStage == FunnelStage.None ? "--rz-danger" : "--rz-text-color";
 
         [CascadingParameter]
-        public MessageSnackbar MessageHandler { get; set; }
+        public MessageSnackbar GlobalMsgHandler { get; set; }
 
         protected override async Task OnParametersSetAsync() => await UpdateData();
 
@@ -59,7 +59,7 @@ namespace PresalesApp.Web.Client.Pages
             }
             catch (Exception e)
             {
-                await MessageHandler.Show(e.Message);
+                await GlobalMsgHandler.Show(e.Message);
             }
 
             StateHasChanged();

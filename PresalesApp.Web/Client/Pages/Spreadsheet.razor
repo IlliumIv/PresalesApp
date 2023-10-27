@@ -120,7 +120,7 @@ else
 
 @code {
     [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    public MessageSnackbar GlobalMsgHandler { get; set; }
 
     private Period Period = new(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
 
@@ -170,7 +170,7 @@ else
         }
         catch (Exception e)
         {
-            await messageHandler.Show(e.Message);
+            await GlobalMsgHandler.Show(e.Message);
         }
     }
 

@@ -21,7 +21,7 @@
     HelloReply? reply;
 
     [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    public MessageSnackbar GlobalMsgHandler { get; set; }
 
     int counter = 0;
 
@@ -89,7 +89,7 @@
         }
         catch (Exception e)
         {
-            await messageHandler.Show(e.Message);
+            await GlobalMsgHandler.Show(e.Message);
         }
         StateHasChanged();
     }

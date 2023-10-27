@@ -68,7 +68,7 @@ else
 
 @code {
     [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    public MessageSnackbar GlobalMsgHandler { get; set; }
 
     private UnpaidProjects? response;
     private string presale_name = string.Empty;
@@ -95,7 +95,7 @@ else
         catch (Exception e)
         {
             downloadBtnAttrs = new() { { "disabled", "disabled" } };
-            await messageHandler.Show(e.Message);
+            await GlobalMsgHandler.Show(e.Message);
         }
         StateHasChanged();
     }

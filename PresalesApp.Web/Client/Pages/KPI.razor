@@ -179,7 +179,7 @@
 
 @code {
     [CascadingParameter]
-    public MessageSnackbar messageHandler { get; set; }
+    public MessageSnackbar GlobalMsgHandler { get; set; }
 
     private bool downloadButtonDisabled = true;
 
@@ -202,7 +202,7 @@
 
         if (string.IsNullOrEmpty(presale_name))
         {
-            await messageHandler.Show($"{Localization["NeedSelectPresaleMessageText"]}");
+            await GlobalMsgHandler.Show($"{Localization["NeedSelectPresaleMessageText"]}");
             return;
         }
 
@@ -227,7 +227,7 @@
             _ => ($"{Localization["UnknownServerResponseMessageText"]}", SnackbarColor.Danger)
         };
 
-        await messageHandler.Show(msg.message, msg.color);
+        await GlobalMsgHandler.Show(msg.message, msg.color);
         StateHasChanged();
     }
 }
