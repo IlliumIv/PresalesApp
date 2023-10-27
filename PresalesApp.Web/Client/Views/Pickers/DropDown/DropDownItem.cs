@@ -1,4 +1,4 @@
-﻿namespace PresalesApp.Web.Client.Shared.DropDown
+﻿namespace PresalesApp.Web.Client.Views.Pickers.DropDown
 {
     public class DropDownItem<T>(T value, string text)
     {

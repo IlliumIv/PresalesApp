@@ -1,16 +1,16 @@
 ﻿@* @page "/spreadsheet" *@
+@using System.Threading
 @using Department = PresalesApp.Web.Shared.Department
 @using Position = PresalesApp.Web.Shared.Position
 @implements IDisposable
-@using System.Threading
 
 <PageTitle>@Localization["SpreadsheetPage"]</PageTitle>
 
 <h1>@Localization["SpreadsheetPage"]</h1>
 <div class="d-flex">
     <PeriodPicker Period="@_period" PeriodChanged="OnPeriodChanged" />
-    <ComboBox_Departments Department="@_department" OnSelectCallback="OnDepartmentChange" />
-    <ComboBox_Positions Position="@_position" OnSelectCallback="OnPositionChange" />
+    <DepartmentPicker Department="@_department" OnSelectCallback="OnDepartmentChange" />
+    <PositionPicker Position="@_position" OnSelectCallback="OnPositionChange" />
     <input title="Только действующие" type="checkbox" id="onlyActive" value="@_only_active_ones"
             @onchange="OnStatusChange"
             checked class="inline-check inline-check-big" style="cursor: help;" />

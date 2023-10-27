@@ -10,7 +10,7 @@
     <main>
         <div class="top-row px-4 d-flex">
             <Profile />
-            <CultureSelector />
+            <CulturePicker />
             <div>v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
             <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
                           Click=@(async () => await js.InvokeAsync<object>("open", new []

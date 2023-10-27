@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components;
 
-namespace PresalesApp.Web.Client.Shared
+namespace PresalesApp.Web.Client.Layouts
 {
-    partial class InfographicsLayout
+    partial class Infographic
     {
         [CascadingParameter]
         public Task<AuthenticationState> AuthenticationState { get; set; }

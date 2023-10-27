@@ -1,7 +1,7 @@
 ﻿@using Enum = System.Enum
 @using Position = PresalesApp.Web.Shared.Position
 
-<select title="Должность" value="@Position" @onchange="((ChangeEventArgs e) => OnPositionChanged(e?.Value))" class="form-select form-select-combobox">
+<select title="Должность" value="@Position" @onchange="OnPositionChanged" class="form-select form-select-combobox">
     <option selected="@Position"></option>
     @foreach (Position pos in Enum.GetValues(typeof(Position)))
     {

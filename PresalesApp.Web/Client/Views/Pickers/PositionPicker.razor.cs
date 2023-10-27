@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Position = PresalesApp.Web.Shared.Position;
 
-namespace PresalesApp.Web.Client.Views.ComboBox
+namespace PresalesApp.Web.Client.Views.Pickers
 {
-    partial class ComboBox_Positions
+    partial class PositionPicker
     {
         [Parameter]
         public EventCallback<Position> OnSelectCallback { get; set; }
@@ -11,9 +11,9 @@ namespace PresalesApp.Web.Client.Views.ComboBox
         [Parameter]
         public Position Position { get; set; } = Position.Any;
 
-        private void OnPositionChanged(object? obj)
+        private void OnPositionChanged(ChangeEventArgs e)
         {
-            if (Enum.TryParse<Position>(obj?.ToString(), out var _p))
+            if (Enum.TryParse<Position>(e?.Value?.ToString(), out var _p))
             {
                 Position = _p;
                 OnSelectCallback.InvokeAsync(Position);

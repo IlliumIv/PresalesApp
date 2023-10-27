@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace PresalesApp.Web.Client.Shared
+namespace PresalesApp.Web.Client.Views
 {
     partial class SurveyPrompt
     {

@@ -1,6 +1,6 @@
 ﻿using Radzen.Blazor;
 
-namespace PresalesApp.Web.Client.Shared.DropDown
+namespace PresalesApp.Web.Client.Views.Pickers.DropDown
 {
     public class CustomRadzenDropDown<T> : RadzenDropDown<T>
     {
