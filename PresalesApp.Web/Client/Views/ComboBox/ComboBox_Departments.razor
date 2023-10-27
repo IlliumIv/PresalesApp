@@ -1,4 +1,5 @@
 ﻿@using Enum = System.Enum
+@using Department = PresalesApp.Web.Shared.Department
 
 <select title="Направление" value="@department" @onchange="((ChangeEventArgs e) => OnDepartmentChanged(e?.Value))" class="form-select form-select-combobox">
     @foreach (Department dep in Enum.GetValues(typeof(Department)))
@@ -6,16 +7,3 @@
         <option value="@dep">@dep.GetLocalizedName(Localization)</option>
     }
 </select>
-
-@code {
-    private Department department = Department.Any;
-
-    private void OnDepartmentChanged(object? obj)
-    {
-        if (Enum.TryParse<Department>(obj?.ToString(), out department))
-            OnSelectCallback.InvokeAsync(department);
-    }
-
-    [Parameter]
-    public EventCallback<Department> OnSelectCallback { get; set; }
-}

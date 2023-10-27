@@ -7,20 +7,14 @@ using AppApi = PresalesApp.Web.Shared.Api.ApiClient;
 
 namespace PresalesApp.Web.Client.Authorization
 {
-    public class IdentityAuthenticationStateProvider : AuthenticationStateProvider
+    public class IdentityAuthenticationStateProvider(
+        ILocalStorageService localStorage,
+        AppApi apiClient) : AuthenticationStateProvider
     {
-        private readonly ILocalStorageService _localStorage;
-        private readonly AppApi _apiClient;
+        private readonly ILocalStorageService _localStorage = localStorage;
+        private readonly AppApi _apiClient = apiClient;
 
         public static UserProfile Profile { get; private set; } = new UserProfile();
-
-        public IdentityAuthenticationStateProvider(
-            ILocalStorageService localStorage,
-            AppApi apiClient)
-        {
-            _localStorage = localStorage;
-            _apiClient = apiClient;
-        }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
