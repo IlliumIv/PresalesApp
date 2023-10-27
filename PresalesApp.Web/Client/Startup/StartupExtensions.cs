@@ -6,9 +6,9 @@ namespace PresalesApp.Web.Client.Startup
 {
     public static class StartupExtensions
     {
-        public static void AddAuthGrpcClient<T>(this IServiceCollection services) where T : ClientBase
+        public static void AddAuthGrpcClientTransient<T>(this IServiceCollection services) where T : ClientBase
         {
-            services.AddScoped(provider =>
+            services.AddTransient(provider =>
             {
                 var nav = provider.GetService<NavigationManager>();
                 var storage = provider.GetService<ISyncLocalStorageService>();

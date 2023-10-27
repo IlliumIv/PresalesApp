@@ -37,7 +37,6 @@ namespace PresalesApp.Web.Client.Views
                 }))
                 {
                     await _registerModal.Hide();
-                    Navigation.NavigateTo(Navigation.Uri, true);
                 }
             }
             catch (Exception e)
@@ -59,7 +58,6 @@ namespace PresalesApp.Web.Client.Views
                 }))
                 {
                     await _loginModal.Hide();
-                    Navigation.NavigateTo(Navigation.Uri, true);
                 }
             }
             catch (Exception e)
@@ -72,7 +70,6 @@ namespace PresalesApp.Web.Client.Views
         private async Task Logout()
         {
             await _autorizeApi.Logout();
-            Navigation.NavigateTo(Navigation.Uri, true);
         }
     }
 }

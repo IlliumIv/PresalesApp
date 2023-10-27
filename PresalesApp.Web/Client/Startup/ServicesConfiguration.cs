@@ -29,8 +29,6 @@ namespace PresalesApp.Web.Client.Startup
                 return new BridgeApi.ApiClient(channel);
             });
 
-            builder.Services.AddAuthGrpcClient<AppApi.ApiClient>();
-
             builder.Services.AddBlazorise();
             builder.Services.AddBootstrap5Providers();
             builder.Services.AddFontAwesomeIcons();
@@ -38,9 +36,13 @@ namespace PresalesApp.Web.Client.Startup
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
-            builder.Services.AddAuthorizationCore();
+            builder.Services.AddAuthGrpcClientTransient<AppApi.ApiClient>();
             builder.Services.AddScoped<AuthorizeApi>();
-            builder.Services.AddScoped<AuthenticationStateProvider, IdentityAuthenticationStateProvider>();
+            builder.Services.AddScoped<IdentityAuthenticationStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<IdentityAuthenticationStateProvider>());
+
+            builder.Services.AddAuthorizationCore();
+
             return builder;
         }
     }

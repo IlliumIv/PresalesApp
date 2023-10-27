@@ -1,18 +1,17 @@
 ﻿using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Authorization;
 using PresalesApp.Web.Shared;
 using AppApi = PresalesApp.Web.Shared.Api.ApiClient;
 
 namespace PresalesApp.Web.Client.Authorization
 {
     public class AuthorizeApi(
-        AuthenticationStateProvider stateProvider,
+        IdentityAuthenticationStateProvider stateProvider,
         ILocalStorageService storage,
         AppApi presalesAppApiClient)
     {
         private readonly ILocalStorageService _localStorage = storage;
         private readonly AppApi _apiClient = presalesAppApiClient;
-        private readonly IdentityAuthenticationStateProvider _stateProvider = (IdentityAuthenticationStateProvider)stateProvider;
+        private readonly IdentityAuthenticationStateProvider _stateProvider = stateProvider;
 
         public async Task<bool> TryRegister(RegisterRequest registerRequest)
         {
