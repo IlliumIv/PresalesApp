@@ -5,7 +5,7 @@
 else
 {
     <label>@Localization["PresaleNameText"]:</label>
-    <select value="@SelectedPresale" @onchange="((ChangeEventArgs e) => OnPresaleChanged(e?.Value))" class="form-select form-select-combobox">
+    <select value="@SelectedPresale" @onchange="OnPresaleChanged" class="form-select form-select-combobox">
         <option selected="@SelectedPresale"></option>
         @foreach (var name in presales.Names)
         {

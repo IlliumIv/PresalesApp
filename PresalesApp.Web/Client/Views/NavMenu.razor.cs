@@ -1,4 +1,4 @@
-﻿namespace PresalesApp.Web.Client.Shared
+﻿namespace PresalesApp.Web.Client.Views
 {
     partial class NavMenu
     {

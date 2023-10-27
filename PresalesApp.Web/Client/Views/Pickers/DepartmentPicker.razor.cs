@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Department = PresalesApp.Web.Shared.Department;
 
-namespace PresalesApp.Web.Client.Views.ComboBox
+namespace PresalesApp.Web.Client.Views.Pickers
 {
-    partial class ComboBox_Departments
+    partial class DepartmentPicker
     {
         [Parameter]
         public EventCallback<Department> OnSelectCallback { get; set; }
@@ -11,9 +11,9 @@ namespace PresalesApp.Web.Client.Views.ComboBox
         [Parameter]
         public Department Department { get; set; } = Department.Any;
 
-        private void OnDepartmentChanged(object? obj)
+        private void OnDepartmentChanged(ChangeEventArgs e)
         {
-            if (Enum.TryParse<Department>(obj?.ToString(), out var _d))
+            if (Enum.TryParse<Department>(e?.Value?.ToString(), out var _d))
             {
                 Department = _d;
                 OnSelectCallback.InvokeAsync(Department);
