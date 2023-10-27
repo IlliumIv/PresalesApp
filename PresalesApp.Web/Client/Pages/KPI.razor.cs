@@ -62,7 +62,6 @@ namespace PresalesApp.Web.Client.Pages
             _presale_name = name;
 
             Storage.SetItemAsString($"{new Uri(Navigation.Uri).LocalPath}.{q_presale}", _presale_name);
-
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
 
             await GenerateReport();
@@ -75,8 +74,8 @@ namespace PresalesApp.Web.Client.Pages
             Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_start}", _period.Start);
             Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_end}", _period.End);
             Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_period_type}", _period.Type);
-
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
+
             await GenerateReport();
         }
 
