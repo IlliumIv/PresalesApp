@@ -178,7 +178,7 @@
     <value>Закрыть</value>
   </data>
   <data name="NotAuthenticatedErrorMessage" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="LogoutButtonText" xml:space="preserve">
     <value>Выйти</value>
@@ -262,7 +262,7 @@
     <value>Проекты</value>
   </data>
   <data name="KpiReportFileName" xml:space="preserve">
-    <value>Отчёт KPI за {0} {1}, {2}</value>
+    <value>Отчёт KPI за {0}, {1}</value>
   </data>
   <data name="ProjectNumberText" xml:space="preserve">
     <value>Номер проекта</value>
