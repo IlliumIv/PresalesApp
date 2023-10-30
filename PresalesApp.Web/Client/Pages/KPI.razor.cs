@@ -15,8 +15,8 @@ namespace PresalesApp.Web.Client.Pages
 
         #region Private Members
         private bool _is_btn_disabled = true;
-        private static Period _period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
-        private static string _presale_name = string.Empty;
+        private Period _period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
+        private string _presale_name = string.Empty;
         private Kpi? _response;
         #endregion
 
@@ -33,10 +33,10 @@ namespace PresalesApp.Web.Client.Pages
         private const string q_presale = "Presale";
         [SupplyParameterFromQuery(Name = q_presale)] public string? PresaleName { get; set; }
 
-        private static Dictionary<string, object?> GetQueryKeyValues() => new()
+        private Dictionary<string, object?> GetQueryKeyValues() => new()
         {
-            [q_start] = _period.Start.ToString(Helpers.Helpers.UriDateTimeFormat),
-            [q_end] = _period.End.ToString(Helpers.Helpers.UriDateTimeFormat),
+            [q_start] = _period.Start.ToString(Helper.UriDateTimeFormat),
+            [q_end] = _period.End.ToString(Helper.UriDateTimeFormat),
             [q_period_type] = _period.Type.ToString(),
             [q_presale] = _presale_name,
         };
@@ -44,10 +44,10 @@ namespace PresalesApp.Web.Client.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            Helpers.Helpers.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref _period.Start);
-            Helpers.Helpers.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _period.End);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PeriodType, query: q_period_type, uri: Navigation.Uri, storage: Storage, param: ref _period.Type);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PresaleName, query: q_presale, uri: Navigation.Uri, storage: Storage, param: ref _presale_name);
+            Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref _period.Start);
+            Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _period.End);
+            Helper.SetFromQueryOrStorage(value: PeriodType, query: q_period_type, uri: Navigation.Uri, storage: Storage, param: ref _period.Type);
+            Helper.SetFromQueryOrStorage(value: PresaleName, query: q_presale, uri: Navigation.Uri, storage: Storage, param: ref _presale_name);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
             await GenerateReport();
@@ -55,7 +55,7 @@ namespace PresalesApp.Web.Client.Pages
 
         #region Private Methods
         private static void GetRowStyle(Invoice invoice, DataGridRowStyling styling) =>
-            styling.Style = $"color: {Helpers.Helpers.SetColor(invoice)};";
+            styling.Style = $"color: {Helper.SetColor(invoice)};";
 
         private async Task OnPresaleChanged(string name)
         {

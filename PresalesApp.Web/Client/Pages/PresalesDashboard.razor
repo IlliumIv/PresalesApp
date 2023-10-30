@@ -17,7 +17,7 @@
                         <div>
                             <div style="background: @ChartColor.FromRgba(colors[item.index].R, colors[item.index].G, colors[item.index].B, color_alfa).ToString()"></div>
                             <p>@item.presale.Name.GetFirstAndLastName():</p>
-                            <p>@Helpers.ToCurrencyString(item.presale.Statistics.Profit)</p>
+                            <p>@Helper.ToCurrencyString(item.presale.Statistics.Profit)</p>
                         </div>
                     }
                 }
@@ -31,7 +31,7 @@
             <div class="timer">@time_left</div>
             @if (overview != null && (decimal)overview.DeltaDay > 0)
             {
-                <div class="delta">+@Helpers.ToCurrencyString((decimal)overview.DeltaDay)</div>
+                <div class="delta">+@Helper.ToCurrencyString((decimal)overview.DeltaDay)</div>
             }
         </div>
         <div class="pie">
@@ -40,8 +40,8 @@
         <div style="position: relative">
             @if (overview != null)
             {
-                <div class="percent">@(overview.Plan != 0 ? Helpers.ToPercentString((double)(overview.Profit / overview.Plan), 1) : "")</div>
-                <div class="left">@Helpers.ToCurrencyString((decimal)overview.Left)</div>
+                <div class="percent">@(overview.Plan != 0 ? Helper.ToPercentString((double)(overview.Profit / overview.Plan), 1) : "")</div>
+                <div class="left">@Helper.ToCurrencyString((decimal)overview.Left)</div>
             }
         </div>
     </div>

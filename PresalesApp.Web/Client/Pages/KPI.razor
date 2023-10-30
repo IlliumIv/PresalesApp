@@ -39,21 +39,21 @@
                     <DataGridAggregate Field="@nameof(Invoice.Amount)" Aggregate="DataGridAggregateType.None">
                         <DisplayTemplate>
                             @{
-                                <span style="text-align: right; display: block;">@Helpers.ToCurrencyString(_response?.Invoices.Sum(i => i.Amount) ?? 0)</span>
+                                <span style="text-align: right; display: block;">@Helper.ToCurrencyString(_response?.Invoices.Sum(i => i.Amount) ?? 0)</span>
                             }
                         </DisplayTemplate>
                     </DataGridAggregate>
                     <DataGridAggregate Field="@nameof(Invoice.SalesAmount)" Aggregate="DataGridAggregateType.None">
                         <DisplayTemplate>
                             @{
-                                <span style="text-align: right; display: block;">@Helpers.ToCurrencyString(_response?.Invoices.Sum(i => i.SalesAmount) ?? 0)</span>
+                                <span style="text-align: right; display: block;">@Helper.ToCurrencyString(_response?.Invoices.Sum(i => i.SalesAmount) ?? 0)</span>
                             }
                         </DisplayTemplate>
                     </DataGridAggregate>
                     <DataGridAggregate Field="@nameof(Invoice.Profit)" Aggregate="DataGridAggregateType.None">
                         <DisplayTemplate>
                             @{
-                                <span style="text-align: right; display: block;">@Helpers.ToCurrencyString(_response?.Invoices.Sum(i => i.Profit) ?? 0)</span>
+                                <span style="text-align: right; display: block;">@Helper.ToCurrencyString(_response?.Invoices.Sum(i => i.Profit) ?? 0)</span>
                             }
                         </DisplayTemplate>
                     </DataGridAggregate>
@@ -73,31 +73,31 @@
                     <DataGridColumn Field="@nameof(Invoice.Amount)" Caption="@Localization["InvoiceAmountText"]" CellStyle="@((e) => "text-align: right")"
                                     Editable="false" Width="11%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="invoice">
                         <DisplayTemplate>
-                            @($"{@Helpers.ToCurrencyString((invoice as Invoice)?.Amount)}")
+                            @($"{Helper.ToCurrencyString((invoice as Invoice)?.Amount)}")
                         </DisplayTemplate>
                     </DataGridColumn>
                     <DataGridColumn Field="@nameof(Invoice.Cost)" Caption="@Localization["InvoiceCostPriceText"]" CellStyle="@((e) => "text-align: right")"
                                     Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="invoice">
                         <DisplayTemplate>
-                            @($"{@Helpers.ToCurrencyString((invoice as Invoice)?.Cost)}")
+                            @($"{Helper.ToCurrencyString((invoice as Invoice)?.Cost)}")
                         </DisplayTemplate>
                     </DataGridColumn>
                     <DataGridColumn Field="@nameof(Invoice.SalesAmount)" Caption="@Localization["InvoiceProfitText"]" CellStyle="@((e) => "text-align: right")"
                                     Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="invoice">
                         <DisplayTemplate>
-                            @($"{@Helpers.ToCurrencyString((invoice as Invoice)?.SalesAmount)}")
+                            @($"{Helper.ToCurrencyString((invoice as Invoice)?.SalesAmount)}")
                         </DisplayTemplate>
                     </DataGridColumn>
                     <DataGridColumn Field="@nameof(Invoice.Percent)" Caption="@Localization["PresalePercentText"]" CellStyle="@((e) => "text-align: right")"
                                     Editable="false" Width="5%" CustomFilter="@DataGridFilters.PercentFilter" Context="invoice">
                         <DisplayTemplate>
-                            @($"{@Helpers.ToPercentString((invoice as Invoice)?.Percent ?? 0, 1)}")
+                            @($"{Helper.ToPercentString((invoice as Invoice)?.Percent ?? 0, 1)}")
                         </DisplayTemplate>
                     </DataGridColumn>
                     <DataGridColumn Field="@nameof(Invoice.Profit)" Caption="@Localization["PresaleProfitText"]" CellStyle="@((e) => "text-align: right")"
                                     Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="invoice">
                         <DisplayTemplate>
-                            @($"{@Helpers.ToCurrencyString((invoice as Invoice)?.Profit)}")
+                            @($"{Helper.ToCurrencyString((invoice as Invoice)?.Profit)}")
                         </DisplayTemplate>
                     </DataGridColumn>
                 </DataGridColumns>

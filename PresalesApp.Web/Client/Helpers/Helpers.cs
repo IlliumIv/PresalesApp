@@ -13,7 +13,7 @@ using Action = PresalesApp.Web.Shared.Action;
 
 namespace PresalesApp.Web.Client.Helpers
 {
-    public static partial class Helpers
+    public static partial class Helper
     {
         public const string DayFormat = "ddd, dd MMMM yyyy";
         public const string MonthFormat = "MMMM yyyy";

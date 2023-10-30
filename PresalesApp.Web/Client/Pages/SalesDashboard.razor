@@ -14,7 +14,7 @@
                 <p>
                     @if (overview != null)
                 {
-                    @Helpers.ToCurrencyString(overview.PreviousActualProfit)
+                    @Helper.ToCurrencyString(overview.PreviousActualProfit)
                 }
             </p>
         </fieldset>
@@ -22,21 +22,21 @@
             <legend>План @(Current.GetLocalizedPeriodName(Localization, false))</legend>
             <p>@if (overview != null)
                 {
-                    @Helpers.ToCurrencyString(overview.CurrentSalesTarget)
+                    @Helper.ToCurrencyString(overview.CurrentSalesTarget)
                 }</p>
         </fieldset>
         <fieldset class="actualProfit">
             <legend>Факт @(Current.GetLocalizedPeriodName(Localization, false))</legend>
             <p>@if (overview != null)
                 {
-                    @Helpers.ToCurrencyString(overview.CurrentActualProfit)
+                    @Helper.ToCurrencyString(overview.CurrentActualProfit)
                 }</p>
         </fieldset>
         <fieldset class="increase">
             <legend>Динамика</legend>
             <p>@if (overview != null)
                 {
-                    @Helpers.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true)
+                    @Helper.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true)
                 }</p>
         </fieldset>
     </div>
@@ -51,7 +51,7 @@
                 <p>
                     @if (overview != null)
                     {
-                        @Helpers.ToPercentString(overview.CurrentSalesTarget != 0 ? decimal.ToDouble(overview.CurrentActualProfit / overview.CurrentSalesTarget) : 0)
+                        @Helper.ToPercentString(overview.CurrentSalesTarget != 0 ? decimal.ToDouble(overview.CurrentActualProfit / overview.CurrentSalesTarget) : 0)
                     }
                 </p>
             </div>
@@ -69,7 +69,7 @@
                                 <td><div style="background:@dataset_colors[item.index]">&nbsp;</div></td>
                                 <td>@(item.index + 1). </td>
                                 <td>@manager.Name</td>
-                                <td>@Helpers.ToCurrencyString(manager.Profit)</td>
+                                <td>@Helper.ToCurrencyString(manager.Profit)</td>
                             </tr>
                         }
                     }
