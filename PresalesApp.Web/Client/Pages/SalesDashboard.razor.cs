@@ -1,6 +1,7 @@
 ﻿using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
 using PresalesApp.Web.Client.Views;
+using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Shared;
 using Period = PresalesApp.Web.Client.Helpers.Period;
 
@@ -30,13 +31,13 @@ namespace PresalesApp.Web.Client.Pages
         private const string q_curr_period_type = "cPeriod";
         [SupplyParameterFromQuery(Name = q_curr_period_type)] public string? CurrPeriodType { get; set; }
 
-        private static Dictionary<string, object?> GetQueryKeyValues() => new()
+        private Dictionary<string, object?> GetQueryKeyValues() => new()
         {
-            [q_prev_start] = Previous.Start.ToString(Helpers.Helpers.UriDateTimeFormat),
-            [q_prev_end] = Previous.End.ToString(Helpers.Helpers.UriDateTimeFormat),
+            [q_prev_start] = Previous.Start.ToString(Helper.UriDateTimeFormat),
+            [q_prev_end] = Previous.End.ToString(Helper.UriDateTimeFormat),
             [q_prev_period_type] = Previous.Type.ToString(),
-            [q_curr_start] = Current.Start.ToString(Helpers.Helpers.UriDateTimeFormat),
-            [q_curr_end] = Current.End.ToString(Helpers.Helpers.UriDateTimeFormat),
+            [q_curr_start] = Current.Start.ToString(Helper.UriDateTimeFormat),
+            [q_curr_end] = Current.End.ToString(Helper.UriDateTimeFormat),
             [q_curr_period_type] = Current.Type.ToString(),
         };
         #endregion
@@ -48,9 +49,9 @@ namespace PresalesApp.Web.Client.Pages
         private List<string> dataset_colors = [];
         private List<string> border_colors = [];
 
-        private static readonly DateTime first_day = new(DateTime.Now.Year, ((DateTime.Now.Month - 1) / 3 + 1) * 3 - 2, 1);
-        private static Period Current = new(first_day, Enums.PeriodType.Quarter);
-        private static Period Previous = new(first_day.AddYears(-1), Enums.PeriodType.Quarter);
+        private static DateTime GetFirstDay() => new(DateTime.Now.Year, ((DateTime.Now.Month - 1) / 3 + 1) * 3 - 2, 1);
+        private Period Current = new(GetFirstDay(), Enums.PeriodType.Quarter);
+        private Period Previous = new(GetFirstDay().AddYears(-1), Enums.PeriodType.Quarter);
 
         private PieChart<decimal> profitChart;
 
@@ -109,13 +110,13 @@ namespace PresalesApp.Web.Client.Pages
 
         protected override void OnInitialized()
         {
-            Helpers.Helpers.SetFromQueryOrStorage(value: PrevStart, query: q_prev_start, uri: Navigation.Uri, storage: Storage, param: ref Previous.Start);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PrevEnd, query: q_prev_end, uri: Navigation.Uri, storage: Storage, param: ref Previous.End);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PrevPeriodType, query: q_prev_period_type, uri: Navigation.Uri, storage: Storage, param: ref Previous.Type);
+            Helper.SetFromQueryOrStorage(value: PrevStart, query: q_prev_start, uri: Navigation.Uri, storage: Storage, param: ref Previous.Start);
+            Helper.SetFromQueryOrStorage(value: PrevEnd, query: q_prev_end, uri: Navigation.Uri, storage: Storage, param: ref Previous.End);
+            Helper.SetFromQueryOrStorage(value: PrevPeriodType, query: q_prev_period_type, uri: Navigation.Uri, storage: Storage, param: ref Previous.Type);
 
-            Helpers.Helpers.SetFromQueryOrStorage(value: CurrStart, query: q_curr_start, uri: Navigation.Uri, storage: Storage, param: ref Current.Start);
-            Helpers.Helpers.SetFromQueryOrStorage(value: CurrEnd, query: q_curr_end, uri: Navigation.Uri, storage: Storage, param: ref Current.End);
-            Helpers.Helpers.SetFromQueryOrStorage(value: CurrPeriodType, query: q_curr_period_type, uri: Navigation.Uri, storage: Storage, param: ref Current.Type);
+            Helper.SetFromQueryOrStorage(value: CurrStart, query: q_curr_start, uri: Navigation.Uri, storage: Storage, param: ref Current.Start);
+            Helper.SetFromQueryOrStorage(value: CurrEnd, query: q_curr_end, uri: Navigation.Uri, storage: Storage, param: ref Current.End);
+            Helper.SetFromQueryOrStorage(value: CurrPeriodType, query: q_curr_period_type, uri: Navigation.Uri, storage: Storage, param: ref Current.Type);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
 

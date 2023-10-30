@@ -68,7 +68,7 @@ namespace PresalesApp.Web.Client.Views.Pickers
             result.Add(new(dt.AddDays(7), Localization["NextWeekText"]));
 
             items_set = [.. result.OrderBy(x => x.Value)];
-            selected_item = new(dt, dt.ToString(Helpers.Helpers.DayFormat).ToUpperFirstLetterString());
+            selected_item = new(dt, dt.ToString(Helper.DayFormat).ToUpperFirstLetterString());
 
             Period.Start = dt;
             Period.SetPeriodByType(PeriodType.Day);
@@ -88,7 +88,7 @@ namespace PresalesApp.Web.Client.Views.Pickers
             result.Add(new(dt.AddMonths(12), $"{dt.AddMonths(12):yyyy}...".ToUpperFirstLetterString()));
 
             items_set = [.. result.OrderBy(x => x.Value)];
-            selected_item = new(dt, dt.ToString(Helpers.Helpers.MonthFormat).ToUpperFirstLetterString());
+            selected_item = new(dt, dt.ToString(Helper.MonthFormat).ToUpperFirstLetterString());
 
             Period.Start = dt;
             Period.SetPeriodByType(PeriodType.Month);
@@ -129,7 +129,7 @@ namespace PresalesApp.Web.Client.Views.Pickers
             result.Add(new(dt.AddYears(4), Localization["NextYearsText"]));
 
             items_set = [.. result.OrderBy(x => x.Value)];
-            selected_item = new(dt, dt.ToString(Helpers.Helpers.YearFormat).ToUpperFirstLetterString());
+            selected_item = new(dt, dt.ToString(Helper.YearFormat).ToUpperFirstLetterString());
             select.SetSelectedIndex(4);
 
             Period.Start = dt;

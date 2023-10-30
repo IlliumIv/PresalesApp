@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using PresalesApp.Bridge1C;
 using PresalesApp.Web.Client.Views;
+using PresalesApp.Web.Client.Helpers;
 using Period = PresalesApp.Web.Client.Helpers.Period;
 
 namespace PresalesApp.Web.Client.Pages
@@ -27,8 +28,8 @@ namespace PresalesApp.Web.Client.Pages
 
         private Dictionary<string, object?> GetQueryKeyValues() => new()
         {
-            [queryFrom] = Period.Start.ToString(Helpers.Helpers.UriDateTimeFormat),
-            [queryTo] = Period.End.ToString(Helpers.Helpers.UriDateTimeFormat),
+            [queryFrom] = Period.Start.ToString(Helper.UriDateTimeFormat),
+            [queryTo] = Period.End.ToString(Helper.UriDateTimeFormat),
             [queryPeriod] = Period.Type.ToString(),
         };
         #endregion
@@ -59,9 +60,9 @@ namespace PresalesApp.Web.Client.Pages
 
         protected override void OnInitialized()
         {
-            Helpers.Helpers.SetFromQueryOrStorage(value: From, query: queryFrom, uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
-            Helpers.Helpers.SetFromQueryOrStorage(value: To, query: queryTo, uri: Navigation.Uri, storage: Storage, param: ref Period.End);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PeriodType, query: queryPeriod, uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
+            Helper.SetFromQueryOrStorage(value: From, query: queryFrom, uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
+            Helper.SetFromQueryOrStorage(value: To, query: queryTo, uri: Navigation.Uri, storage: Storage, param: ref Period.End);
+            Helper.SetFromQueryOrStorage(value: PeriodType, query: queryPeriod, uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
         }
@@ -96,7 +97,7 @@ namespace PresalesApp.Web.Client.Pages
             return new PieChartDataset<double>
             {
                 Label = "# of randoms",
-                Data = RandomizeData(),
+                Data = GetRandomizedData(),
                 BackgroundColor = backgroundColors,
                 BorderColor = borderColors,
                 // Fill = true,
@@ -109,7 +110,7 @@ namespace PresalesApp.Web.Client.Pages
         private readonly List<string> backgroundColors = [ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f)];
         private readonly List<string> borderColors = [ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f)];
 
-        private static List<double> RandomizeData()
+        private List<double> GetRandomizedData()
         {
             var r = new Random(DateTime.Now.Millisecond);
 

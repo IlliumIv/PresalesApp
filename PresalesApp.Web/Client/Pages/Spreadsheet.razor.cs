@@ -14,10 +14,10 @@ namespace PresalesApp.Web.Client.Pages
         public MessageSnackbar GlobalMsgHandler { get; set; }
 
         #region Private Members
-        private static Period _period = new(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
-        private static Department _department = Department.Any;
-        private static Position _position = Position.Any;
-        private static bool _only_active_ones = true;
+        private Period _period = new(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
+        private Department _department = Department.Any;
+        private Position _position = Position.Any;
+        private bool _only_active_ones = true;
         private readonly PeriodicTimer _periodic_timer = new(TimeSpan.FromMinutes(10));
         private Overview? _overview;
         #region Descriptions
@@ -54,10 +54,10 @@ namespace PresalesApp.Web.Client.Pages
         private const string q_only_active_ones = "OnlyActive";
         [SupplyParameterFromQuery(Name = q_only_active_ones)] public string? OnlyActiveOnes { get; set; }
 
-        private static Dictionary<string, object?> GetQueryKeyValues() => new()
+        private Dictionary<string, object?> GetQueryKeyValues() => new()
         {
-            [q_start] = _period.Start.ToString(Helpers.Helpers.UriDateTimeFormat),
-            [q_end] = _period.End.ToString(Helpers.Helpers.UriDateTimeFormat),
+            [q_start] = _period.Start.ToString(Helper.UriDateTimeFormat),
+            [q_end] = _period.End.ToString(Helper.UriDateTimeFormat),
             [q_period_type] = _period.Type.ToString(),
             [q_department] = _department.ToString(),
             [q_position] = _position.ToString(),
@@ -73,12 +73,12 @@ namespace PresalesApp.Web.Client.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            Helpers.Helpers.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref _period.Start);
-            Helpers.Helpers.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _period.End);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PeriodType, query: q_period_type, uri: Navigation.Uri, storage: Storage, param: ref _period.Type);
-            Helpers.Helpers.SetFromQueryOrStorage(value: DepartmentType, query: q_department, uri: Navigation.Uri, storage: Storage, param: ref _department);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PositionType, query: q_position, uri: Navigation.Uri, storage: Storage, param: ref _position);
-            Helpers.Helpers.SetFromQueryOrStorage(value: OnlyActiveOnes, query: q_only_active_ones, uri: Navigation.Uri, storage: Storage, param: ref _only_active_ones);
+            Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref _period.Start);
+            Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _period.End);
+            Helper.SetFromQueryOrStorage(value: PeriodType, query: q_period_type, uri: Navigation.Uri, storage: Storage, param: ref _period.Type);
+            Helper.SetFromQueryOrStorage(value: DepartmentType, query: q_department, uri: Navigation.Uri, storage: Storage, param: ref _department);
+            Helper.SetFromQueryOrStorage(value: PositionType, query: q_position, uri: Navigation.Uri, storage: Storage, param: ref _position);
+            Helper.SetFromQueryOrStorage(value: OnlyActiveOnes, query: q_only_active_ones, uri: Navigation.Uri, storage: Storage, param: ref _only_active_ones);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
             RunTimer();
@@ -120,8 +120,8 @@ namespace PresalesApp.Web.Client.Pages
 
         private static string Format(Project project) =>
             $"{project.Number}, {project.Name}, " +
-            $"{Helpers.Helpers.ToOneDateString(project.ApprovalByTechDirectorAt, project.ApprovalBySalesDirectorAt)}" +
-            $"{Helpers.Helpers.ToDateString(project.PresaleStartAt, " - ")}" +
+            $"{Helper.ToOneDateString(project.ApprovalByTechDirectorAt, project.ApprovalBySalesDirectorAt)}" +
+            $"{Helper.ToDateString(project.PresaleStartAt, " - ")}" +
             $"{(string.IsNullOrEmpty(project.Presale?.Name.GetFirstAndLastName()) ? "" : $", {project.Presale?.Name.GetFirstAndLastName()}")}";
 
         private async void RunTimer()
