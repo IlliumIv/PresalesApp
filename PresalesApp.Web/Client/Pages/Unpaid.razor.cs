@@ -13,9 +13,9 @@ namespace PresalesApp.Web.Client.Pages
 
         #region Private Members
         private UnpaidProjects? _response;
-        private static string _presale_name = string.Empty;
+        private string _presale_name = string.Empty;
         private bool _is_main_project_include = false;
-        private static Period _period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
+        private Period _period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
         private Dictionary<string, object> _btn_attrs = new() { { "disabled", "disabled" } };
         #endregion
 
@@ -32,21 +32,26 @@ namespace PresalesApp.Web.Client.Pages
         private const string q_presale = "Presale";
         [SupplyParameterFromQuery(Name = q_presale)] public string? PresaleName { get; set; }
 
-        private static Dictionary<string, object?> GetQueryKeyValues() => new()
+        private const string q_include_main = "IncludeMain";
+        [SupplyParameterFromQuery(Name = q_include_main)] public string? IncludeMain { get; set; }
+
+        private Dictionary<string, object?> GetQueryKeyValues() => new()
         {
-            [q_start] = _period.Start.ToString(Helpers.Helpers.UriDateTimeFormat),
-            [q_end] = _period.End.ToString(Helpers.Helpers.UriDateTimeFormat),
+            [q_start] = _period.Start.ToString(Helper.UriDateTimeFormat),
+            [q_end] = _period.End.ToString(Helper.UriDateTimeFormat),
             [q_period_type] = _period.Type.ToString(),
             [q_presale] = _presale_name,
+            [q_include_main] = _is_main_project_include.ToString(),
         };
         #endregion
 
         protected override async Task OnInitializedAsync()
         {
-            Helpers.Helpers.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref _period.Start);
-            Helpers.Helpers.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _period.End);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PeriodType, query: q_period_type, uri: Navigation.Uri, storage: Storage, param: ref _period.Type);
-            Helpers.Helpers.SetFromQueryOrStorage(value: PresaleName, query: q_presale, uri: Navigation.Uri, storage: Storage, param: ref _presale_name);
+            Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref _period.Start);
+            Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _period.End);
+            Helper.SetFromQueryOrStorage(value: PeriodType, query: q_period_type, uri: Navigation.Uri, storage: Storage, param: ref _period.Type);
+            Helper.SetFromQueryOrStorage(value: PresaleName, query: q_presale, uri: Navigation.Uri, storage: Storage, param: ref _presale_name);
+            Helper.SetFromQueryOrStorage(value: IncludeMain, query: q_include_main, uri: Navigation.Uri, storage: Storage, param: ref _is_main_project_include);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
             await UpdateData();
@@ -100,6 +105,10 @@ namespace PresalesApp.Web.Client.Pages
         private async void OnModeChanged(object? obj)
         {
             _is_main_project_include = obj == null ? _is_main_project_include : (bool)obj;
+
+            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_include_main}", _is_main_project_include);
+            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
+
             await UpdateData();
         }
         #endregion

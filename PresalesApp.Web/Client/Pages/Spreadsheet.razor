@@ -48,35 +48,35 @@ else
             {
                 <tr>
                     <td>@presale.Name.GetFirstAndLastName()</td>
-                    <td title="@GetTitleInWork()">@Helpers.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
-                    <td title="@title_assign">@Helpers.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
-                    <td title="@title_won">@Helpers.ToEmptyIfZeroString(presale.Statistics.Won)</td>
-                    <td title="@title_conversion">@Helpers.ToPercentString(presale.Statistics.Conversion)</td>
-                    <td title="@title_loss">@Helpers.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Potential)</td>
-                    <td>@Helpers.ToCurrencyString(presale.Statistics.Profit)</td>
-                    <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
-                    <td title="@title_time_spend">@Helpers.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
-                    <td title="@title_avt_time_spend">@Helpers.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
-                    <td title="@title_abandoned">@Helpers.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
-                    <td title="@title_avg_time_to_win">@Helpers.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
-                    <td title="@title_avg_rank">@Helpers.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
+                    <td title="@GetTitleInWork()">@Helper.ToEmptyIfZeroString(presale.Statistics.InWork)</td>
+                    <td title="@title_assign">@Helper.ToEmptyIfZeroString(presale.Statistics.Assign)</td>
+                    <td title="@title_won">@Helper.ToEmptyIfZeroString(presale.Statistics.Won)</td>
+                    <td title="@title_conversion">@Helper.ToPercentString(presale.Statistics.Conversion)</td>
+                    <td title="@title_loss">@Helper.ToEmptyIfZeroString(presale.Statistics.Loss)</td>
+                    <td>@Helper.ToCurrencyString(presale.Statistics.Potential)</td>
+                    <td>@Helper.ToCurrencyString(presale.Statistics.Profit)</td>
+                    <td title="@title_avg_time_to_reaction">@Helper.ToMinutesString(presale.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                    <td title="@title_time_spend">@Helper.ToHoursString(presale.Statistics.SumSpend.ToTimeSpan())</td>
+                    <td title="@title_avt_time_spend">@Helper.ToHoursString(presale.Statistics.AvgSpend.ToTimeSpan())</td>
+                    <td title="@title_abandoned">@Helper.ToEmptyIfZeroString(presale.Statistics.Abnd)</td>
+                    <td title="@title_avg_time_to_win">@Helper.ToDaysString(presale.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                    <td title="@title_avg_rank">@Helper.ToEmptyIfZeroString(Math.Round(presale.Statistics.AvgRank, 1))</td>
                 </tr>
             }
             <tr>
                 <td>Всего</td>
-                <td title="@GetTitleInWork()">@Helpers.ToEmptyIfZeroString(_overview.Statistics.InWork)</td>
-                <td title="@title_assign">@Helpers.ToEmptyIfZeroString(_overview.Statistics.Assign)</td>
-                <td title="@title_won">@Helpers.ToEmptyIfZeroString(_overview.Statistics.Won)</td>
-                <td title="@title_conversion">@Helpers.ToPercentString(_overview.Statistics.Conversion)</td>
-                <td title="@title_loss">@Helpers.ToEmptyIfZeroString(_overview.Statistics.Loss)</td>
-                <td>@Helpers.ToCurrencyString(_overview.Statistics.Potential)</td>
-                <td>@Helpers.ToCurrencyString(_overview.Statistics.Profit)</td>
-                <td title="@title_avg_time_to_reaction">@Helpers.ToMinutesString(_overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
-                <td title="@title_time_spend">@Helpers.ToHoursString(_overview.Statistics.SumSpend.ToTimeSpan())</td>
-                <td title="@title_avt_time_spend">@Helpers.ToHoursString(_overview.Statistics.AvgSpend.ToTimeSpan())</td>
-                <td title="@title_abandoned">@Helpers.ToEmptyIfZeroString(_overview.Statistics.Abnd)</td>
-                <td title="@title_avg_time_to_win">@Helpers.ToDaysString(_overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
+                <td title="@GetTitleInWork()">@Helper.ToEmptyIfZeroString(_overview.Statistics.InWork)</td>
+                <td title="@title_assign">@Helper.ToEmptyIfZeroString(_overview.Statistics.Assign)</td>
+                <td title="@title_won">@Helper.ToEmptyIfZeroString(_overview.Statistics.Won)</td>
+                <td title="@title_conversion">@Helper.ToPercentString(_overview.Statistics.Conversion)</td>
+                <td title="@title_loss">@Helper.ToEmptyIfZeroString(_overview.Statistics.Loss)</td>
+                <td>@Helper.ToCurrencyString(_overview.Statistics.Potential)</td>
+                <td>@Helper.ToCurrencyString(_overview.Statistics.Profit)</td>
+                <td title="@title_avg_time_to_reaction">@Helper.ToMinutesString(_overview.Statistics.AvgTimeToReaction.ToTimeSpan())</td>
+                <td title="@title_time_spend">@Helper.ToHoursString(_overview.Statistics.SumSpend.ToTimeSpan())</td>
+                <td title="@title_avt_time_spend">@Helper.ToHoursString(_overview.Statistics.AvgSpend.ToTimeSpan())</td>
+                <td title="@title_abandoned">@Helper.ToEmptyIfZeroString(_overview.Statistics.Abnd)</td>
+                <td title="@title_avg_time_to_win">@Helper.ToDaysString(_overview.Statistics.AvgTimeToWin.ToTimeSpan())</td>
                 <td title="@title_avg_rank">@Math.Round(_overview.Statistics.AvgRank, 1)</td>
             </tr>
         </tbody>
@@ -84,7 +84,7 @@ else
 
     @if (_overview.AvgDirectorTimeToReaction.Seconds > 0)
     {
-        <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helpers.ToMinutesString(_overview.AvgDirectorTimeToReaction.ToTimeSpan())</p>
+        <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helper.ToMinutesString(_overview.AvgDirectorTimeToReaction.ToTimeSpan())</p>
     }
     @if (_overview.Escalations.Count > 0)
     {
