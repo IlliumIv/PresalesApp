@@ -94,10 +94,16 @@ namespace PresalesApp.Web.Client.Helpers
             _ => char.ToUpper(value[0]) + value[1..]
         };
 
-        public static string ToEmptyIfZeroString(double value) => value switch
+        public static string ToEmptyIfZeroString(double? value) => value switch
         {
             0 => "",
-            _ => value.ToString()
+            _ => $"{value}"
+        };
+
+        public static string ToEmptyIfZeroString(int? value) => value switch
+        {
+            0 => "",
+            _ => $"{value}"
         };
 
         private async static Task SaveAs(IJSRuntime js, string filename, byte[] data)
