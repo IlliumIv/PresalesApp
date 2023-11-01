@@ -151,6 +151,7 @@ message Invoice {
 	repeated Action actions_ignored = 12;
 	google.protobuf.Timestamp last_pay_at = 13;
 	google.protobuf.Timestamp last_shipment_at = 14;
+	int32 rank = 15;
 }
 
 message NamesResponse {

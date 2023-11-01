@@ -6,10 +6,10 @@ using static PresalesApp.Database.DbController;
 
 namespace PresalesApp.Database.Entities
 {
-    public class Project : Entity
+    public class Project(string number) : Entity
     {
         [JsonProperty("Код")]
-        public string Number { get; private set; } = string.Empty;
+        public string Number { get; private set; } = number;
 
         [JsonProperty("Наименование")]
         public string Name { get; set; } = string.Empty;
@@ -50,8 +50,6 @@ namespace PresalesApp.Database.Entities
         public virtual List<Invoice>? Invoices { get; set; }
 
         public FunnelStage FunnelStage { get; set; } = FunnelStage.None;
-
-        public Project(string number) => this.Number = number;
 
         internal override Project GetOrAddIfNotExist(ControllerContext dbContext)
         {
@@ -107,6 +105,10 @@ namespace PresalesApp.Database.Entities
             $"\"Пресейл\":\"{this.Presale?.Name}\"," +
             $"\"ОсновнойПроект\":\"{this.MainProject?.Number}\"}}";
 
+        public bool IsClosed() => ClosedAt != DateTime.MinValue;
+
+        public bool IsClosedAfter(DateTime dt) => ClosedAt != DateTime.MinValue && ClosedAt < dt;
+
         public bool IsOverdue(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {
             var from = this.ApprovalByTechDirectorAt;
@@ -130,13 +132,13 @@ namespace PresalesApp.Database.Entities
 
         public int Rank()
         {
-            HashSet<PresaleAction> actionsIgnored = new(), actionsTallied = new();
-            HashSet<Project> projectsIgnored = new(), projectsFound = new();
+            HashSet<PresaleAction> actionsIgnored = [], actionsTallied = [];
+            HashSet<Project> projectsIgnored = [], projectsFound = [];
             return Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound);
         }
 
         public int Rank(ref HashSet<PresaleAction> actionsIgnored, ref HashSet<PresaleAction> actionsTallied,
-            ref HashSet<Project> projectsIgnored, ref HashSet<Project> projectsFound)
+            ref HashSet<Project> projectsIgnored, ref HashSet<Project> projectsFound, DateTime ignoreProjectsClosedAfter = new DateTime())
         {
             if (projectsFound.Contains(this)) return 0;
             else projectsFound.Add(this);
@@ -144,24 +146,33 @@ namespace PresalesApp.Database.Entities
             var ignored = this.PresaleActions?.Where(a => a.Type == ActionType.Unknown)?.ToHashSet();
             if (ignored != null) actionsIgnored.UnionWith(ignored);
 
+            int rank = 0;
             var counted = this.PresaleActions?.Where(a => a.Type != ActionType.Unknown)?.ToHashSet();
-            if (counted == null || counted.Count == 0) projectsIgnored.Add(this);
-            else actionsTallied.UnionWith(counted);
 
-            int rank = CalcRankByTimeSpend(ActionType.Calculation, 5);
-            rank += CalcRankByTimeSpend(ActionType.Consultation, 5);
-            rank += CalcRankByTimeSpend(ActionType.Negotiations, 10);
-            rank += CalcRankByTimeSpend(ActionType.ProblemDiagnostics, 15);
-            rank += this.PresaleActions?.Where(a => a.Type != ActionType.Calculation
-                                    && a.Type != ActionType.Consultation
-                                    && a.Type != ActionType.Negotiations
-                                    && a.Type != ActionType.ProblemDiagnostics
-                                    && a.Type != ActionType.Unknown)
-                            .Sum(a => a.Rank) ?? 0;
+            if (counted == null || counted.Count == 0 || IsClosedAfter(ignoreProjectsClosedAfter))
+            {
+                projectsIgnored.Add(this);
+                if (counted != null) actionsIgnored.UnionWith(counted);
+            } 
+            else
+            {
+                rank = CalcRankByTimeSpend(ActionType.Calculation, 5);
+                rank += CalcRankByTimeSpend(ActionType.Consultation, 5);
+                rank += CalcRankByTimeSpend(ActionType.Negotiations, 10);
+                rank += CalcRankByTimeSpend(ActionType.ProblemDiagnostics, 15);
+                rank += this.PresaleActions?.Where(a => a.Type != ActionType.Calculation
+                                        && a.Type != ActionType.Consultation
+                                        && a.Type != ActionType.Negotiations
+                                        && a.Type != ActionType.ProblemDiagnostics
+                                        && a.Type != ActionType.Unknown)
+                                .Sum(a => a.Rank) ?? 0;
+
+                actionsTallied.UnionWith(counted);
+            }
 
             if (this.MainProject != null)
                 rank += this.MainProject
-                    .Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound);
+                    .Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound, ignoreProjectsClosedAfter);
 
             return rank;
         }

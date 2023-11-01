@@ -24,7 +24,6 @@ using Google.Protobuf;
 using PresalesApp.Database.Enums;
 using PresalesApp.Web.Server.Authorization;
 using PresalesApp.Web.Authorization;
-using PresalesApp.Web.Server;
 using AppApi = PresalesApp.Web.Shared.Api;
 
 namespace PresalesApp.Web.Controllers
@@ -46,6 +45,7 @@ namespace PresalesApp.Web.Controllers
         private static readonly Dictionary<(DateTime Start, DateTime End), (decimal Value, DateTime CalculationTime)> _salesTargetCache = [];
 
         private static string _cachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
+        
         private static ImageResponse _cashedImageGirl = new()
         {
             Raw = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3",
@@ -62,6 +62,7 @@ namespace PresalesApp.Web.Controllers
             Liked = false,
             Id = "wGENt52EEnU"
         };
+
         private static ImageResponse _cashedImageNY = new()
         {
             Raw = "https://images.unsplash.com/photo-1514803530614-3a2bef88f31c?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2NzA1MDkwMTY&ixlib=rb-4.0.3",
@@ -211,7 +212,11 @@ namespace PresalesApp.Web.Controllers
                 HashSet<PresaleAction> actionsIgnored = [], actionsTallied = [];
                 HashSet<Project> projectsIgnored = [], projectsFound = [];
 
-                var percent = invoice.Project?.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound) switch
+                var startAt = invoice.Project?.PresaleStartAt is null ? DateTime.MinValue : invoice.Project.PresaleStartAt;
+                var dtToCompare = startAt > DateTime.MinValue.AddDays(180) ? startAt.AddDays(-180) : DateTime.MinValue;
+
+                var rank = invoice.Project is null ? 0 : invoice.Project.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound, dtToCompare);
+                var percent = rank switch
                 {
                     int n when n >= 1 && n <= 3 => .004,
                     int n when n >= 4 && n <= 6 => .007,
@@ -227,6 +232,7 @@ namespace PresalesApp.Web.Controllers
                 invoiceReply.SalesAmount = DecimalValue.FromDecimal(profit);
                 invoiceReply.Percent = percent;
                 invoiceReply.Profit = DecimalValue.FromDecimal(profit * (decimal)percent);
+                invoiceReply.Rank = rank;
 
                 foreach (var inv in projectsIgnored.OrderBy(p => p.Number))
                     invoiceReply.ProjectsIgnored.Add(inv.Translate());
@@ -631,7 +637,7 @@ namespace PresalesApp.Web.Controllers
                 if (project == null) continue;
                 if (!projectsViewed.Add(project)) continue;
 
-                var some = db.PresaleActions?.Where(a => a.Project!.Number == project.Number)?.ToList();
+                db.PresaleActions?.Where(a => a.Project!.Number == project.Number)?.ToList();
 
                 var prj = db.Projects?.Where(p => p.Number == project.Number)?.Include(p => p.MainProject).FirstOrDefault();
                 if (prj?.MainProject?.Number != null)
