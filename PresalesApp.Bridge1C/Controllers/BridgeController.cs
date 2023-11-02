@@ -69,7 +69,7 @@ namespace PresalesApp.Bridge1C.Controllers
 
         private static bool TryGetData<T>(out List<T> result, ref Update update) where T : Entity
         {
-            result = new List<T>();
+            result = [];
 
             var (request, period) = DefineVariables<T>(ref update);
 
@@ -128,8 +128,7 @@ namespace PresalesApp.Bridge1C.Controllers
 
             if (update.GetType().Name == nameof(CacheLog))
             {
-                var cache_log = previous_update as CacheLog;
-                if (cache_log != null)
+                if (previous_update is CacheLog cache_log)
                 {
                     to = (cache_log.PeriodEnd - cache_log.SynchronizedTo).TotalDays > 1 ?
                         cache_log.SynchronizedTo.AddDays(1) : cache_log.PeriodEnd;

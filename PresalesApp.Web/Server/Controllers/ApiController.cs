@@ -596,7 +596,7 @@ namespace PresalesApp.Web.Controllers
 
             foreach (var presale in presales)
             {
-                if (!presale.Projects?.Any() ?? true) continue;
+                if (presale.Projects?.Count == 0) continue;
                 foreach (var project in presale.Projects!.OrderBy(p => p.ClosedAt).ThenBy(p => p.Number))
                     reply.Projects.Add(project.Translate());
             }
