@@ -36,7 +36,7 @@
             <legend>Динамика</legend>
             <p>@if (overview != null)
                 {
-                    @Helper.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, true)
+                    @Helper.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, allowNegatives: true)
                 }</p>
         </fieldset>
     </div>

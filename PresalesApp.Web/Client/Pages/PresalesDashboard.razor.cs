@@ -7,6 +7,7 @@ using PresalesApp.Web.Shared;
 using Department = PresalesApp.Web.Shared.Department;
 using Position = PresalesApp.Web.Shared.Position;
 using Period = PresalesApp.Web.Client.Helpers.Period;
+using System.Globalization;
 
 namespace PresalesApp.Web.Client.Pages
 {
@@ -17,7 +18,7 @@ namespace PresalesApp.Web.Client.Pages
 
         private TimeSpan time_left = new(0, 10, 0);
 
-        private MonthProfitOverview overview;
+        private ProfitOverview overview;
 
         private PieChart<decimal> chart;
 
@@ -53,6 +54,8 @@ namespace PresalesApp.Web.Client.Pages
             RunTimer();
         }
 
+        private decimal GetCurrentDayProfit() => overview?.Profit?.FirstOrDefault(per => per.Key == DateTime.Now.StartOfDay().ToString(CultureInfo.InvariantCulture)).Value;
+
         private readonly PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
         private readonly Period period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
         private static string GetChartOptions() => "{\"cutout\":\"30%\",\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
@@ -87,7 +90,7 @@ namespace PresalesApp.Web.Client.Pages
         {
             try
             {
-                overview = await AppApi.GetMonthProfitOverviewAsync(new OverviewRequest
+                overview = await AppApi.GetProfitOverviewAsync(new OverviewRequest
                 {
                     Period = period.Translate(),
                     Department = Department.Any,

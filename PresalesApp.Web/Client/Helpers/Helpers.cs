@@ -28,51 +28,65 @@ namespace PresalesApp.Web.Client.Helpers
 
         public static string ToMinMaxFormatString(DateTime? value) => $"{value:yyyy-MM-dd}";
 
-        public static string ToCurrencyString(this decimal value, bool allowNegatives = false, CultureInfo? cultureInfo = null)
+        public static string ToCurrencyString(this decimal value, bool allowNegatives = false, bool shortFormat = false, CultureInfo? cultureInfo = null)
         {
             cultureInfo ??= new CultureInfo("ru-RU");
             var numberFormat = cultureInfo.NumberFormat;
 
-            string pattern = (value >= decimal.Zero) switch
+            string result = shortFormat switch
             {
-                true => numberFormat.CurrencyPositivePattern switch
-                {
-                    0 => "{0}{1}",
-                    1 => "{1}{0}",
-                    2 => "{0} {1}",
-                    3 => "{1} {0}",
-                    _ => throw new NotImplementedException()
-                },
-                false => allowNegatives switch
-                {
-                    true => numberFormat.CurrencyNegativePattern switch
-                    {
-                        0 => "({0}{1})",
-                        1 => "{0}{1}",
-                        2 => "{0}{1}",
-                        3 => "{0}{1}",
-                        4 => "({1}{0})",
-                        5 => "{1}{0}",
-                        6 => "{1}{0}",
-                        7 => "{1}{0}",
-                        8 => "{1} {0}",
-                        9 => "{0} {1}",
-                        10 => "{1} {0}",
-                        11 => "{0} {1}",
-                        12 => "{0} {1}",
-                        13 => "{1} {0}",
-                        14 => "({0} {1})",
-                        15 => "({1} {0})",
-                        _ => throw new NotImplementedException(),
-                    },
-                    false => ""
-                }
+                false => $"{value:N2}",
+                true => value.ToString(value.GetShortener(), cultureInfo)
             };
 
-            return string.Format(cultureInfo, pattern, numberFormat.CurrencySymbol, $"{value:N2}");
+            return string.Format(cultureInfo, value.GetPattern(cultureInfo, allowNegatives), numberFormat.CurrencySymbol, result);
         }
 
-        public static string ToPercentString(double value, int digits = 0) =>
+        private static string GetShortener(this decimal value) => Math.Abs(value) switch
+        {
+            > 1_000_000_000 => "0,,,.###B",
+            > 1_000_000 => "0,,.##M",
+            > 1_000 => "0,.#K",
+            _ => "0.#"
+        };
+
+        private static string GetPattern(this decimal value, CultureInfo cultureInfo, bool allowNegatives) => (value >= decimal.Zero) switch
+        {
+            true => cultureInfo.NumberFormat.CurrencyPositivePattern switch
+            {
+                0 => "{0}{1}",
+                1 => "{1}{0}",
+                2 => "{0} {1}",
+                3 => "{1} {0}",
+                _ => throw new NotImplementedException()
+            },
+            false => allowNegatives switch
+            {
+                true => cultureInfo.NumberFormat.CurrencyNegativePattern switch
+                {
+                    0 => "({0}{1})",
+                    1 => "{0}{1}",
+                    2 => "{0}{1}",
+                    3 => "{0}{1}",
+                    4 => "({1}{0})",
+                    5 => "{1}{0}",
+                    6 => "{1}{0}",
+                    7 => "{1}{0}",
+                    8 => "{1} {0}",
+                    9 => "{0} {1}",
+                    10 => "{1} {0}",
+                    11 => "{0} {1}",
+                    12 => "{0} {1}",
+                    13 => "{1} {0}",
+                    14 => "({0} {1})",
+                    15 => "({1} {0})",
+                    _ => throw new NotImplementedException(),
+                },
+                false => ""
+            }
+        };
+
+        public static string ToPercentString(this double value, int digits = 0) =>
             value == 0 ? "" : string.Format($"{{0:P{digits}}}", value);
 
         public static string ToDaysString(TimeSpan avgTTW) => avgTTW == TimeSpan.Zero ? "" : $"{avgTTW.TotalDays:f0}";
@@ -325,5 +339,7 @@ namespace PresalesApp.Web.Client.Helpers
             else if (storage.ContainKey($"{new Uri(uri).LocalPath}.{query}"))
                 param = storage.GetItemAsString($"{new Uri(uri).LocalPath}.{query}");
         }
+
+        public static DateTime StartOfDay(this DateTime date) => new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, 0);
     }
 }
