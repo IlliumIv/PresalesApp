@@ -200,6 +200,8 @@ message Statistic {
 	google.protobuf.Duration sum_spend = 11;
 	types.DecimalValue profit = 12;
 	types.DecimalValue potential = 13;
+	int32 invoices = 14;
+	int32 invoices_shipped = 15;
 }
 
 message Project {
