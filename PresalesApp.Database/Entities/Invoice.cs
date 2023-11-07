@@ -5,10 +5,10 @@ using static PresalesApp.Database.DbController;
 
 namespace PresalesApp.Database.Entities
 {
-    public class Invoice : Entity
+    public class Invoice(string number) : Entity
     {
         [JsonProperty("Номер")]
-        public string Number { get; set; } = string.Empty;
+        public string Number { get; set; } = number;
 
         [JsonProperty("Дата"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime Date { get; set; } = new(0, DateTimeKind.Utc);
@@ -33,8 +33,6 @@ namespace PresalesApp.Database.Entities
 
         [JsonProperty("ПрибыльПериоды")]
         public virtual List<ProfitPeriod>? ProfitPeriods { get; set; }
-
-        public Invoice(string number) => this.Number = number;
 
         public decimal GetProfit() => this.ProfitPeriods?.Sum(p => p.Amount) ?? 0;
 

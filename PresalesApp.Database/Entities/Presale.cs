@@ -5,9 +5,9 @@ using static PresalesApp.Database.DbController;
 
 namespace PresalesApp.Database.Entities
 {
-    public class Presale : Entity
+    public class Presale(string name) : Entity
     {
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; } = name;
 
         public Department Department { get; set; } = Department.None;
 
@@ -18,8 +18,6 @@ namespace PresalesApp.Database.Entities
         public virtual List<Project>? Projects { get; set; }
 
         public virtual List<Invoice>? Invoices { get; set; }
-
-        public Presale(string name) => this.Name = name;
 
         internal override bool TryUpdateIfExist(ControllerContext dbContext)
         {
@@ -77,7 +75,7 @@ namespace PresalesApp.Database.Entities
 
         public int CountProjectsAbandoned(DateTime from, int since) =>
             this.Projects?.Where(p => p.Status == ProjectStatus.WorkInProgress)?
-            .Where(p => p.PresaleActions != null && p.PresaleActions.Any())?
+            .Where(p => p.PresaleActions != null && p.PresaleActions.Count != 0)?
             .Where(p => p.PresaleActions?.Max(a => a.Date) <
                 (from == DateTime.MinValue ? from : from.AddDays(-since)))?
             .Count() ?? 0;
