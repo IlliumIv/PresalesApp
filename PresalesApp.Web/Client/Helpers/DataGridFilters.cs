@@ -25,6 +25,16 @@ namespace PresalesApp.Web.Client.Helpers
             return true;
         }
 
+        public static bool StatisticByProfitFilter(object statistic, object searchValue)
+        {
+            var @decimal = (decimal)((Statistic)statistic).Profit;
+            if (decimal.TryParse(searchValue?.ToString(), out var filter))
+            {
+                return @decimal >= filter;
+            }
+            return true;
+        }
+
         public static bool PresaleFilter(object itemValue, object searchValue)
         {
             var presale = (Presale)itemValue;

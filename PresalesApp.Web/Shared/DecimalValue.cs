@@ -1,6 +1,6 @@
 ﻿namespace PresalesApp.Web.Shared
 {
-    public partial class DecimalValue
+    public partial class DecimalValue : IComparable
     {
         private const decimal NanoFactor = 1_000_000_000;
 
@@ -25,6 +25,16 @@
             var units = decimal.ToInt64(value);
             var nanos = decimal.ToInt32((value - units) * NanoFactor);
             return new DecimalValue(units, nanos);
+        }
+
+        public int CompareTo(object? value)
+        {
+            if (value is null)
+                return 1;
+            if (value is not DecimalValue dv)
+                throw new ArgumentException("Argument must be DecimalValue");
+
+            return decimal.Compare(this, dv);
         }
     }
 }

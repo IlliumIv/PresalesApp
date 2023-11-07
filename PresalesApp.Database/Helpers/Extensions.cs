@@ -59,6 +59,12 @@ namespace PresalesApp.Database.Helpers
                 #region Потенциал
                 Potential = presale.SumPotential(_from, _to),
                 #endregion
+                #region Счетов
+                Invoices = presale.Invoices?.Count ?? 0,
+                #endregion
+                #region Счетов отгружено
+                InvoicesShipped = presale.Invoices?.Where(i => from <= i.LastShipmentAt && i.LastShipmentAt <= to)?.Count() ?? 0,
+                #endregion
                 #endregion
                 #region Среднее время жизни проекта до выигрыша
                 AvgTimeToWin = Duration.FromTimeSpan(presale.AverageTimeToWin()),
