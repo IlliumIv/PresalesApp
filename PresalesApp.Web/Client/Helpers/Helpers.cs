@@ -340,6 +340,6 @@ namespace PresalesApp.Web.Client.Helpers
                 param = storage.GetItemAsString($"{new Uri(uri).LocalPath}.{query}");
         }
 
-        public static DateTime StartOfDay(this DateTime date) => new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, 0);
+        public static DateTime StartOfDay(this DateTime date) => new(date.Year, date.Month, date.Day, 0, 0, 0, 0);
     }
 }

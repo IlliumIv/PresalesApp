@@ -20,7 +20,7 @@ namespace PresalesApp.Web.Client.Helpers
                 _ => throw new NotImplementedException()
             }, periodType) { }
 
-        public Web.Shared.Period Translate() => new()
+        public Shared.Period Translate() => new()
         {
             From = Timestamp.FromDateTime(Start.ToUniversalTime()),
             To = Timestamp.FromDateTime(End.ToUniversalTime())

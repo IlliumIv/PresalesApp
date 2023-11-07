@@ -498,8 +498,6 @@ namespace PresalesApp.Web.Controllers
             var department = request?.Department ?? Shared.Department.Any;
             var onlyActive = request?.OnlyActive ?? false;
 
-            DateTime.Now.ToString();
-
             var (profit, presales) = await GetProfitStatistic(from, to, position, department, onlyActive);
 
             if (!_salesTargetCache.TryGetValue((from, to), out var value)
@@ -644,8 +642,7 @@ namespace PresalesApp.Web.Controllers
         }
 
         private static async Task<(Dictionary<DateTime, decimal> Profit, Shared.Presale[] Presales)> GetProfitStatistic(
-            DateTime from, DateTime to,
-            Shared.Position position, Shared.Department department, bool onlyActive)
+            DateTime from, DateTime to, Shared.Position position, Shared.Department department, bool onlyActive)
         {
             using var db = new ReadOnlyContext();
 
@@ -677,10 +674,7 @@ namespace PresalesApp.Web.Controllers
                     filteredPresales.Add(new Shared.Presale()
                     {
                         Name = presale.Name,
-                        Statistics = new Statistic()
-                        {
-                            Profit = DecimalValue.FromDecimal(presaleProfit)
-                        }
+                        Statistics = presale.GetStatistic(from, to)
                     });
                 }
             }
