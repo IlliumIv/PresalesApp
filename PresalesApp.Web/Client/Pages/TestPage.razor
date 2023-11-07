@@ -1,5 +1,4 @@
 ﻿@page "/testpage"
-@page "/testpage/{StartOfPeriod}"
 @layout Test
 
 <div class="d-flex">
@@ -11,5 +10,6 @@
 <PeriodPicker Period="@Period" PeriodChanged="OnPeriodChanged" />
 <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=CleanStorage>Clean Storage</RadzenButton>
 <div style="width: 500px;height: 500px">
+    <LineChart @ref="lineChart" TItem="double" OptionsJsonString="@GetChartOptions()" />
     <PieChart @ref="pieChart" TItem="double" />
 </div>

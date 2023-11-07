@@ -88,11 +88,18 @@ namespace PresalesApp.Web.Client.Pages
         private async Task HandleRedraw()
         {
             await pieChart.Clear();
-            await pieChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset());
-        }
+            await pieChart.AddLabelsDatasetsAndUpdate(Labels, GetPieChartDataset());
+
+            await lineChart.Clear();
+            await lineChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset(), GetSmallPlanLine(), GetBigPlanLine(), GetMinPoint());
+       }
 
         private PieChart<double> pieChart;
-        private PieChartDataset<double> GetLineChartDataset()
+        private LineChart<double> lineChart;
+
+        private static string GetChartOptions() => "{\"plugins\":{\"legend\":{\"display\": false}}}";
+
+        private PieChartDataset<double> GetPieChartDataset()
         {
             return new PieChartDataset<double>
             {
@@ -106,22 +113,82 @@ namespace PresalesApp.Web.Client.Pages
             };
         }
 
+        private LineChartDataset<double> GetLineChartDataset()
+        {
+            return new LineChartDataset<double>
+            {
+                Label = "# of randoms",
+                Data = GetRandomizedData(),
+                BackgroundColor = backgroundColors,
+                BorderColor = borderColors,
+                Fill = true,
+                PointRadius = 0,
+                // CubicInterpolationMode = "monotone",
+            };
+        }
+
+        private LineChartDataset<double> GetSmallPlanLine()
+        {
+            return new LineChartDataset<double>
+            {
+                Label = "real plan",
+                Data = SmallPlanLine,
+                BackgroundColor = backgroundColors,
+                BorderColor = borderColors,
+                // Fill = true,
+                PointRadius = 0,
+                // CubicInterpolationMode = "monotone",
+            };
+        }
+
+        private LineChartDataset<double> GetBigPlanLine()
+        {
+            return new LineChartDataset<double>
+            {
+                Label = "big plan",
+                Data = BigPlanLine,
+                BackgroundColor = backgroundColors,
+                BorderColor = borderColors,
+                // Fill = true,
+                PointRadius = 0,
+                // CubicInterpolationMode = "monotone",
+            };
+        }
+
+        private LineChartDataset<double> GetMinPoint()
+        {
+            return new LineChartDataset<double>
+            {
+                Label = "min point",
+                Data = [35],
+                BackgroundColor = backgroundColors,
+                BorderColor = borderColors,
+                // Fill = true,
+                PointRadius = 0,
+                // CubicInterpolationMode = "monotone",
+            };
+        }
+
         private readonly string[] Labels = ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"];
         private readonly List<string> backgroundColors = [ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f)];
         private readonly List<string> borderColors = [ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f)];
 
         private List<double> GetRandomizedData()
         {
-            var r = new Random(DateTime.Now.Millisecond);
+            var r = new Random();
 
             return [
-                r.Next( 3, 50 ) * r.NextDouble(),
-                r.Next( 3, 50 ) * r.NextDouble(),
-                r.Next( 3, 50 ) * r.NextDouble(),
-                r.Next( 3, 50 ) * r.NextDouble(),
-                r.Next( 3, 50 ) * r.NextDouble(),
-                r.Next( 3, 50 ) * r.NextDouble()
+                r.Next(3, 50) * r.NextDouble(),
+                r.Next(3, 50) * r.NextDouble(),
+                r.Next(3, 50) * r.NextDouble(),
+                r.Next(3, 50) * r.NextDouble(),
+                r.Next(3, 50) * r.NextDouble(),
+                r.Next(3, 50) * r.NextDouble()
             ];
         }
+
+        private static readonly List<double> SmallPlanLine = [25, 25, 25, 25, 25, 25];
+
+        private static readonly List<double> BigPlanLine = [30, 30, 30, 30, 30, 30];
     }
 }

@@ -1,0 +1,128 @@
+﻿@page "/presales-ny-dashboard"
+@implements IDisposable
+@layout Infographic
+
+<div class="layout">
+    <div class="percent plan content">
+        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.2f).ToJsRgba()">
+            <legend>@GetPlanName() план</legend>
+            <div class="plan-layout">
+                <p class="plan-percent">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), 120_000_000)</p>
+                <div class="plan-amount">
+                    <p>@Helper.ToCurrencyString(overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+    <div class="day-profit plan content">
+        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.2f).ToJsRgba()">
+            <legend>Прирост за день</legend>
+            <div class="plan-layout">
+                <p class="plan-percent">@(GetCurrentDayProfit() switch { > 0 => $"+{Helper.ToCurrencyString(GetCurrentDayProfit(), shortFormat: true)}", _ => "" })&nbsp;</p>
+            </div>
+        </fieldset>
+    </div>
+    <div class="chart content" style="--aspect-ratio: 3/1;">
+        <LineChart @ref="lineChart" TItem="decimal" OptionsJsonString="@GetChartOptions()" />
+    </div>
+    <div class="allocation content">
+        @if (overview is not null)
+        {
+            <DataGrid TItem="Presale"
+                      Data="@(overview.Presales.OrderByDescending(p => p.Statistics.Profit))"
+                      DetailRowStartsVisible="false"
+                      Filterable="false"
+                      Sortable="false"
+                      PageSize="int.MaxValue"
+                      RowSelectable=@((x) => false)
+                      Responsive Borderless>
+             <DataGridAggregates>
+                 <DataGridAggregate Field="@nameof(Presale.Name)" Aggregate="DataGridAggregateType.None">
+                     <DisplayTemplate>
+                                <span style="text-align: right; display: block;">@Localization["TotalText"]</span>
+                        </DisplayTemplate>
+                    </DataGridAggregate>
+
+                    <DataGridAggregate Field="@nameof(Presale.Statistics)" Aggregate="DataGridAggregateType.None">
+                        <DisplayTemplate>
+                            <span style="text-align: right; display: block;">@Helper.ToCurrencyString(overview?.Presales.Sum(i => i.Statistics.Profit) ?? 0)</span>
+                        </DisplayTemplate>
+                    </DataGridAggregate>
+
+                    <DataGridAggregate Field="@nameof(Presale.IsActive)" Aggregate="DataGridAggregateType.None">
+                        <DisplayTemplate>
+                            <span style="text-align: right; display: block;">100&nbsp;%</span>
+                        </DisplayTemplate>
+                    </DataGridAggregate>
+
+                    <DataGridAggregate Field="@nameof(Presale.Department)" Aggregate="DataGridAggregateType.None">
+                        <DisplayTemplate>
+                            <span style="text-align: right; display: block;">@(overview?.Presales.Sum(i => i.Statistics.Invoices - i.Statistics.InvoicesShipped) ?? 0)</span>
+                        </DisplayTemplate>
+                    </DataGridAggregate>
+
+                    <DataGridAggregate Field="@nameof(Presale.Position)" Aggregate="DataGridAggregateType.None">
+                        <DisplayTemplate>
+                            <span style="text-align: right; display: block;">@(overview?.Presales.Sum(i => i.Statistics.InvoicesShipped) ?? 0)</span>
+                        </DisplayTemplate>
+                    </DataGridAggregate>
+                </DataGridAggregates>
+             <DataGridColumns>
+                 <DataGridColumn Field="@nameof(Presale.Name)" Caption="Пресейл"
+                                 Editable="false" CustomFilter="@DataGridFilters.DefaultFilter" Context="presale">
+                     <DisplayTemplate>
+                         @Helper.GetFirstAndLastName((presale as Presale)?.Name ?? "")
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    <DataGridColumn Field="@nameof(Presale.Statistics)" Caption="Сумма" CellStyle="@((e) => "text-align: right")"
+                                    Editable="false" CustomFilter="@DataGridFilters.StatisticByProfitFilter" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
+                        <DisplayTemplate>
+                            <div class="profit-layout">
+                                <div class="profit-progress" style="width: @GetProgressPercentString((presale as Presale).Statistics.Profit, overview.Presales.Max(p => p.Statistics.Profit)); background-color: @ChartColor.FromRgba(12, 90, 74, 0.2f).ToJsRgba()"> &nbsp; </div>
+                                <span class="profit">
+                                    @($"{Helper.ToCurrencyString((presale as Presale)?.Statistics.Profit)}")
+                                </span>
+                            </div>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    <DataGridColumn Field="@nameof(Presale.IsActive)" Caption="Доля" CellStyle="@((e) => "text-align: right")"
+                                    Editable="false" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
+                        <DisplayTemplate>
+                            @GetProgressPercentString((presale as Presale).Statistics.Profit, overview.Presales.Sum(p => p.Statistics.Profit))
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    <DataGridColumn Field="@nameof(Presale.Department)" Caption="Счетов" CellStyle="@((e) => "text-align: right")"
+                                    Editable="false" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
+                        <DisplayTemplate>
+                            @($"{(presale as Presale)?.Statistics.Invoices - (presale as Presale)?.Statistics.InvoicesShipped}")
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                    <DataGridColumn Field="@nameof(Presale.Position)" Caption="Выиграно" CellStyle="@((e) => "text-align: right")"
+                                    Editable="false" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
+                        <DisplayTemplate>
+                            @($"{(presale as Presale)?.Statistics.InvoicesShipped}")
+                        </DisplayTemplate>
+                    </DataGridColumn>
+
+                </DataGridColumns>
+            </DataGrid>
+        }
+    </div>
+    <div class="img-container content">
+        <img src="@img?.Regular" alt="@img?.AltDescription" />
+    </div>
+    <div class="img-credits content">
+        <p>
+            @((MarkupString)Localization["UnsplashCredits",
+                (MarkupString)$"<a href=\"{img?.AuthorUrl}\" target=\"_blank\">{img?.AuthorName}</a>",
+                (MarkupString)$"<a href=\"{img?.SourceUrl}\" target=\"_blank\">{img?.SourceName}</a>"].Value)
+        </p>
+    </div>
+    <div class="img-keyword content">
+        <input @bind="@image_keyword" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
+    </div>
+</div>
