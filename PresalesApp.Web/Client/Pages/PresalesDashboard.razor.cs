@@ -68,7 +68,7 @@ namespace PresalesApp.Web.Client.Pages
 
         private async void RunTimer()
         {
-            int count = 0;
+            int count = 600;
             var second = new TimeSpan(0, 0, 1);
             while (await periodic_timer.WaitForNextTickAsync())
             {
@@ -151,16 +151,6 @@ namespace PresalesApp.Web.Client.Pages
                 Storage.SetItemAsString($"{new Uri(Navigation.Uri).LocalPath}.{q_keyword}", image_keyword);
                 Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
                 await UpdateImage();
-            }
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                await UpdateData();
-                await UpdateImage();
-                await RedrawChart();
             }
         }
 
