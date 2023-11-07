@@ -1,30 +1,22 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PresalesApp.Database.Helpers;
 using PresalesApp.Database.Entities;
 using PresalesApp.Web.Shared;
 using System.Security.Authentication;
-using System.Security.Cryptography;
-using Enum = System.Enum;
 using Position = PresalesApp.Database.Enums.Position;
 using Department = PresalesApp.Database.Enums.Department;
-using ActionType = PresalesApp.Database.Enums.ActionType;
-using FunnelStage = PresalesApp.Database.Enums.FunnelStage;
 using ProjectStatus = PresalesApp.Database.Enums.ProjectStatus;
 using Project = PresalesApp.Database.Entities.Project;
-using Presale = PresalesApp.Database.Entities.Presale;
-using Invoice = PresalesApp.Database.Entities.Invoice;
 using static PresalesApp.Database.DbController;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Google.Protobuf;
-using PresalesApp.Database.Enums;
 using PresalesApp.Web.Server.Authorization;
 using PresalesApp.Web.Authorization;
 using AppApi = PresalesApp.Web.Shared.Api;
+using System.Globalization;
 
 namespace PresalesApp.Web.Controllers
 {
@@ -498,7 +490,7 @@ namespace PresalesApp.Web.Controllers
             }
         }
 
-        public override async Task<MonthProfitOverview> GetMonthProfitOverview(OverviewRequest request, ServerCallContext context)
+        public override async Task<ProfitOverview> GetProfitOverview(OverviewRequest request, ServerCallContext context)
         {
             var from = request?.Period?.From?.ToDateTime() ?? DateTime.MinValue;
             var to = request?.Period?.To?.ToDateTime() ?? DateTime.MaxValue;
@@ -506,7 +498,9 @@ namespace PresalesApp.Web.Controllers
             var department = request?.Department ?? Shared.Department.Any;
             var onlyActive = request?.OnlyActive ?? false;
 
-            var (profit, dailyIncrease, presales) = await GetProfitStatistic(from, to, position, department, onlyActive);
+            DateTime.Now.ToString();
+
+            var (profit, presales) = await GetProfitStatistic(from, to, position, department, onlyActive);
 
             if (!_salesTargetCache.TryGetValue((from, to), out var value)
                 || value.CalculationTime.Month < DateTime.Now.Month
@@ -514,19 +508,20 @@ namespace PresalesApp.Web.Controllers
             {
                 _salesTargetCache[(from, to)] = (Value: GetProfitStatistic(
                         from.AddYears(-1), to.AddYears(-1), position, department, onlyActive)
-                    .Result.Profit * _handicap,
+                    .Result.Profit.Values.Sum() * _handicap,
                     CalculationTime: DateTime.Now);
             }
 
-            var reply = new MonthProfitOverview();
+            var reply = new ProfitOverview();
 
             foreach (var presale in presales)
                 reply.Presales.Add(presale);
 
-            reply.Profit = profit;
             reply.Plan = _salesTargetCache[(from, to)].Value;
-            reply.Left = _salesTargetCache[(from, to)].Value - profit > 0 ? _salesTargetCache[(from, to)].Value - profit : 0;
-            reply.DeltaDay = dailyIncrease;
+            reply.Left = _salesTargetCache[(from, to)].Value - profit.Values.Sum() > 0 ? _salesTargetCache[(from, to)].Value - profit.Values.Sum() : 0;
+
+            foreach ((var date, var amount) in profit)
+                reply.Profit.Add(date.ToString(CultureInfo.InvariantCulture), amount);
 
             return reply;
         }
@@ -648,7 +643,7 @@ namespace PresalesApp.Web.Controllers
             }
         }
 
-        private static async Task<(decimal Profit, decimal DailyIncrease, Shared.Presale[] Presales)> GetProfitStatistic(
+        private static async Task<(Dictionary<DateTime, decimal> Profit, Shared.Presale[] Presales)> GetProfitStatistic(
             DateTime from, DateTime to,
             Shared.Position position, Shared.Department department, bool onlyActive)
         {
@@ -690,12 +685,20 @@ namespace PresalesApp.Web.Controllers
                 }
             }
 
-            var profit = presalesFromDb?.Sum(p => p.SumProfit(from, to)) ?? 0;
-            var dailyIncrease = presalesFromDb?.Sum(p => p.SumProfit(DateTime.UtcNow.Date, to)) ?? 0;
+            Dictionary<DateTime, decimal> profit = [];
+
+            foreach (DateTime day in EachDay(from, to))
+                profit.Add(day, presalesFromDb?.Sum(p => p.SumProfit(day, day.AddDays(1))) ?? 0);
 
             db.Dispose();
 
-            return (profit, dailyIncrease, Presales: filteredPresales.ToArray());
+            return (profit, Presales: filteredPresales.ToArray());
+        }
+
+        public static IEnumerable<DateTime> EachDay(DateTime from, DateTime to)
+        {
+            for (var day = from.Date; day.Date <= to.Date; day = day.AddDays(1))
+                yield return day;
         }
     }
 }

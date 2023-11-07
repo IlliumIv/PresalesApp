@@ -17,7 +17,7 @@ service Api {
 	rpc GetNames(google.protobuf.Empty) returns (NamesResponse);
 	rpc GetKpi(KpiRequest) returns (KpiResponse);
 	rpc GetImage(ImageRequest) returns (ImageResponse);
-	rpc GetMonthProfitOverview(OverviewRequest) returns (MonthProfitOverview);
+	rpc GetProfitOverview(OverviewRequest) returns (ProfitOverview);
 	rpc GetSalesOverview(SalesOverviewRequest) returns (SalesOverview);
 	rpc GetUnpaidProjects(UnpaidRequest) returns (UnpaidProjects);
 	rpc GetFunnelProjects(google.protobuf.Empty) returns (FunnelProjects);
@@ -87,12 +87,11 @@ message Manager {
 	types.DecimalValue profit = 2;
 }
 
-message MonthProfitOverview {
+message ProfitOverview {
 	repeated Presale presales = 1;
-	types.DecimalValue profit = 2;
-	types.DecimalValue plan = 3;
-	types.DecimalValue left = 4;
-	types.DecimalValue delta_day = 5;
+	types.DecimalValue plan = 2;
+	types.DecimalValue left = 3;
+	map<string, types.DecimalValue> profit = 4;
 }
 
 message ImageRequest {
