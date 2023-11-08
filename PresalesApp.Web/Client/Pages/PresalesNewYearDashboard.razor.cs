@@ -129,7 +129,7 @@ namespace PresalesApp.Web.Client.Pages
         {
             var r = new List<string>();
 
-            for (int i = 0; i < colors.Length && i <= max; i++)
+            for (int i = 0; i < colors.Length && i < max; i++)
             {
                 r.Add(ChartColor.FromRgba(colors[i].R, colors[i].G, colors[i].B, alfa));
             }
