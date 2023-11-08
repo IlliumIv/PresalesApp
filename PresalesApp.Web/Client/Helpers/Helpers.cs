@@ -184,7 +184,7 @@ namespace PresalesApp.Web.Client.Helpers
                 $"{localization["ProjectCloseDateText"]} ;" +
                 $"{localization["ProjectInvoicesCountText"]}\n";
 
-            foreach(var project in projects.Projects)
+            foreach (var project in projects.Projects)
             {
                 text += $"{project.Number};{project.Name};{project.Presale?.Name.GetFirstAndLastName()};{project.Status.GetLocalizedName(localization)};" +
                     $"{project.ApprovalBySalesDirectorAt.ToDateTime().ToPresaleTime()};" +

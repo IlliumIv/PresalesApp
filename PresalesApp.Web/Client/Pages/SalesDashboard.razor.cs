@@ -1,7 +1,7 @@
 ﻿using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
-using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Client.Helpers;
+using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
 using Period = PresalesApp.Web.Client.Helpers.Period;
 

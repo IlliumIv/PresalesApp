@@ -18,7 +18,8 @@ namespace PresalesApp.Web.Client.Helpers
                 PeriodType.Year => AddYear(start),
                 PeriodType.Arbitrary => start,
                 _ => throw new NotImplementedException()
-            }, periodType) { }
+            }, periodType)
+        { }
 
         public Shared.Period Translate() => new()
         {

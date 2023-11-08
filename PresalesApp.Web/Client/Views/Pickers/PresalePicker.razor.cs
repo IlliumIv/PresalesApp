@@ -13,7 +13,7 @@ namespace PresalesApp.Web.Client.Views.Pickers
         public EventCallback<string> OnSelectCallback { get; set; }
 
         [Parameter]
-        public string SelectedPresale {  get; set; } = string.Empty;
+        public string SelectedPresale { get; set; } = string.Empty;
 
         private NamesResponse? presales;
 
