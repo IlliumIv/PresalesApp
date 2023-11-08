@@ -36,6 +36,7 @@ namespace PresalesApp.Web.Client.Pages
         };
         #endregion
 
+        private List<Presale> sorted_presales;
         private Department _department = Department.Russian;
         private readonly Helpers.Period period = new(new(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc), PeriodType.Quarter);
         private static ImageResponse img;
@@ -92,6 +93,8 @@ namespace PresalesApp.Web.Client.Pages
                     Department = _department,
                     Position = Position.Any
                 });
+
+                sorted_presales = [.. overview.Presales.OrderByDescending(p => p.Statistics.Profit)];
             }
             catch
             {
