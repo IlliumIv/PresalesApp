@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
-using PresalesApp.Web.Shared;
-using Blazorise.Charts;
+using Microsoft.AspNetCore.Components.Web;
+using PresalesApp.Web.Client.Enums;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
+using PresalesApp.Web.Shared;
 using System.Globalization;
-using PresalesApp.Web.Client.Enums;
 
 namespace PresalesApp.Web.Client.Pages
 {
@@ -99,7 +99,7 @@ namespace PresalesApp.Web.Client.Pages
                 return;
             }
         }
-        
+
         private async Task UpdateImage() => img = await AppApi.GetImageAsync(new ImageRequest
         {
             Keyword = image_keyword,
@@ -157,8 +157,15 @@ namespace PresalesApp.Web.Client.Pages
         };
 
         #region Colors
-        private readonly static (byte R, byte G, byte B)[] colors = [ (12, 90, 74), (5, 47, 91), (165, 14, 130), (232, 125, 55),
-            (106, 158, 31), (20, 150, 124), (99, 8, 78), (198, 35, 36), (3, 28, 58) ];
+        private readonly static (byte R, byte G, byte B)[] colors = [(12, 90, 74),
+            (5, 47, 91),
+            (165, 14, 130),
+            (232, 125, 55),
+            (106, 158, 31),
+            (20, 150, 124),
+            (99, 8, 78),
+            (198, 35, 36),
+            (3, 28, 58)];
 
         private static List<string> GetColors(float alfa, int max = int.MaxValue)
         {

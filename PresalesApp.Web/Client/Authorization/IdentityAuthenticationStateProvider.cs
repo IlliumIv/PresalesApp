@@ -1,8 +1,8 @@
-﻿using System.Security.Claims;
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Components.Authorization;
 using PresalesApp.Web.Shared;
+using System.Security.Claims;
 using AppApi = PresalesApp.Web.Shared.Api.ApiClient;
 
 namespace PresalesApp.Web.Client.Authorization

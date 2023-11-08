@@ -1,13 +1,13 @@
 ﻿using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Client.Helpers;
+using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
-using Department = PresalesApp.Web.Shared.Department;
-using Position = PresalesApp.Web.Shared.Position;
-using Period = PresalesApp.Web.Client.Helpers.Period;
 using System.Globalization;
+using Department = PresalesApp.Web.Shared.Department;
+using Period = PresalesApp.Web.Client.Helpers.Period;
+using Position = PresalesApp.Web.Shared.Position;
 
 namespace PresalesApp.Web.Client.Pages
 {
@@ -61,8 +61,15 @@ namespace PresalesApp.Web.Client.Pages
         private static string GetChartOptions() => "{\"cutout\":\"30%\",\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
 
         private readonly (byte R, byte G, byte B)[] colors = [
-            (5, 47, 91), (165, 14, 130), (12, 90, 74), (232, 125, 55), (106, 158, 31),
-            (20, 150, 124), (99, 8, 78), (198, 35, 36), (3, 28, 58) ];
+            (5, 47, 91),
+            (165, 14, 130),
+            (12, 90, 74),
+            (232, 125, 55),
+            (106, 158, 31),
+            (20, 150, 124),
+            (99, 8, 78),
+            (198, 35, 36),
+            (3, 28, 58)];
 
         private readonly float color_alfa = 0.5f;
 

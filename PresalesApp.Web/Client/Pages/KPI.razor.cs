@@ -1,10 +1,10 @@
 ﻿using Blazorise.DataGrid;
+using Blazorise.Snackbar;
 using Microsoft.AspNetCore.Components;
+using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
 using Period = PresalesApp.Web.Client.Helpers.Period;
-using PresalesApp.Web.Client.Helpers;
-using Blazorise.Snackbar;
 
 namespace PresalesApp.Web.Client.Pages
 {

@@ -1,8 +1,8 @@
 ﻿using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
 using PresalesApp.Bridge1C;
-using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Client.Helpers;
+using PresalesApp.Web.Client.Views;
 using Period = PresalesApp.Web.Client.Helpers.Period;
 
 namespace PresalesApp.Web.Client.Pages
@@ -92,7 +92,7 @@ namespace PresalesApp.Web.Client.Pages
 
             await lineChart.Clear();
             await lineChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset(), GetSmallPlanLine(), GetBigPlanLine(), GetMinPoint());
-       }
+        }
 
         private PieChart<double> pieChart;
         private LineChart<double> lineChart;
