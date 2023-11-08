@@ -14,6 +14,30 @@ namespace PresalesApp.Web.Client.Pages
         [CascadingParameter]
         public MessageSnackbar GlobalMsgHandler { get; set; }
 
+        #region UriQuery
+        private const string q_keyword = "Keyword";
+        [SupplyParameterFromQuery(Name = q_keyword)] public string? Keyword { get; set; }
+
+        private const string q_start = "Start";
+        [SupplyParameterFromQuery(Name = q_start)] public string? Start { get; set; }
+
+        private const string q_end = "End";
+        [SupplyParameterFromQuery(Name = q_end)] public string? End { get; set; }
+
+        private const string q_department = "Department";
+        [SupplyParameterFromQuery(Name = q_department)] public string? DepartmentType { get; set; }
+
+        private Dictionary<string, object?> GetQueryKeyValues() => new()
+        {
+            [q_start] = period.Start.ToString(Helper.UriDateTimeFormat),
+            [q_end] = period.End.ToString(Helper.UriDateTimeFormat),
+            [q_keyword] = image_keyword,
+            [q_department] = _department.ToString(),
+        };
+        #endregion
+
+        private Department _department = Department.Russian;
+        private readonly Helpers.Period period = new(new(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc), PeriodType.Quarter);
         private static ImageResponse img;
         private string image_keyword = "woman";
         private ProfitOverview overview;
@@ -27,7 +51,16 @@ namespace PresalesApp.Web.Client.Pages
         private static string GetHeaderCellStyling() => "text-align: right";
         private static string GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
 
-        protected override void OnInitialized() => RunTimer();
+        protected override void OnInitialized()
+        {
+            Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref period.Start);
+            Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref period.End);
+            Helper.SetFromQueryOrStorage(value: Keyword, query: q_keyword, uri: Navigation.Uri, storage: Storage, param: ref image_keyword);
+            Helper.SetFromQueryOrStorage(value: DepartmentType, query: q_department, uri: Navigation.Uri, storage: Storage, param: ref _department);
+
+            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
+            RunTimer();
+        }
 
         private async void RunTimer()
         {
@@ -55,8 +88,8 @@ namespace PresalesApp.Web.Client.Pages
             {
                 overview = await AppApi.GetProfitOverviewAsync(new OverviewRequest
                 {
-                    Period = new Helpers.Period(new DateTime(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc), Enums.PeriodType.Quarter).Translate(),
-                    Department = Department.Russian,
+                    Period = period.Translate(),
+                    Department = _department,
                     Position = Position.Any
                 });
             }
@@ -77,6 +110,8 @@ namespace PresalesApp.Web.Client.Pages
         {
             if (e.Code == "Enter" || e.Code == "NumpadEnter")
             {
+                Storage.SetItemAsString($"{new Uri(Navigation.Uri).LocalPath}.{q_keyword}", image_keyword);
+                Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
                 await UpdateImage();
             }
         }
