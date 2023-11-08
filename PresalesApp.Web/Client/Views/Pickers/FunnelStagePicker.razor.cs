@@ -1,6 +1,5 @@
 ﻿using Blazorise.Snackbar;
 using Microsoft.AspNetCore.Components;
-using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
 using Radzen.Blazor;
 

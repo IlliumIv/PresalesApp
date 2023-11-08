@@ -1,15 +1,15 @@
 ﻿using Blazored.LocalStorage;
+using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
-using Blazorise;
-using Grpc.Net.Client.Web;
 using Grpc.Net.Client;
+using Grpc.Net.Client.Web;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using BridgeApi = PresalesApp.Bridge1C.Api;
-using AppApi = PresalesApp.Web.Shared.Api;
 using PresalesApp.Web.Client.Authorization;
+using AppApi = PresalesApp.Web.Shared.Api;
+using BridgeApi = PresalesApp.Bridge1C.Api;
 
 namespace PresalesApp.Web.Client.Startup
 {

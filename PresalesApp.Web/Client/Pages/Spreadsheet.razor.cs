@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
-using Department = PresalesApp.Web.Shared.Department;
-using Position = PresalesApp.Web.Shared.Position;
-using Period = PresalesApp.Web.Client.Helpers.Period;
 using PresalesApp.Web.Shared;
+using Department = PresalesApp.Web.Shared.Department;
+using Period = PresalesApp.Web.Client.Helpers.Period;
+using Position = PresalesApp.Web.Shared.Position;
 
 namespace PresalesApp.Web.Client.Pages
 {

@@ -1,8 +1,8 @@
-﻿using PresalesApp.Web.Client.Enums;
+﻿using Microsoft.AspNetCore.Components;
+using PresalesApp.Web.Client.Enums;
 using PresalesApp.Web.Client.Helpers;
-using Microsoft.AspNetCore.Components;
-using Period = PresalesApp.Web.Client.Helpers.Period;
 using PresalesApp.Web.Client.Views.Pickers.DropDown;
+using Period = PresalesApp.Web.Client.Helpers.Period;
 
 namespace PresalesApp.Web.Client.Views.Pickers
 {
