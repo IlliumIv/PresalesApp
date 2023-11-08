@@ -31,96 +31,66 @@
     <div class="allocation content">
         @if (overview is not null)
         {
-            @code{int i = 0; }
-            <DataGrid TItem="Presale"
-                      Data="@(overview.Presales.OrderByDescending(p => p.Statistics.Profit))"
-                      DetailRowStartsVisible="false"
-                      Filterable="false"
-                      Sortable="false"
-                      PageSize="int.MaxValue"
-                      RowSelectable=@((x) => false)
-                      Hoverable="false"
-                      Responsive Borderless>
-             <DataGridAggregates>
-                 <DataGridAggregate Field="@nameof(Presale.Name)" Aggregate="DataGridAggregateType.None">
-                     <DisplayTemplate>
-                                <span style="text-align: right; display: block;">@Localization["TotalText"]</span>
-                        </DisplayTemplate>
-                    </DataGridAggregate>
-
-                    <DataGridAggregate Field="@nameof(Presale.Statistics)" Aggregate="DataGridAggregateType.None">
-                        <DisplayTemplate>
-                            <span style="text-align: right; display: block;">@Helper.ToCurrencyString(overview?.Presales.Sum(i => i.Statistics.Profit) ?? 0)</span>
-                        </DisplayTemplate>
-                    </DataGridAggregate>
-
-                    <DataGridAggregate Field="@nameof(Presale.IsActive)" Aggregate="DataGridAggregateType.None">
-                        <DisplayTemplate>
-                            <span style="text-align: right; display: block;">100&nbsp;%</span>
-                        </DisplayTemplate>
-                    </DataGridAggregate>
-
-                    <DataGridAggregate Field="@nameof(Presale.Department)" Aggregate="DataGridAggregateType.None">
-                        <DisplayTemplate>
-                            <span style="text-align: right; display: block;">@(overview?.Presales.Sum(i => i.Statistics.Invoices - i.Statistics.InvoicesShipped) ?? 0)</span>
-                        </DisplayTemplate>
-                    </DataGridAggregate>
-
-                    <DataGridAggregate Field="@nameof(Presale.Position)" Aggregate="DataGridAggregateType.None">
-                        <DisplayTemplate>
-                            <span style="text-align: right; display: block;">@(overview?.Presales.Sum(i => i.Statistics.InvoicesShipped) ?? 0)</span>
-                        </DisplayTemplate>
-                    </DataGridAggregate>
-                </DataGridAggregates>
-             <DataGridColumns>
-                 <DataGridColumn Field="@nameof(Presale.Name)" Caption="Пресейл"
-                                 Editable="false" CustomFilter="@DataGridFilters.DefaultFilter" Context="presale">
-                     <DisplayTemplate>
-                         @Helper.GetFirstAndLastName((presale as Presale)?.Name ?? "")
-                        </DisplayTemplate>
-                    </DataGridColumn>
-
-                    <DataGridColumn Field="@nameof(Presale.Statistics)" Caption="Сумма" CellStyle="@((e) => "text-align: right")"
-                                    Editable="false" CustomFilter="@DataGridFilters.StatisticByProfitFilter" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
-                        <DisplayTemplate>
+            <RadzenDataGrid TItem="Presale"
+                            Style="border: none !important;"
+                            Data="@sorted_presales">
+                <Columns>
+                    <RadzenDataGridColumn Property="Name" Title="@Localization["PresaleNameText"]" TItem=Presale FooterCssClass="pnyd-footer" Width="20%">
+                        <Template>
+                            @Helper.GetFirstAndLastName(context.Name)
+                        </Template>
+                        <FooterTemplate>
+                            @Localization["TotalText"]
+                        </FooterTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="Statistics.Profit" Title="Сумма" TItem=Presale FooterCssClass="pnyd-footer" CssClass="pnyd-progress" Width="35%"
+                                          TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                        <Template>
                             <div class="profit-layout">
-                                <div class="profit-progress" style="width: @GetProgressPercentString((presale as Presale).Statistics.Profit, overview.Presales.Max(p => p.Statistics.Profit)); background-color: @ChartColor.FromRgba(12, 90, 74, 0.3f).ToJsRgba()"> &nbsp; </div>
+                                <div class="profit-progress" style="width: @GetProgressPercentString(context.Statistics.Profit, overview.Presales.Max(p => p.Statistics.Profit)); background-color: @ChartColor.FromRgba(12, 90, 74, 0.3f).ToJsRgba()"> &nbsp; </div>
                                 <span class="profit">
-                                    @($"{Helper.ToCurrencyString((presale as Presale)?.Statistics.Profit)}")
+                                    @Helper.ToCurrencyString(context.Statistics.Profit)
                                 </span>
                             </div>
-                        </DisplayTemplate>
-                    </DataGridColumn>
-
-                    <DataGridColumn Field="@nameof(Presale.IsActive)" Caption="Доля" CellStyle="@((e) => "text-align: right")"
-                                    Editable="false" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
-                        <DisplayTemplate>
-                            @GetProgressPercentString((presale as Presale).Statistics.Profit, overview.Presales.Sum(p => p.Statistics.Profit))
-                        </DisplayTemplate>
-                    </DataGridColumn>
-
-                    <DataGridColumn Field="@nameof(Presale.Department)" Caption="Счетов" CellStyle="@((e) => "text-align: right")"
-                                    Editable="false" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
-                        <DisplayTemplate>
-                            @($"{(presale as Presale)?.Statistics.Invoices - (presale as Presale)?.Statistics.InvoicesShipped}")
-                        </DisplayTemplate>
-                    </DataGridColumn>
-
-                    <DataGridColumn Field="@nameof(Presale.Position)" Caption="Выиграно" CellStyle="@((e) => "text-align: right")"
-                                    Editable="false" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
-                        <DisplayTemplate>
+                        </Template>
+                        <FooterTemplate>
+                            @Helper.ToCurrencyString(overview?.Presales.Sum(i => i.Statistics.Profit) ?? 0)
+                        </FooterTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="Proportion" Title="Доля" TItem=Presale FooterCssClass="pnyd-footer" Width="10%"
+                                          TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                        <Template>
+                            @GetProgressPercentString(context.Statistics.Profit, overview.Presales.Sum(p => p.Statistics.Profit))
+                        </Template>
+                        <FooterTemplate>
+                            100&nbsp;%
+                        </FooterTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="Invoices" Title="Счетов" TItem=Presale FooterCssClass="pnyd-footer" Width="10%"
+                                          TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                        <Template>
+                            @(context.Statistics.Invoices - context.Statistics.InvoicesShipped)
+                        </Template>
+                        <FooterTemplate>
+                            @(overview?.Presales.Sum(i => i.Statistics.Invoices - i.Statistics.InvoicesShipped) ?? 0)
+                        </FooterTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="InvoicesShipped" Title="Отгружено" TItem=Presale FooterCssClass="pnyd-footer" CssClass="pnyd-progress" Width="25%"
+                                          TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                        <Template>
                             <div class="profit-layout">
-                                <div class="profit-progress" style="width: @GetProgressPercentString((presale as Presale).Statistics.InvoicesShipped, overview.Presales.Max(p => p.Statistics.InvoicesShipped)); background-color: @ChartColor.FromRgba(colors[i].R, colors[i].G, colors[i].B, 0.3f).ToJsRgba()"> &nbsp; </div>
+                                <div class="profit-progress" style="width: @GetProgressPercentString(context.Statistics.InvoicesShipped, overview.Presales.Max(p => p.Statistics.InvoicesShipped)); background-color: @ChartColor.FromRgba(colors[sorted_presales.IndexOf(context)].R, colors[sorted_presales.IndexOf(context)].G, colors[sorted_presales.IndexOf(context)].B, 0.3f).ToJsRgba()"> &nbsp; </div>
                                 <span class="profit">
-                                    @($"{(presale as Presale)?.Statistics.InvoicesShipped}")
-                                    <p style="display: none">@(i++)</p>
+                                    @($"{context.Statistics.InvoicesShipped}")
                                 </span>
                             </div>
-                        </DisplayTemplate>
-                    </DataGridColumn>
-                </DataGridColumns>
-            </DataGrid>
-            @*<p style="display: none">@(i = 0)</p>*@
+                        </Template>
+                        <FooterTemplate>
+                            @(overview?.Presales.Sum(i => i.Statistics.InvoicesShipped) ?? 0)
+                        </FooterTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
         }
     </div>
     <div class="invoices-chart content" style="display: none;">
