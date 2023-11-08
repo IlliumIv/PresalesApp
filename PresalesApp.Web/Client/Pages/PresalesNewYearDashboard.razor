@@ -4,7 +4,7 @@
 
 <div class="layout">
     <div class="percent plan content">
-        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.2f).ToJsRgba()">
+        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
             <legend>@(IsRealisticPlanDone ? "Амбициозный" : "Реалистичный") план</legend>
             <div class="plan-layout">
                 <p class="plan-percent">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), IsRealisticPlanDone ? 150_000_000 : 120_000_000)</p>
@@ -15,7 +15,7 @@
         </fieldset>
     </div>
     <div class="day-profit plan content">
-        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.3f).ToJsRgba()">
+        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
             <legend>Прирост за день</legend>
             <div class="plan-layout">
                 <p class="plan-percent">@Helper.ToCurrencyString(GetCurrentDayProfit(), shortFormat: true)</p>
