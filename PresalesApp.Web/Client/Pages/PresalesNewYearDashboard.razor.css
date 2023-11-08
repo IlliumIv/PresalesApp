@@ -37,7 +37,7 @@
 
 fieldset {
     padding: 3px 6px;
-    border: 1px solid #000;
+    /* border: 1px solid #000; */
     margin: 0 10px;
     display: flex;
     align-items: center;
