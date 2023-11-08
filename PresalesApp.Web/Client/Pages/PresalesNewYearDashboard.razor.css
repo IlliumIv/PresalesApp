@@ -132,7 +132,7 @@ legend {
     grid-column-start: 9;
     grid-column-end: 15;
     grid-row-start: 1;
-    grid-row-end: 33;
+    grid-row-end: 35;
 }
 
 .img-container img {
@@ -148,18 +148,23 @@ legend {
     border: none;
     text-align: center;
     font-size: calc(1.5vw * 9/16);
+    padding: 0;
 }
 
 .img-credits {
     grid-column-start: 9;
     grid-column-end: 15;
-    grid-row-start: 33;
-    grid-row-end: 35;
+    grid-row-start: 35;
+    grid-row-end: 36;
+}
+
+.img-credits p {
+    margin: 0;
 }
 
 .img-keyword {
     grid-column-start: 9;
     grid-column-end: 15;
-    grid-row-start: 35;
+    grid-row-start: 36;
     grid-row-end: 37;
 }
