@@ -120,10 +120,10 @@
                     </DataGridColumn>
                 </DataGridColumns>
             </DataGrid>
-            <p style="display: none">@(i = 0)</p>
+            @*<p style="display: none">@(i = 0)</p>*@
         }
     </div>
-    <div class="invoices-chart content">
+    <div class="invoices-chart content" style="display: none;">
         <div class="invoices-chart-container content">
             <PieChart @ref="invoices_chart" TItem="int" OptionsJsonString="@GetInvoicesChartOptions()" />
         </div>

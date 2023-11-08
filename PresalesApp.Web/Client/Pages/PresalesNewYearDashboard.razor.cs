@@ -56,7 +56,7 @@ namespace PresalesApp.Web.Client.Pages
                 overview = await AppApi.GetProfitOverviewAsync(new OverviewRequest
                 {
                     Period = new Helpers.Period(new DateTime(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc), Enums.PeriodType.Quarter).Translate(),
-                    Department = Department.Any,
+                    Department = Department.Russian,
                     Position = Position.Any
                 });
             }
