@@ -115,7 +115,7 @@ legend {
 
 .allocation {
     grid-column-start: 1;
-    grid-column-end: 6;
+    grid-column-end: 9;
     grid-row-start: 22;
     grid-row-end: 37;
     display: block;
