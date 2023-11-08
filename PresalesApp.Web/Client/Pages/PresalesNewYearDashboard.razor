@@ -5,9 +5,9 @@
 <div class="layout">
     <div class="percent plan content">
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.2f).ToJsRgba()">
-            <legend>@GetPlanName() план</legend>
+            <legend>@(IsRealisticPlanDone ? "Амбициозный" : "Реалистичный") план</legend>
             <div class="plan-layout">
-                <p class="plan-percent">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), 120_000_000)</p>
+                <p class="plan-percent">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), IsRealisticPlanDone ? 150_000_000 : 120_000_000)</p>
                 <div class="plan-amount">
                     <p>@Helper.ToCurrencyString(overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
                 </div>
@@ -15,19 +15,23 @@
         </fieldset>
     </div>
     <div class="day-profit plan content">
-        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.2f).ToJsRgba()">
+        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.3f).ToJsRgba()">
             <legend>Прирост за день</legend>
             <div class="plan-layout">
                 <p class="plan-percent">@(GetCurrentDayProfit() switch { > 0 => $"+{Helper.ToCurrencyString(GetCurrentDayProfit(), shortFormat: true)}", _ => "" })&nbsp;</p>
+                <div class="plan-amount">
+                    <p>@Helper.ToCurrencyString((overview?.Profit.Values.Sum(amount => amount) ?? 0) - (IsRealisticPlanDone ? 150_000_000 : 120_000_000), shortFormat: true, allowNegatives: true)</p>
+                </div>
             </div>
         </fieldset>
     </div>
-    <div class="chart content" style="--aspect-ratio: 3/1;">
-        <LineChart @ref="lineChart" TItem="decimal" OptionsJsonString="@GetChartOptions()" />
+    <div class="chart content">
+        <LineChart @ref="line_chart" TItem="decimal" OptionsJsonString="@GetChartOptions()" />
     </div>
     <div class="allocation content">
         @if (overview is not null)
         {
+            @code{int i = 0; }
             <DataGrid TItem="Presale"
                       Data="@(overview.Presales.OrderByDescending(p => p.Statistics.Profit))"
                       DetailRowStartsVisible="false"
@@ -35,6 +39,7 @@
                       Sortable="false"
                       PageSize="int.MaxValue"
                       RowSelectable=@((x) => false)
+                      Hoverable="false"
                       Responsive Borderless>
              <DataGridAggregates>
                  <DataGridAggregate Field="@nameof(Presale.Name)" Aggregate="DataGridAggregateType.None">
@@ -79,7 +84,7 @@
                                     Editable="false" CustomFilter="@DataGridFilters.StatisticByProfitFilter" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
                         <DisplayTemplate>
                             <div class="profit-layout">
-                                <div class="profit-progress" style="width: @GetProgressPercentString((presale as Presale).Statistics.Profit, overview.Presales.Max(p => p.Statistics.Profit)); background-color: @ChartColor.FromRgba(12, 90, 74, 0.2f).ToJsRgba()"> &nbsp; </div>
+                                <div class="profit-progress" style="width: @GetProgressPercentString((presale as Presale).Statistics.Profit, overview.Presales.Max(p => p.Statistics.Profit)); background-color: @ChartColor.FromRgba(12, 90, 74, 0.3f).ToJsRgba()"> &nbsp; </div>
                                 <span class="profit">
                                     @($"{Helper.ToCurrencyString((presale as Presale)?.Statistics.Profit)}")
                                 </span>
@@ -104,13 +109,24 @@
                     <DataGridColumn Field="@nameof(Presale.Position)" Caption="Выиграно" CellStyle="@((e) => "text-align: right")"
                                     Editable="false" Context="presale" HeaderCellStyle="@GetHeaderCellStyling()">
                         <DisplayTemplate>
-                            @($"{(presale as Presale)?.Statistics.InvoicesShipped}")
+                            <div class="profit-layout">
+                                <div class="profit-progress" style="width: @GetProgressPercentString((presale as Presale).Statistics.InvoicesShipped, overview.Presales.Max(p => p.Statistics.InvoicesShipped)); background-color: @ChartColor.FromRgba(colors[i].R, colors[i].G, colors[i].B, 0.3f).ToJsRgba()"> &nbsp; </div>
+                                <span class="profit">
+                                    @($"{(presale as Presale)?.Statistics.InvoicesShipped}")
+                                    <p style="display: none">@(i++)</p>
+                                </span>
+                            </div>
                         </DisplayTemplate>
                     </DataGridColumn>
-
                 </DataGridColumns>
             </DataGrid>
+            <p style="display: none">@(i = 0)</p>
         }
+    </div>
+    <div class="invoices-chart content">
+        <div class="invoices-chart-container content">
+            <PieChart @ref="invoices_chart" TItem="int" OptionsJsonString="@GetInvoicesChartOptions()" />
+        </div>
     </div>
     <div class="img-container content">
         <img src="@img?.Regular" alt="@img?.AltDescription" />
