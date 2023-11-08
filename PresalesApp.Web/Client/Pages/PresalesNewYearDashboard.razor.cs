@@ -16,34 +16,18 @@ namespace PresalesApp.Web.Client.Pages
 
         private static ImageResponse img;
         private string image_keyword = "woman";
-
-        private string GetPlanName() => (overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000 ? "Амбициозный" : "Реалистичный";
-
         private ProfitOverview overview;
-
         private TimeSpan time_left = new(0, 10, 0);
         private readonly PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
 
-        private decimal GetCurrentDayProfit() => overview?.Profit?.FirstOrDefault(per => per.Key == DateTime.Now.StartOfDay().ToString(CultureInfo.InvariantCulture)).Value;
+        private bool IsRealisticPlanDone => (overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000;
+        private decimal GetCurrentDayProfit() =>
+            overview?.Profit?.FirstOrDefault(per => per.Key == DateTime.Now.StartOfDay()
+            .ToString(CultureInfo.InvariantCulture)).Value;
+        private static string GetHeaderCellStyling() => "text-align: right";
+        private static string GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
 
-        private async void OnManuallyImageUpdate(KeyboardEventArgs e)
-        {
-            if (e.Code == "Enter" || e.Code == "NumpadEnter")
-            {
-                await UpdateImage();
-            }
-        }
-
-        private async Task UpdateImage() => img = await AppApi.GetImageAsync(new ImageRequest
-        {
-            Keyword = image_keyword,
-            Orientation = ImageOrientation.Portrait
-        });
-
-        protected override void OnInitialized()
-        {
-            RunTimer();
-        }
+        protected override void OnInitialized() => RunTimer();
 
         private async void RunTimer()
         {
@@ -82,72 +66,52 @@ namespace PresalesApp.Web.Client.Pages
                 return;
             }
         }
-
-        private static string GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
-
-        private static string GetHeaderCellStyling() => "text-align: right";
-
-        #region Chart
-        // private static readonly double aspectRatio = 2.43875;
-        private LineChart<decimal> lineChart;
-        private readonly List<string> backgroundColors = [ChartColor.FromRgba(12, 90, 74, 0.2f), ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f)];
-        private readonly List<string> borderColors = [ChartColor.FromRgba(12, 90, 74, 0.8f), ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f)];
-        private static readonly List<double> SmallPlanLine = [120, 120, 120, 120, 120, 120];
-        private static readonly List<double> BigPlanLine = [150, 150, 150, 150, 150, 150];
-        private static string GetChartOptions() => "{\"aspectRatio\":2.43875, \"plugins\":{\"legend\":{\"display\": false}}}";
-
-        private async Task RedrawChart()
+        
+        private async Task UpdateImage() => img = await AppApi.GetImageAsync(new ImageRequest
         {
-            if (overview == null) return;
-            await lineChart.Clear();
+            Keyword = image_keyword,
+            Orientation = ImageOrientation.Portrait
+        });
 
-            var labels = new List<string>();
-            var profit = new List<decimal>();
-            var realistic_plan = new List<decimal>();
-            var ambitious_plan = new List<decimal>();
-            // var backgroud_colors = new List<string>();
-            // var border_colors = new List<string>();
-            decimal amount = 0;
-
-            foreach ((var date, var day_profit) in overview.Profit)
+        private async void OnManuallyImageUpdate(KeyboardEventArgs e)
+        {
+            if (e.Code == "Enter" || e.Code == "NumpadEnter")
             {
-                amount += day_profit;
-                labels.Add(DateTime.Parse(date, CultureInfo.InvariantCulture).GetLocalizedDateNameByPeriodType(PeriodType.Day, Localization));
-                profit.Add(amount);
-                realistic_plan.Add(120_000_000);
-                ambitious_plan.Add(150_000_000);
+                await UpdateImage();
             }
-
-            await lineChart.AddLabelsDatasetsAndUpdate(labels, GetChartDataset(profit), GetRealisticPlanDataset(realistic_plan), GetAmbitiousPlanDataset(ambitious_plan), GetMinPointDataset());
         }
 
-        private LineChartDataset<decimal> GetChartDataset(List<decimal> data) => new()
+        #region Charts
+        private LineChart<decimal> line_chart;
+        private PieChart<int> invoices_chart;
+
+        private static string GetChartOptions() => "{\"aspectRatio\":2.43875, \"plugins\":{\"legend\":{\"display\": false}}}";
+        private static string GetInvoicesChartOptions() => "{\"cutout\":\"80%\",\"animation\":{\"animateScale\": true}}";
+
+        private static LineChartDataset<decimal> GetChartDataset(List<decimal> data) => new()
         {
-            Label = "profit",
+            Label = "Сумма",
             Data = data,
-            BackgroundColor = backgroundColors.Take(1).ToList(),
-            BorderColor = borderColors.Take(1).ToList(),
+            BackgroundColor = GetColors(0.3f, max: 1),
+            BorderColor = GetColors(0.8f, max: 1),
             Fill = true,
             PointRadius = 1,
-            // CubicInterpolationMode = "monotone",
         };
 
-        private LineChartDataset<decimal> GetRealisticPlanDataset(List<decimal> data) => new()
+        private static LineChartDataset<decimal> GetRealisticPlanDataset(List<decimal> data) => new()
         {
             Label = "Реалистичный план",
             Data = data,
-            BorderColor = borderColors,
+            BorderColor = GetColors(0.8f),
             PointRadius = 0,
-            BorderDash = [15, 5],
         };
 
-        private LineChartDataset<decimal> GetAmbitiousPlanDataset(List<decimal> data) => new()
+        private static LineChartDataset<decimal> GetAmbitiousPlanDataset(List<decimal> data) => new()
         {
             Label = "Амбициозный план",
             Data = data,
-            BorderColor = borderColors,
+            BorderColor = GetColors(0.8f),
             PointRadius = 0,
-            BorderDash = [15, 5],
         };
 
         private static LineChartDataset<decimal> GetMinPointDataset() => new()
@@ -156,6 +120,59 @@ namespace PresalesApp.Web.Client.Pages
             Data = [155_000_000],
             PointRadius = 0,
         };
+
+        #region Colors
+        private readonly static (byte R, byte G, byte B)[] colors = [ (12, 90, 74), (5, 47, 91), (165, 14, 130), (232, 125, 55),
+            (106, 158, 31), (20, 150, 124), (99, 8, 78), (198, 35, 36), (3, 28, 58) ];
+
+        private static List<string> GetColors(float alfa, int max = int.MaxValue)
+        {
+            var r = new List<string>();
+
+            for (int i = 0; i < colors.Length && i <= max; i++)
+            {
+                r.Add(ChartColor.FromRgba(colors[i].R, colors[i].G, colors[i].B, alfa));
+            }
+
+            return r;
+        }
+        #endregion
+
+        private async Task RedrawChart()
+        {
+            if (overview == null) return;
+            await line_chart.Clear();
+            await invoices_chart.Clear();
+
+            var labels = new List<string>();
+            var profit = new List<decimal>();
+            var realistic_plan = new List<decimal>();
+            var ambitious_plan = new List<decimal>();
+            decimal amount = 0;
+
+            foreach ((var date, var day_profit) in overview.Profit)
+            {
+                var dt = DateTime.Parse(date, CultureInfo.InvariantCulture);
+                if (dt > DateTime.Now) break;
+                amount += day_profit;
+                labels.Add(dt.GetLocalizedDateNameByPeriodType(PeriodType.Day, Localization));
+                profit.Add(amount);
+                realistic_plan.Add(120_000_000);
+                ambitious_plan.Add(150_000_000);
+            }
+
+            var invoices = new List<int>();
+            foreach (var presale in overview.Presales.OrderByDescending(p => p.Statistics.Profit))
+                invoices.Add(presale.Statistics.InvoicesShipped);
+
+            await line_chart.AddLabelsDatasetsAndUpdate(labels, GetChartDataset(profit), GetRealisticPlanDataset(realistic_plan), GetAmbitiousPlanDataset(ambitious_plan), GetMinPointDataset());
+            await invoices_chart.AddDatasetsAndUpdate(new PieChartDataset<int>()
+            {
+                Data = invoices,
+                BackgroundColor = GetColors(0.3f),
+                BorderColor = GetColors(0.8f),
+            });
+        }
         #endregion
 
         public void Dispose()
