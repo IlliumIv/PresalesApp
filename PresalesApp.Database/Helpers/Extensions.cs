@@ -94,18 +94,18 @@ namespace PresalesApp.Database.Helpers
                 Potential = project.PotentialAmount
             };
 
-            if (project.Invoices != null && project.Invoices.Any())
+            if (project.Invoices != null && project.Invoices.Count != 0)
                 foreach (var invoice in project.Invoices)
                     proj.Invoices.Add(invoice.Translate());
 
-            if (project.PresaleActions != null && project.PresaleActions.Any())
+            if (project.PresaleActions != null && project.PresaleActions.Count != 0)
                 foreach (var action in project.PresaleActions.OrderBy(a => a.Number))
                     proj.Actions.Add(action.Translate());
 
             return proj;
         }
 
-        public static Shared.Invoice Translate(this Invoice invoice) => new Shared.Invoice
+        public static Shared.Invoice Translate(this Invoice invoice) => new()
         {
             Counterpart = invoice.Counterpart,
             Number = invoice.Number,
@@ -116,7 +116,7 @@ namespace PresalesApp.Database.Helpers
             Profit = invoice.GetProfit(),
         };
 
-        public static Shared.Presale Translate(this Presale presale) => new Shared.Presale
+        public static Shared.Presale Translate(this Presale presale) => new()
         {
             Name = presale.Name,
             Statistics = presale.GetStatistic(),

@@ -55,6 +55,7 @@
                         (MarkupString)$"<a href=\"{img.AuthorUrl}\" target=\"_blank\">{img.AuthorName}</a>",
                         (MarkupString)$"<a href=\"{img.SourceUrl}\" target=\"_blank\">{img.SourceName}</a>"].Value)
                 </p>
+                <RadzenIcon Icon="@Helper.GetIcon(_keyword_type)" @onclick="@(() => OnImageKeywordTypeChange())" title="@Helper.GetIcon(_keyword_type)" Style="cursor: default;" />
                 <input @bind="@image_keyword" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
             </div>
         }
