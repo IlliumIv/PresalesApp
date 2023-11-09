@@ -197,7 +197,7 @@ namespace PresalesApp.Web.Client.Pages
 
             foreach ((var date, var day_profit) in overview.Profit)
             {
-                var dt = DateTime.Parse(date, CultureInfo.InvariantCulture);
+                var dt = DateTime.Parse(date, CultureInfo.InvariantCulture).ToLocalTime();
                 if (dt > DateTime.Now) break;
                 amount += day_profit;
                 labels.Add(dt.GetLocalizedDateNameByPeriodType(PeriodType.Day, Localization));

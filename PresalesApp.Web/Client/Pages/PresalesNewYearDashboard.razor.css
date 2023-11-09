@@ -119,6 +119,7 @@ legend {
     grid-row-start: 22;
     grid-row-end: 37;
     display: block;
+    padding: 5px;
 }
 
 .invoices-chart {
