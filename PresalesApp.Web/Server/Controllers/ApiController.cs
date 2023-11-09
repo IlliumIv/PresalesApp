@@ -682,17 +682,25 @@ namespace PresalesApp.Web.Controllers
             Dictionary<DateTime, decimal> profit = [];
 
             foreach (DateTime day in EachDay(from, to))
-                profit.Add(day, presalesFromDb?.Sum(p => p.SumProfit(day, day.AddDays(1))) ?? 0);
+            {
+                var p = presalesFromDb?.Sum(p => p.SumProfit(day, day.AddDays(1))) ?? 0;
+                if (p != 0 || day.AddHours(5).IsBusinessDayUTC())
+                {
+                    profit.Add(day, presalesFromDb?.Sum(p => p.SumProfit(day, day.AddDays(1))) ?? 0);
+                }
+            }
 
             db.Dispose();
 
             return (profit, Presales: filteredPresales.ToArray());
         }
 
-        public static IEnumerable<DateTime> EachDay(DateTime from, DateTime to)
+        private static IEnumerable<DateTime> EachDay(DateTime from, DateTime to)
         {
             for (var day = from; day.Date <= to.Date; day = day.AddDays(1))
+            {
                 yield return day;
+            }
         }
     }
 }
