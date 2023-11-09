@@ -112,23 +112,23 @@ namespace PresalesApp.Database.Entities
         public bool IsOverdue(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
         {
             var from = this.ApprovalByTechDirectorAt;
-            var to = new List<DateTime?>() {
+            var to = new List<DateTime>() {
                 this.PresaleActions?.FirstOrDefault(a => a.Number == 1)?.Date ?? DateTime.Now,
                 this.PresaleStartAt
             }.Min(dt => dt);
 
-            return WorkTimeCalculator.CalculateWorkingMinutes(start: from, end: to) >
+            return BusinessTimeCalculator.CalculateBusinessMinutesLOCAL(start: from, end: to) >
                 (this.PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
         }
 
         public bool IsForgotten(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180) =>
             this.PresaleStartAt == DateTime.MinValue &&
-            WorkTimeCalculator.CalculateWorkingMinutes(start: this.ApprovalByTechDirectorAt, end: DateTime.Now) >
+            BusinessTimeCalculator.CalculateBusinessMinutesLOCAL(start: this.ApprovalByTechDirectorAt, end: DateTime.Now) >
                 (this.PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
 
         public TimeSpan TimeToDirectorReaction() =>
-            TimeSpan.FromMinutes(WorkTimeCalculator.CalculateWorkingMinutes(
-                start: this.ApprovalBySalesDirectorAt, end: this.ApprovalByTechDirectorAt) ?? 0);
+            TimeSpan.FromMinutes(BusinessTimeCalculator.CalculateBusinessMinutesLOCAL(
+                start: this.ApprovalBySalesDirectorAt, end: this.ApprovalByTechDirectorAt));
 
         public int Rank()
         {

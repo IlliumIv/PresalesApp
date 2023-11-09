@@ -213,7 +213,7 @@ namespace PresalesApp.Database.Entities
         {
             var minutes = projects?.Where(p => p.PresaleStartAt != DateTime.MinValue)?
                 .DefaultIfEmpty()
-                .Average(p => p is null ? 0 : WorkTimeCalculator.CalculateWorkingMinutes(
+                .Average(p => p is null ? 0 : BusinessTimeCalculator.CalculateBusinessMinutesLOCAL(
                     p.ApprovalByTechDirectorAt, SelectTiming(p.PresaleActions?.FirstOrDefault(a => a.Number == 1)?.Date
                         .AddMinutes(p.PresaleActions?.FirstOrDefault(a => a.Number == 1)?.TimeSpend ?? 0), p.PresaleStartAt)
                     ));
