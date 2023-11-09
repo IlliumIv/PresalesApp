@@ -29,9 +29,9 @@
         </div>
         <div class="delta-container timer-container">
             <div class="timer">@time_left</div>
-            @if (overview != null && GetCurrentDayProfit() > 0)
+            @if (overview != null && day_profit > 0)
             {
-                <div class="delta">+@Helper.ToCurrencyString(GetCurrentDayProfit())</div>
+                <div class="delta">+@Helper.ToCurrencyString(day_profit)</div>
             }
         </div>
         <div class="pie">
