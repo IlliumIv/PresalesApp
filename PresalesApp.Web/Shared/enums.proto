@@ -50,6 +50,11 @@ enum ImageOrientation {
 	IMAGEORIENTATION_SQUARISH = 2;
 }
 
+enum ImageKeywordType {
+	IMAGEKEYWORDTYPE_QUERY = 0;
+	IMAGEKEYWORDTYPE_COLLECTIONS = 1;
+}
+
 enum FunnelStage {
 	FUNNELSTAGE_NONE = 0;
 	FUNNELSTAGE_FIRST = 1;
