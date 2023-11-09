@@ -178,7 +178,10 @@ legend {
 
 ::deep .pnyd-progress {
     padding-left: 0;
-    padding-right: 0;
+}
+
+::deep .allocation .rz-column-title {
+    padding-right: 16px;
 }
 
 ::deep .allocation .rz-grid-table thead th .rz-column-title,
