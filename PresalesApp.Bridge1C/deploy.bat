@@ -1,4 +1,5 @@
 @echo off
+cd /d D:\users\polyakov\github\PresalesApp\PresalesApp.Bridge1C
 set pkg_name=PresalesApp.Bridge1C
 del %pkg_name%.7z >nul 2>&1
 echo    Create %pkg_name% package...
