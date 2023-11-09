@@ -56,8 +56,7 @@ namespace PresalesApp.Web.Client.Pages
             RunTimer();
         }
 
-        private decimal GetCurrentDayProfit() => overview?.Profit?.FirstOrDefault(per => per.Key == DateTime.Now.StartOfDay().ToString(CultureInfo.InvariantCulture)).Value;
-
+        private decimal day_profit = 0;
         private readonly PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
         private readonly Period period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
         private static string GetChartOptions() => "{\"cutout\":\"30%\",\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
@@ -105,6 +104,8 @@ namespace PresalesApp.Web.Client.Pages
                     Department = Department.Any,
                     Position = Position.Any
                 });
+
+                day_profit = overview.Profit.FirstOrDefault(p => p.Key == DateTime.Now.Date.ToUniversalTime().ToString(CultureInfo.InvariantCulture)).Value ?? 0;
             }
             catch
             {

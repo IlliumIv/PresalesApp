@@ -18,7 +18,7 @@
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
             <legend>Прирост за день</legend>
             <div class="plan-layout">
-                <p class="plan-percent">@Helper.ToCurrencyString(GetCurrentDayProfit(), shortFormat: true)</p>
+                <p class="plan-percent">@Helper.ToCurrencyString(day_profit, shortFormat: true)</p>
                 <div class="plan-amount">
                     <p>@Helper.ToCurrencyString((overview?.Profit.Values.Sum(amount => amount) ?? 0) - (IsRealisticPlanDone ? 150_000_000 : 120_000_000), shortFormat: true, allowNegatives: true)</p>
                 </div>
