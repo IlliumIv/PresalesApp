@@ -6,9 +6,9 @@
     <div class="percent plan content">
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
             <legend>@(IsRealisticPlanDone ? "Амбициозный" : "Реалистичный") план</legend>
-            <div class="plan-layout">
-                <p class="plan-percent">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), IsRealisticPlanDone ? 150_000_000 : 120_000_000)</p>
-                <div class="plan-amount">
+            <div class="fs-content-layout">
+                <p class="fs-content">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), IsRealisticPlanDone ? 150_000_000 : 120_000_000)</p>
+                <div class="fs-desc">
                     <p>@Helper.ToCurrencyString(overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
                 </div>
             </div>
@@ -17,9 +17,9 @@
     <div class="day-profit plan content">
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
             <legend>Прирост за день</legend>
-            <div class="plan-layout">
-                <p class="plan-percent">@Helper.ToCurrencyString(day_profit, shortFormat: true)</p>
-                <div class="plan-amount">
+            <div class="fs-content-layout">
+                <p class="fs-content">@Helper.ToCurrencyString(day_profit, shortFormat: true)</p>
+                <div class="fs-desc">
                     <p>@Helper.ToCurrencyString((overview?.Profit.Values.Sum(amount => amount) ?? 0) - (IsRealisticPlanDone ? 150_000_000 : 120_000_000), shortFormat: true, allowNegatives: true)</p>
                 </div>
             </div>
