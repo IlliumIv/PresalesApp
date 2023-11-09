@@ -40,6 +40,7 @@ namespace PresalesApp.Web.Client.Pages
         };
         #endregion
 
+        private decimal day_profit = 0;
         private List<Presale> sorted_presales;
         private Department _department = Department.Russian;
         private ImageKeywordType _keyword_type = ImageKeywordType.Query;
@@ -51,9 +52,6 @@ namespace PresalesApp.Web.Client.Pages
         private readonly PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
 
         private bool IsRealisticPlanDone => (overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000;
-        private decimal GetCurrentDayProfit() =>
-            overview?.Profit?.FirstOrDefault(per => per.Key == DateTime.Now.StartOfDay()
-            .ToString(CultureInfo.InvariantCulture)).Value;
         private static string GetHeaderCellStyling() => "text-align: right";
         private static string GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
 
@@ -101,6 +99,7 @@ namespace PresalesApp.Web.Client.Pages
                 });
 
                 sorted_presales = [.. overview.Presales.OrderByDescending(p => p.Statistics.Profit)];
+                day_profit = overview.Profit.FirstOrDefault(p => p.Key == DateTime.Now.Date.ToUniversalTime().ToString(CultureInfo.InvariantCulture)).Value ?? 0;
             }
             catch
             {
