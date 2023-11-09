@@ -17,14 +17,11 @@ namespace PresalesApp.Web.Client.Pages
         public MessageSnackbar GlobalMsgHandler { get; set; }
 
         private TimeSpan time_left = new(0, 10, 0);
-
         private ProfitOverview overview;
-
         private PieChart<decimal> chart;
-
         private static ImageResponse img;
-
         private string image_keyword = "girl";
+        private ImageKeywordType _keyword_type = ImageKeywordType.Query;
 
         #region UriQuery
         private const string q_keyword = "Keyword";
@@ -36,11 +33,15 @@ namespace PresalesApp.Web.Client.Pages
         private const string q_end = "End";
         [SupplyParameterFromQuery(Name = q_end)] public string? End { get; set; }
 
+        private const string q_keyword_type = "KeywordType";
+        [SupplyParameterFromQuery(Name = q_keyword_type)] public string? KeywordType { get; set; }
+
         private Dictionary<string, object?> GetQueryKeyValues() => new()
         {
             [q_start] = period.Start.ToString(Helper.UriDateTimeFormat),
             [q_end] = period.End.ToString(Helper.UriDateTimeFormat),
             [q_keyword] = image_keyword,
+            [q_keyword_type] = _keyword_type.ToString(),
         };
         #endregion
 
@@ -49,6 +50,7 @@ namespace PresalesApp.Web.Client.Pages
             Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref period.Start);
             Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref period.End);
             Helper.SetFromQueryOrStorage(value: Keyword, query: q_keyword, uri: Navigation.Uri, storage: Storage, param: ref image_keyword);
+            Helper.SetFromQueryOrStorage(value: KeywordType, query: q_keyword_type, uri: Navigation.Uri, storage: Storage, param: ref _keyword_type);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
             RunTimer();
@@ -114,7 +116,8 @@ namespace PresalesApp.Web.Client.Pages
         private async Task UpdateImage() => img = await AppApi.GetImageAsync(new ImageRequest
         {
             Keyword = image_keyword,
-            Orientation = ImageOrientation.Portrait
+            Orientation = ImageOrientation.Portrait,
+            KeywordType = _keyword_type
         });
 
         private async Task RedrawChart()
@@ -159,6 +162,18 @@ namespace PresalesApp.Web.Client.Pages
                 Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
                 await UpdateImage();
             }
+        }
+
+        private void OnImageKeywordTypeChange()
+        {
+            _keyword_type = _keyword_type switch
+            {
+                ImageKeywordType.Query => ImageKeywordType.Collections,
+                ImageKeywordType.Collections => ImageKeywordType.Query,
+                _ => throw new NotImplementedException()
+            };
+            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_keyword_type}", _keyword_type);
+            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
         }
 
         public void Dispose()

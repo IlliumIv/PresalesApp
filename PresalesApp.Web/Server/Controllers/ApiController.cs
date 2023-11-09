@@ -444,7 +444,7 @@ namespace PresalesApp.Web.Controllers
                     SslProtocols = SslProtocols.Tls12
                 };
                 var unsplashClient = new HttpClient(clientHandler) { BaseAddress = new Uri("https://api.unsplash.com") };
-                var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random?query={request.Keyword}&orientation={request.Orientation.ToString().ToLower()}");
+                var unsplashRequest = new HttpRequestMessage(HttpMethod.Get, $"photos/random?{request.KeywordType.ToString().ToLower()}={request.Keyword}&orientation={request.Orientation.ToString().ToLower()}");
                 unsplashRequest.Headers.Add("Authorization", "Client-ID zoKHly26A5L5BCYWXdctm0hc9u5JGaqcsMv_znpsIR0");
                 var unsplashResponse = await unsplashClient.SendAsync(unsplashRequest);
                 if (!unsplashResponse.IsSuccessStatusCode) return _cashedImageGirl;

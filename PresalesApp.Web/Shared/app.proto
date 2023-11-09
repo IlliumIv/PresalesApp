@@ -97,6 +97,7 @@ message ProfitOverview {
 message ImageRequest {
 	string keyword = 1;
 	enums.ImageOrientation orientation = 2;
+	enums.ImageKeywordType keyword_type = 3;
 }
 
 message ImageResponse {

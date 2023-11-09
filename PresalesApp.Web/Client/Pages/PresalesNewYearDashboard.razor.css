@@ -169,3 +169,24 @@ legend {
     grid-row-start: 36;
     grid-row-end: 37;
 }
+
+::deep .pnyd-footer {
+    text-align: right;
+    font-size: inherit !important;
+}
+
+::deep .pnyd-progress {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+::deep .allocation .rz-grid-table thead th .rz-column-title,
+::deep .allocation .rz-grid-table td .rz-cell-data {
+    line-height: calc(100vw * 9/16 / 40);
+}
+
+::deep .allocation .rz-grid-table thead th > div:not(.rz-cell-filter),
+::deep .allocation .rz-grid-table td {
+    padding-top: calc(100vw * 9/16 / 80);
+    padding-bottom: calc(100vw * 9/16 / 80);
+}

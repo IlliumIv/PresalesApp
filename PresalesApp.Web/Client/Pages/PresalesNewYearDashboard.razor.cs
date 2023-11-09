@@ -27,17 +27,22 @@ namespace PresalesApp.Web.Client.Pages
         private const string q_department = "Department";
         [SupplyParameterFromQuery(Name = q_department)] public string? DepartmentType { get; set; }
 
+        private const string q_keyword_type = "KeywordType";
+        [SupplyParameterFromQuery(Name = q_keyword_type)] public string? KeywordType { get; set; }
+
         private Dictionary<string, object?> GetQueryKeyValues() => new()
         {
             [q_start] = period.Start.ToString(Helper.UriDateTimeFormat),
             [q_end] = period.End.ToString(Helper.UriDateTimeFormat),
             [q_keyword] = image_keyword,
             [q_department] = _department.ToString(),
+            [q_keyword_type] = _keyword_type.ToString(),
         };
         #endregion
 
         private List<Presale> sorted_presales;
         private Department _department = Department.Russian;
+        private ImageKeywordType _keyword_type = ImageKeywordType.Query;
         private readonly Helpers.Period period = new(new(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc), PeriodType.Quarter);
         private static ImageResponse img;
         private string image_keyword = "woman";
@@ -58,6 +63,7 @@ namespace PresalesApp.Web.Client.Pages
             Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref period.End);
             Helper.SetFromQueryOrStorage(value: Keyword, query: q_keyword, uri: Navigation.Uri, storage: Storage, param: ref image_keyword);
             Helper.SetFromQueryOrStorage(value: DepartmentType, query: q_department, uri: Navigation.Uri, storage: Storage, param: ref _department);
+            Helper.SetFromQueryOrStorage(value: KeywordType, query: q_keyword_type, uri: Navigation.Uri, storage: Storage, param: ref _keyword_type);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
             RunTimer();
@@ -106,7 +112,8 @@ namespace PresalesApp.Web.Client.Pages
         private async Task UpdateImage() => img = await AppApi.GetImageAsync(new ImageRequest
         {
             Keyword = image_keyword,
-            Orientation = ImageOrientation.Portrait
+            Orientation = ImageOrientation.Portrait,
+            KeywordType = _keyword_type
         });
 
         private async void OnManuallyImageUpdate(KeyboardEventArgs e)
@@ -117,6 +124,18 @@ namespace PresalesApp.Web.Client.Pages
                 Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
                 await UpdateImage();
             }
+        }
+
+        private void OnImageKeywordTypeChange()
+        {
+            _keyword_type = _keyword_type switch
+            {
+                ImageKeywordType.Query => ImageKeywordType.Collections,
+                ImageKeywordType.Collections => ImageKeywordType.Query,
+                _ => throw new NotImplementedException()
+            };
+            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_keyword_type}", _keyword_type);
+            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
         }
 
         #region Charts

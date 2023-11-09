@@ -109,6 +109,7 @@
         </p>
     </div>
     <div class="img-keyword content">
+        <RadzenIcon Icon="@Helper.GetIcon(_keyword_type)" @onclick="@(() => OnImageKeywordTypeChange())" title="@Helper.GetIcon(_keyword_type)" Style="cursor: default;" />
         <input @bind="@image_keyword" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
     </div>
 </div>

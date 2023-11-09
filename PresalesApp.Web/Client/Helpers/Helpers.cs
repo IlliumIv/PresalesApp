@@ -341,5 +341,7 @@ namespace PresalesApp.Web.Client.Helpers
         }
 
         public static DateTime StartOfDay(this DateTime date) => new(date.Year, date.Month, date.Day, 0, 0, 0, 0);
+
+        public static string GetIcon(ImageKeywordType type) => type switch { ImageKeywordType.Collections => "collections", _ => "image" };
     }
 }

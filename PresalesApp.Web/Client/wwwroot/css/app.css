@@ -154,24 +154,3 @@ html, body * {
 .rz-grid-table td .rz-cell-data {
     font-size: inherit !important;
 }
-
-.pnyd-footer {
-    text-align: right;
-    font-size: inherit !important;
-}
-
-.pnyd-progress {
-    padding-left: 0;
-    padding-right: 0;
-}
-
-.allocation .rz-grid-table thead th .rz-column-title,
-.allocation .rz-grid-table td .rz-cell-data {
-    line-height: calc(100vw * 9/16 / 40);
-}
-
-.allocation .rz-grid-table thead th > div:not(.rz-cell-filter),
-.allocation .rz-grid-table td {
-    padding-top: calc(100vw * 9/16 / 80);
-    padding-bottom: calc(100vw * 9/16 / 80);
-}
