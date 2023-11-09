@@ -57,7 +57,7 @@ legend {
     font-size: calc(2vw * 9/16);
 }
 
-.plan-layout {
+.fs-content-layout {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, auto);
@@ -67,16 +67,17 @@ legend {
     height: 100%;
 }
 
-.plan-percent {
+.fs-content {
     grid-column-start: 1;
     grid-column-end: 5;
     grid-row-start: 1;
     grid-row-end: 2;
     font-size: calc(6vw * 9/16);
     font-weight: bold;
+    padding-top: 5px;
 }
 
-.plan-amount {
+.fs-desc {
     grid-column-start: 2;
     grid-column-end: 3;
     grid-row-start: 1;
@@ -88,7 +89,7 @@ legend {
     align-items: start;
 }
 
-.plan-amount p {
+.fs-desc p {
     margin: 0;
 }
 
