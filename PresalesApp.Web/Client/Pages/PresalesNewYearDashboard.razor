@@ -5,9 +5,9 @@
 <div class="layout">
     <div class="percent plan content">
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
-            <legend>@(IsRealisticPlanDone ? "Амбициозный" : "Реалистичный") план</legend>
+            <legend>@(IsRealisticPlanDone() ? "Амбициозный" : "Реалистичный") план</legend>
             <div class="fs-content-layout">
-                <p class="fs-content">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), IsRealisticPlanDone ? 150_000_000 : 120_000_000)</p>
+                <p class="fs-content">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), IsRealisticPlanDone() ? 150_000_000 : 120_000_000)</p>
                 <div class="fs-desc">
                     <p>@Helper.ToCurrencyString(overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
                 </div>
@@ -20,7 +20,7 @@
             <div class="fs-content-layout">
                 <p class="fs-content">@Helper.ToCurrencyString(day_profit, shortFormat: true)</p>
                 <div class="fs-desc">
-                    <p>@Helper.ToCurrencyString((overview?.Profit.Values.Sum(amount => amount) ?? 0) - (IsRealisticPlanDone ? 150_000_000 : 120_000_000), shortFormat: true, allowNegatives: true)</p>
+                    <p>@Helper.ToCurrencyString((overview?.Profit.Values.Sum(amount => amount) ?? 0) - (IsRealisticPlanDone() ? 150_000_000 : 120_000_000), shortFormat: true, allowNegatives: true)</p>
                 </div>
             </div>
         </fieldset>
@@ -93,11 +93,6 @@
             </RadzenDataGrid>
         }
     </div>
-    <div class="invoices-chart content" style="display: none;">
-        <div class="invoices-chart-container content">
-            <PieChart @ref="invoices_chart" TItem="int" OptionsJsonString="@GetInvoicesChartOptions()" />
-        </div>
-    </div>
     <div class="img-container content">
         <img src="@img?.Regular" alt="@img?.AltDescription" />
     </div>
@@ -109,7 +104,7 @@
         </p>
     </div>
     <div class="img-keyword content">
-        <RadzenIcon Icon="@Helper.GetIcon(_keyword_type)" @onclick="@(() => OnImageKeywordTypeChange())" title="@Helper.GetIcon(_keyword_type)" Style="cursor: default;" />
+        <RadzenIcon Icon="@Helper.GetIcon(keyword_type)" @onclick="@(() => OnImageKeywordTypeChange())" title="@Helper.GetIcon(keyword_type)" Style="cursor: default;" />
         <input @bind="@image_keyword" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
     </div>
 </div>
