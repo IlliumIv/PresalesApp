@@ -123,13 +123,6 @@ legend {
     padding: 5px;
 }
 
-.invoices-chart {
-    grid-column-start: 6;
-    grid-column-end: 9;
-    grid-row-start: 22;
-    grid-row-end: 37;
-}
-
 .img-container {
     grid-column-start: 9;
     grid-column-end: 15;

@@ -19,9 +19,9 @@ namespace PresalesApp.Web.Client.Pages
         private TimeSpan time_left = new(0, 10, 0);
         private ProfitOverview overview;
         private PieChart<decimal> chart;
-        private static ImageResponse img;
+        private ImageResponse img;
         private string image_keyword = "girl";
-        private ImageKeywordType _keyword_type = ImageKeywordType.Query;
+        private ImageKeywordType keyword_type = ImageKeywordType.Query;
 
         #region UriQuery
         private const string q_keyword = "Keyword";
@@ -41,7 +41,7 @@ namespace PresalesApp.Web.Client.Pages
             [q_start] = period.Start.ToString(Helper.UriDateTimeFormat),
             [q_end] = period.End.ToString(Helper.UriDateTimeFormat),
             [q_keyword] = image_keyword,
-            [q_keyword_type] = _keyword_type.ToString(),
+            [q_keyword_type] = keyword_type.ToString(),
         };
         #endregion
 
@@ -50,7 +50,7 @@ namespace PresalesApp.Web.Client.Pages
             Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref period.Start);
             Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref period.End);
             Helper.SetFromQueryOrStorage(value: Keyword, query: q_keyword, uri: Navigation.Uri, storage: Storage, param: ref image_keyword);
-            Helper.SetFromQueryOrStorage(value: KeywordType, query: q_keyword_type, uri: Navigation.Uri, storage: Storage, param: ref _keyword_type);
+            Helper.SetFromQueryOrStorage(value: KeywordType, query: q_keyword_type, uri: Navigation.Uri, storage: Storage, param: ref keyword_type);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
             RunTimer();
@@ -73,6 +73,10 @@ namespace PresalesApp.Web.Client.Pages
             (3, 28, 58)];
 
         private readonly float color_alfa = 0.5f;
+
+        #region Colors
+
+        #endregion
 
         private async void RunTimer()
         {
@@ -105,7 +109,9 @@ namespace PresalesApp.Web.Client.Pages
                     Position = Position.Any
                 });
 
-                day_profit = overview.Profit.FirstOrDefault(p => p.Key == DateTime.Now.Date.ToUniversalTime().ToString(CultureInfo.InvariantCulture)).Value ?? 0;
+                day_profit = overview.Profit
+                    .FirstOrDefault(p => p.Key == DateTime.Now.Date.ToUniversalTime()
+                    .ToString(CultureInfo.InvariantCulture)).Value ?? 0;
             }
             catch
             {
@@ -114,18 +120,30 @@ namespace PresalesApp.Web.Client.Pages
             }
         }
 
-        private async Task UpdateImage() => img = await AppApi.GetImageAsync(new ImageRequest
+        private async Task UpdateImage()
         {
-            Keyword = image_keyword,
-            Orientation = ImageOrientation.Portrait,
-            KeywordType = _keyword_type
-        });
+            try
+            {
+                img = await AppApi.GetImageAsync(new ImageRequest
+                {
+                    Keyword = image_keyword,
+                    Orientation = ImageOrientation.Portrait,
+                    KeywordType = keyword_type
+                });
+            }
+            catch
+            {
+                await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+                return;
+            }
+        }
 
         private async Task RedrawChart()
         {
             if (overview == null) return;
 
             await chart.Clear();
+
             var dataset = new List<decimal>();
             var backgroud_colors = new List<string>();
             var border_colors = new List<string>();
@@ -167,13 +185,13 @@ namespace PresalesApp.Web.Client.Pages
 
         private void OnImageKeywordTypeChange()
         {
-            _keyword_type = _keyword_type switch
+            keyword_type = keyword_type switch
             {
                 ImageKeywordType.Query => ImageKeywordType.Collections,
                 ImageKeywordType.Collections => ImageKeywordType.Query,
                 _ => throw new NotImplementedException()
             };
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_keyword_type}", _keyword_type);
+            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_keyword_type}", keyword_type);
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
         }
 

@@ -35,23 +35,22 @@ namespace PresalesApp.Web.Client.Pages
             [q_start] = period.Start.ToString(Helper.UriDateTimeFormat),
             [q_end] = period.End.ToString(Helper.UriDateTimeFormat),
             [q_keyword] = image_keyword,
-            [q_department] = _department.ToString(),
-            [q_keyword_type] = _keyword_type.ToString(),
+            [q_department] = department.ToString(),
+            [q_keyword_type] = keyword_type.ToString(),
         };
         #endregion
 
-        private decimal day_profit = 0;
-        private List<Presale> sorted_presales;
-        private Department _department = Department.Russian;
-        private ImageKeywordType _keyword_type = ImageKeywordType.Query;
-        private readonly Helpers.Period period = new(new(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc), PeriodType.Quarter);
+        private static decimal day_profit = 0;
+        private static List<Presale> sorted_presales;
+        private static Department department = Department.Russian;
+        private static ImageKeywordType keyword_type = ImageKeywordType.Query;
+        private static readonly Helpers.Period period = new(new(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc), PeriodType.Quarter);
         private static ImageResponse img;
         private string image_keyword = "woman";
-        private ProfitOverview overview;
-        private TimeSpan time_left = new(0, 10, 0);
-        private readonly PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
+        private static ProfitOverview overview;
+        private static PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
 
-        private bool IsRealisticPlanDone => (overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000;
+        private static bool IsRealisticPlanDone() => (overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000;
         private static string GetHeaderCellStyling() => "text-align: right";
         private static string GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
 
@@ -60,8 +59,8 @@ namespace PresalesApp.Web.Client.Pages
             Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref period.Start);
             Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref period.End);
             Helper.SetFromQueryOrStorage(value: Keyword, query: q_keyword, uri: Navigation.Uri, storage: Storage, param: ref image_keyword);
-            Helper.SetFromQueryOrStorage(value: DepartmentType, query: q_department, uri: Navigation.Uri, storage: Storage, param: ref _department);
-            Helper.SetFromQueryOrStorage(value: KeywordType, query: q_keyword_type, uri: Navigation.Uri, storage: Storage, param: ref _keyword_type);
+            Helper.SetFromQueryOrStorage(value: DepartmentType, query: q_department, uri: Navigation.Uri, storage: Storage, param: ref department);
+            Helper.SetFromQueryOrStorage(value: KeywordType, query: q_keyword_type, uri: Navigation.Uri, storage: Storage, param: ref keyword_type);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
             RunTimer();
@@ -69,21 +68,14 @@ namespace PresalesApp.Web.Client.Pages
 
         private async void RunTimer()
         {
-            int count = 600;
-            var second = new TimeSpan(0, 0, 1);
             while (await periodic_timer.WaitForNextTickAsync())
             {
-                time_left = time_left.Subtract(second);
-                if (count > 600)
-                {
-                    count = 0;
-                    await UpdateData();
-                    await UpdateImage();
-                    await RedrawChart();
-                    time_left = new(0, 10, 0);
-                }
-                count++;
+                Console.WriteLine(DateTime.Now);
+                await UpdateData();
+                await UpdateImage();
+                await RedrawChart();
                 StateHasChanged();
+                periodic_timer = new(TimeSpan.FromMinutes(10));
             }
         }
 
@@ -94,12 +86,14 @@ namespace PresalesApp.Web.Client.Pages
                 overview = await AppApi.GetProfitOverviewAsync(new OverviewRequest
                 {
                     Period = period.Translate(),
-                    Department = _department,
+                    Department = department,
                     Position = Position.Any
                 });
 
                 sorted_presales = [.. overview.Presales.OrderByDescending(p => p.Statistics.Profit)];
-                day_profit = overview.Profit.FirstOrDefault(p => p.Key == DateTime.Now.Date.ToUniversalTime().ToString(CultureInfo.InvariantCulture)).Value ?? 0;
+                day_profit = overview.Profit
+                    .FirstOrDefault(p => p.Key == DateTime.Now.Date.ToUniversalTime()
+                    .ToString(CultureInfo.InvariantCulture)).Value ?? 0;
             }
             catch
             {
@@ -108,12 +102,23 @@ namespace PresalesApp.Web.Client.Pages
             }
         }
 
-        private async Task UpdateImage() => img = await AppApi.GetImageAsync(new ImageRequest
+        private async Task UpdateImage()
         {
-            Keyword = image_keyword,
-            Orientation = ImageOrientation.Portrait,
-            KeywordType = _keyword_type
-        });
+            try
+            {
+                img = await AppApi.GetImageAsync(new ImageRequest
+                {
+                    Keyword = image_keyword,
+                    Orientation = ImageOrientation.Portrait,
+                    KeywordType = keyword_type
+                });
+            }
+            catch
+            {
+                await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+                return;
+            }
+        }
 
         private async void OnManuallyImageUpdate(KeyboardEventArgs e)
         {
@@ -127,19 +132,18 @@ namespace PresalesApp.Web.Client.Pages
 
         private void OnImageKeywordTypeChange()
         {
-            _keyword_type = _keyword_type switch
+            keyword_type = keyword_type switch
             {
                 ImageKeywordType.Query => ImageKeywordType.Collections,
                 ImageKeywordType.Collections => ImageKeywordType.Query,
                 _ => throw new NotImplementedException()
             };
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_keyword_type}", _keyword_type);
+            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_keyword_type}", keyword_type);
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
         }
 
         #region Charts
-        private LineChart<decimal> line_chart;
-        private PieChart<int> invoices_chart;
+        private static LineChart<decimal> line_chart;
 
         private static string GetChartOptions() => "{\"aspectRatio\":2.43875, \"plugins\":{\"legend\":{\"display\": false}}}";
         private static string GetInvoicesChartOptions() => "{\"cutout\":\"80%\",\"animation\":{\"animateScale\": true}}";
@@ -178,7 +182,7 @@ namespace PresalesApp.Web.Client.Pages
         };
 
         #region Colors
-        private readonly static (byte R, byte G, byte B)[] colors = [(12, 90, 74),
+        private static readonly (byte R, byte G, byte B)[] colors = [(12, 90, 74),
             (5, 47, 91),
             (165, 14, 130),
             (232, 125, 55),
@@ -204,8 +208,8 @@ namespace PresalesApp.Web.Client.Pages
         private async Task RedrawChart()
         {
             if (overview == null) return;
+
             await line_chart.Clear();
-            await invoices_chart.Clear();
 
             var labels = new List<string>();
             var profit = new List<decimal>();
@@ -226,15 +230,15 @@ namespace PresalesApp.Web.Client.Pages
 
             var invoices = new List<int>();
             foreach (var presale in overview.Presales.OrderByDescending(p => p.Statistics.Profit))
-                invoices.Add(presale.Statistics.InvoicesShipped);
-
-            await line_chart.AddLabelsDatasetsAndUpdate(labels, GetChartDataset(profit), GetRealisticPlanDataset(realistic_plan), GetAmbitiousPlanDataset(ambitious_plan), GetMinPointDataset());
-            await invoices_chart.AddDatasetsAndUpdate(new PieChartDataset<int>()
             {
-                Data = invoices,
-                BackgroundColor = GetColors(0.3f),
-                BorderColor = GetColors(0.8f),
-            });
+                invoices.Add(presale.Statistics.InvoicesShipped);
+            }
+
+            await line_chart.AddLabelsDatasetsAndUpdate(labels: labels,
+                GetChartDataset(profit),
+                GetRealisticPlanDataset(realistic_plan),
+                GetAmbitiousPlanDataset(ambitious_plan),
+                GetMinPointDataset());
         }
         #endregion
 
