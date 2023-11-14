@@ -423,4 +423,7 @@
   <data name="PeriodTypeArbitraryText" xml:space="preserve">
     <value>Произвольный</value>
   </data>
+  <data name="DataGridItemsPerPageText" xml:space="preserve">
+    <value>записей на странице</value>
+  </data>
 </root>
