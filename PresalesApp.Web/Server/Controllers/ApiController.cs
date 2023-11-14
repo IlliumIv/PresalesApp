@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Blazorise.Extensions;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,6 +11,7 @@ using PresalesApp.Web.Authorization;
 using PresalesApp.Web.Server.Authorization;
 using PresalesApp.Web.Shared;
 using System.Globalization;
+using System.Linq.Dynamic.Core;
 using System.Security.Authentication;
 using static PresalesApp.Database.DbController;
 using AppApi = PresalesApp.Web.Shared.Api;
@@ -670,6 +672,66 @@ public class ApiController(
         return reply;
     }
 
+    public override async Task<Roles> GetRoles(Empty request, ServerCallContext context)
+    {
+        var items = _RoleManager.Roles;
+
+        var roles = new Shared.Roles();
+
+        foreach(var role in items)
+        {
+            roles.Roles_.Add(role.Translate());
+        }
+
+        return await Task.FromResult(roles);
+    }
+
+    public override async Task<NullableRole> CreateRole(Role request, ServerCallContext context)
+    {
+        string name = request.Name.Value;
+
+        if(!name.IsNullOrEmpty())
+        {
+            var role = new IdentityRole(name);
+
+            if(!await _RoleManager.RoleExistsAsync(name))
+            {
+                var some = await _RoleManager.CreateAsync(role);
+
+                if(some.Succeeded)
+                {
+                    role = _RoleManager.Roles
+                                .Where(i => i.Name == name)
+                                // .Include(i => i.AspNetRoleClaims)
+                                // .Include(i => i.AspNetUserRoles)
+                                .FirstOrDefault();
+                    if(role is not null)
+                    {
+                        return new() { Value = role.Translate() };
+                    }
+                }
+            }
+        }
+
+        return new() { Null = new() };
+    }
+
+    public override async Task<NullableRole> DeleteRole(Role request, ServerCallContext context)
+    {
+        var role = _RoleManager.Roles
+                              .Where(i => i.Id == request.Id)
+                              // .Include(i => i.AspNetRoleClaims)
+                              // .Include(i => i.AspNetUserRoles)
+                              .FirstOrDefault();
+
+        if(role is not null)
+        {
+            _ = await _RoleManager.DeleteAsync(role);
+        }
+
+        return new() { Null = new() };
+    }
+
     private static void _RecursiveLoad(List<Project>? projects, ReadOnlyContext db, ref HashSet<Project> projectsViewed)
     {
         if(projects == null || projects.Count == 0)
@@ -762,6 +824,29 @@ public class ApiController(
         for(var day = from; day.Date <= to.Date; day = day.AddDays(1))
         {
             yield return day;
+        }
+    }
+
+    private static void _ApplyQuery<T>(ref IQueryable<T> items, Query query)
+    {
+        if(!string.IsNullOrEmpty(query.Filter))
+        {
+            items = query.FilterParameters != null ? items.Where(query.Filter, query.FilterParameters) : items.Where(query.Filter);
+        }
+
+        if(!string.IsNullOrEmpty(query.OrderBy))
+        {
+            items = items.OrderBy(query.OrderBy);
+        }
+
+        if(query.Skip.HasValue)
+        {
+            items = items.Skip(query.Skip.Value);
+        }
+
+        if(query.Top.HasValue)
+        {
+            items = items.Take(query.Top.Value);
         }
     }
 }
