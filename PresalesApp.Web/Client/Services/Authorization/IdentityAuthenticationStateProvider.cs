@@ -5,7 +5,7 @@ using PresalesApp.Web.Shared;
 using System.Security.Claims;
 using AppApi = PresalesApp.Web.Shared.Api.ApiClient;
 
-namespace PresalesApp.Web.Client.Authorization
+namespace PresalesApp.Web.Client.Services.Authorization
 {
     public class IdentityAuthenticationStateProvider(
         ILocalStorageService localStorage,

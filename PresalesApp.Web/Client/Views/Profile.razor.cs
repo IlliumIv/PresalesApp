@@ -1,6 +1,6 @@
 ﻿using Blazorise;
 using Microsoft.AspNetCore.Components;
-using PresalesApp.Web.Client.Authorization;
+using PresalesApp.Web.Client.Services.Authorization;
 using PresalesApp.Web.Shared;
 
 namespace PresalesApp.Web.Client.Views
