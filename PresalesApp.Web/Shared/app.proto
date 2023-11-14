@@ -4,6 +4,8 @@ package app;
 
 import "types.proto";
 import "enums.proto";
+import "identity.proto";
+
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/duration.proto";
@@ -12,6 +14,10 @@ service Api {
 	rpc Login(LoginRequest) returns (LoginResponse);
 	rpc Register(RegisterRequest) returns (LoginResponse);
 	rpc GetUserProfile(google.protobuf.Empty) returns (UserInfoResponse);
+
+	rpc GetRoles(google.protobuf.Empty) returns (identity.Roles);
+	rpc CreateRole(identity.Role) returns (identity.NullableRole);
+	rpc DeleteRole(identity.Role) returns (identity.NullableRole);
 
 	rpc GetOverview(OverviewRequest) returns (Overview);
 	rpc GetNames(google.protobuf.Empty) returns (NamesResponse);

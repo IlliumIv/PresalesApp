@@ -1,0 +1,44 @@
+﻿@page "/add-role"
+
+<PageTitle>Add AspNetRole</PageTitle>
+<RadzenColumn SizeMD=12>
+    <RadzenAlert Shade="Shade.Lighter" Variant="Variant.Flat" Size="AlertSize.Small" AlertStyle="AlertStyle.Danger" Visible="@IsErrorVisible">Cannot save AspNetRole</RadzenAlert>
+    <RadzenTemplateForm TItem="Role" Data="@Role" Visible="@(Role != null)" Submit="@FormSubmit">
+        <RadzenStack>
+            @*
+            <RadzenFormField Text="Id" Variant="Variant.Outlined">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@Role.Id" Name="Id" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Id" Text="Id is required" />
+                </Helper>
+            </RadzenFormField>
+            *@
+            <RadzenFormField Text="Name" Variant="Variant.Outlined">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@Role.Name.Value" Name="Name" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="Name" Text="Name is required" />
+                </Helper>
+            </RadzenFormField>
+            @*
+            <RadzenFormField Text="Normalized Name" Variant="Variant.Outlined">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@Role.NormalizedName" Name="NormalizedName" />
+                </ChildContent>
+            </RadzenFormField>
+            <RadzenFormField Text="Concurrency Stamp" Variant="Variant.Outlined">
+                <ChildContent>
+                    <RadzenTextBox style="display: block; width: 100%" @bind-Value="@Role.ConcurrencyStamp" Name="ConcurrencyStamp" />
+                </ChildContent>
+            </RadzenFormField>
+            *@
+        </RadzenStack>
+        <RadzenStack style="margin-top:1rem;" Orientation="Radzen.Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="Radzen.JustifyContent.End" Gap="0.5rem">
+            <RadzenButton ButtonStyle="ButtonStyle.Primary" ButtonType="Radzen.ButtonType.Submit" Icon="save" Text="Save" Variant="Variant.Flat" />
+            <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Variant="Variant.Flat" Click="@CancelButtonClick" />
+        </RadzenStack>
+    </RadzenTemplateForm>
+</RadzenColumn>

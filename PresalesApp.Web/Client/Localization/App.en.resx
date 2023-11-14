@@ -342,4 +342,7 @@
   <data name="PeriodTypeArbitraryText" xml:space="preserve">
     <value>Arbitrary</value>
   </data>
+  <data name="DataGridItemsPerPageText" xml:space="preserve">
+    <value>items per page</value>
+  </data>
 </root>
