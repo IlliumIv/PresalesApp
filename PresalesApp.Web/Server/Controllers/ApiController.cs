@@ -672,11 +672,27 @@ public class ApiController(
         return reply;
     }
 
-    public override async Task<Roles> GetRoles(Empty request, ServerCallContext context)
+    public override async Task<Roles> GetRoles(Query query, ServerCallContext context)
     {
-        var items = _RoleManager.Roles;
+        throw new NotImplementedException();
 
-        var roles = new Shared.Roles();
+        var items = _RoleManager.Roles.AsQueryable();
+
+
+        var some = items.Where("Name == @0", "Admin").FirstOrDefault();
+
+        if(!string.IsNullOrEmpty(query.Expand))
+        {
+            var propertiesToExpand = query.Expand.Split(',');
+            foreach(var p in propertiesToExpand)
+            {
+                items = items.Include(p.Trim());
+            }
+        }
+
+        _ApplyQuery(ref items, query);
+
+        var roles = new Roles();
 
         foreach(var role in items)
         {

@@ -1,8 +1,6 @@
 using PresalesApp.Bridge1C.Controllers;
-using PresalesApp.Database;
 using PresalesApp.Database.Entities;
 using PresalesApp.Database.Entities.Updates;
-using Serilog;
 using PresalesApp.Bridge1C.Startup;
 using PresalesApp.Web.Shared.Startup;
 

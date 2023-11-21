@@ -15,7 +15,7 @@ service Api {
 	rpc Register(RegisterRequest) returns (LoginResponse);
 	rpc GetUserProfile(google.protobuf.Empty) returns (UserInfoResponse);
 
-	rpc GetRoles(google.protobuf.Empty) returns (identity.Roles);
+	rpc GetRoles(identity.Query) returns (identity.Roles);
 	rpc CreateRole(identity.Role) returns (identity.NullableRole);
 	rpc DeleteRole(identity.Role) returns (identity.NullableRole);
 
