@@ -633,7 +633,7 @@ public class ApiController(
 
         foreach(var presale in presales)
         {
-            if(presale.Projects?.Count == 0)
+            if((presale.Projects?.Count ?? 0) == 0)
             {
                 continue;
             }
