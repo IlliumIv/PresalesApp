@@ -38,12 +38,23 @@ public partial class Roles
     {
         try
         {
-            var result = await ApiClient.GetRolesAsync(new());
+            var query = new Shared.Query()
+            {
+                Filter = $@"(contains(Id,""{search}"") or contains(Name,""{search}"") or contains(NormalizedName,""{search}"") or contains(ConcurrencyStamp,""{search}"")) and {(string.IsNullOrEmpty(args.Filter) ? "true" : args.Filter)}"
+                    .Replace("\"", "'") ?? "",
+                Top = args.Top,
+                Skip = args.Skip,
+                OrderBy = args.OrderBy,
+                Expand = "",
+                Select = "",
+            };
+
+            var result = await ApiClient.GetRolesAsync(query);
 
             _Roles = result.Roles_.AsODataEnumerable();
             count = result.Roles_.Count;
         }
-        catch(System.Exception)
+        catch(Exception)
         {
             NotificationService.Notify(new NotificationMessage() { Severity = NotificationSeverity.Error, Summary = $"Error", Detail = $"Unable to load AspNetRoles" });
         }
