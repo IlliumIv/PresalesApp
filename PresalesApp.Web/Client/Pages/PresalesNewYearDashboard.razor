@@ -3,6 +3,12 @@
 @layout Infographic
 
 <div class="layout">
+    <div class="aeration-warning content" style="display: @aeration_warning">
+        <h2 class="glitch layers" data-text="@($"Нужно проветрить!\n{time_left}")">
+            <span>Нужно проветрить!</span>
+            <span>@time_left</span>
+        </h2>
+    </div>
     <div class="percent plan content">
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
             <legend>@(IsRealisticPlanDone() ? "Амбициозный" : "Реалистичный") план</legend>
