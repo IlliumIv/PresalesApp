@@ -174,7 +174,7 @@
 
 
 .glitch {
-    font-size: 6em;
+    font-size: calc(16vw * 9/16);
     color: crimson;
     text-align: center;
 }
