@@ -5,6 +5,7 @@ using PresalesApp.Web.Client.Enums;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
+using Radzen.Blazor.Rendering;
 using System.Globalization;
 
 namespace PresalesApp.Web.Client.Pages
@@ -49,6 +50,8 @@ namespace PresalesApp.Web.Client.Pages
         private string image_keyword = "woman";
         private static ProfitOverview overview;
         private static PeriodicTimer periodic_timer = new(TimeSpan.FromSeconds(1));
+        private string aeration_warning = "none";
+        private TimeSpan time_left = new(0, 10, 0);
 
         private static bool IsRealisticPlanDone() => (overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000;
         private static string GetHeaderCellStyling() => "text-align: right";
@@ -63,19 +66,38 @@ namespace PresalesApp.Web.Client.Pages
             Helper.SetFromQueryOrStorage(value: KeywordType, query: q_keyword_type, uri: Navigation.Uri, storage: Storage, param: ref keyword_type);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-            RunTimer();
+            _RunTimer();
         }
 
-        private async void RunTimer()
+        private async void _RunTimer()
         {
+            var count = 600;
+            var hour = new TimeSpan(1, 0, 0);
             while (await periodic_timer.WaitForNextTickAsync())
             {
-                Console.WriteLine(DateTime.Now);
-                await UpdateData();
-                await UpdateImage();
-                await RedrawChart();
+                if (count > 600)
+                {
+                    count = 0;
+                    await UpdateData();
+                    await UpdateImage();
+                    await RedrawChart();
+                }
+
+                count++;
+                var current_time = DateTime.Now.TimeOfDay;
+                time_left = hour - new TimeSpan(0, current_time.Minutes, current_time.Seconds);
+
+                aeration_warning = current_time.Minutes switch
+                {
+                    > 49 => current_time.Hours switch
+                    {
+                        10 or 12 or 14 or 16 => "flex",
+                        _ => "none"
+                    },
+                    _ => "none"
+                };
+
                 StateHasChanged();
-                periodic_timer = new(TimeSpan.FromMinutes(10));
             }
         }
 
