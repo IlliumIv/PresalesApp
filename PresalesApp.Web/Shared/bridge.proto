@@ -1,12 +1,22 @@
 syntax = "proto3";
-option csharp_namespace = "PresalesApp.Bridge1C";
+option csharp_namespace = "PresalesApp.Service";
 package bridge;
 
 import "enums.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service Api {
-  rpc SayHello (HelloRequest) returns (HelloReply);
-  rpc SetProjectFunnelStage(NewProjectFunnelStage) returns (IsActionSuccess);
+	rpc SayHello (HelloRequest) returns (HelloReply);
+	rpc SetProjectFunnelStage(NewProjectFunnelStage) returns (IsActionSuccess);
+	
+	rpc GetPresalesArrival(google.protobuf.Empty) returns (stream Arrival);
+}
+
+message Arrival {
+	string name = 1;
+	google.protobuf.Timestamp timestamp = 2;
+	string image_bytes = 3;
 }
 
 message NewProjectFunnelStage {
@@ -20,9 +30,9 @@ message IsActionSuccess {
 }
 
 message HelloRequest {
-  string name = 1;
+	string name = 1;
 }
 
 message HelloReply {
-  string message = 1;
+	string message = 1;
 }

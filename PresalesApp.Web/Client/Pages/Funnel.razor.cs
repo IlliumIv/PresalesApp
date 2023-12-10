@@ -8,28 +8,28 @@ namespace PresalesApp.Web.Client.Pages
 {
     public partial class Funnel
     {
-        private static string SetCellColor(Project project) =>
+        private static string _SetCellColor(Project project) =>
             !project.Actions.Any(a => a.SalesFunnel) || project.FunnelStage == FunnelStage.None ? "--rz-danger" : "--rz-text-color";
 
         [CascadingParameter]
         public MessageSnackbar GlobalMsgHandler { get; set; }
 
-        protected override async Task OnParametersSetAsync() => await UpdateData();
+        protected override async Task OnParametersSetAsync() => await _UpdateData();
 
-        private FunnelProjects? response;
+        private FunnelProjects? _Response;
 
-        private RadzenDataGrid<Project> grid;
+        private RadzenDataGrid<Project> _Grid;
 
-        private bool allRowsExpanded = false;
+        private bool _AllRowsExpanded = false;
 
         private FunnelStage? _selectedStage = null;
 
-        private DateTime? _selectedApprovalByTechDirectorAt = DateTime.MinValue;
-        private DateTime? _selectedLastAction = DateTime.MinValue;
+        private DateTime? _SelectedApprovalByTechDirectorAt = DateTime.MinValue;
+        private DateTime? _SelectedLastAction = DateTime.MinValue;
 
-        private DateTime? _selectedDate = DateTime.MinValue;
+        private DateTime? _SelectedDate = DateTime.MinValue;
 
-        private void DropDown0Change(object args)
+        private void _DropDown0Change(object args)
         {
             if (_selectedStage == FunnelStage.Any)
             {
@@ -37,25 +37,25 @@ namespace PresalesApp.Web.Client.Pages
             }
         }
 
-        private async Task ToggleRowsExpand()
+        private async Task _ToggleRowsExpand()
         {
-            allRowsExpanded = !allRowsExpanded;
+            _AllRowsExpanded = !_AllRowsExpanded;
 
-            if (allRowsExpanded)
+            if (_AllRowsExpanded)
             {
-                await grid.ExpandRows(grid.PagedView);
+                await _Grid.ExpandRows(_Grid.PagedView);
             }
             else
             {
-                await grid.CollapseRows(grid.PagedView);
+                await _Grid.CollapseRows(_Grid.PagedView);
             }
         }
 
-        private async Task UpdateData()
+        private async Task _UpdateData()
         {
             try
             {
-                response = await AppApi.GetFunnelProjectsAsync(new Empty());
+                _Response = await AppApi.GetFunnelProjectsAsync(new Empty());
             }
             catch (Exception e)
             {

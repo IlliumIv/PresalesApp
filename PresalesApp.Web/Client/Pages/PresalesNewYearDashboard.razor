@@ -3,19 +3,19 @@
 @layout Infographic
 
 <div class="layout">
-    <div class="aeration-warning content" style="display: @aeration_warning">
+    <div class="aeration-warning content" style="display: @_AerationWarning">
         <h2 class="glitch layers">
             <span>Нужно проветрить!</span>
-            <span>@time_left</span>
+            <span>@_TimeLeft</span>
         </h2>
     </div>
     <div class="percent plan content">
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
-            <legend>@(IsRealisticPlanDone() ? "Амбициозный" : "Реалистичный") план</legend>
+            <legend>@(_IsRealisticPlanDone() ? "Амбициозный" : "Реалистичный") план</legend>
             <div class="fs-content-layout">
-                <p class="fs-content">@GetProgressPercentString(overview?.Presales.Sum(p => p.Statistics.Profit), IsRealisticPlanDone() ? 150_000_000 : 120_000_000)</p>
+                <p class="fs-content">@_GetProgressPercentString(_Overview?.Presales.Sum(p => p.Statistics.Profit), _IsRealisticPlanDone() ? 150_000_000 : 120_000_000)</p>
                 <div class="fs-desc">
-                    <p>@Helper.ToCurrencyString(overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
+                    <p>@Helper.ToCurrencyString(_Overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
                 </div>
             </div>
         </fieldset>
@@ -24,93 +24,112 @@
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
             <legend>Прирост за день</legend>
             <div class="fs-content-layout">
-                <p class="fs-content">@Helper.ToCurrencyString(day_profit, shortFormat: true)</p>
+                <p class="fs-content">@Helper.ToCurrencyString(_DayProfit, shortFormat: true)</p>
                 <div class="fs-desc">
-                    <p>@Helper.ToCurrencyString((overview?.Profit.Values.Sum(amount => amount) ?? 0) - (IsRealisticPlanDone() ? 150_000_000 : 120_000_000), shortFormat: true, allowNegatives: true)</p>
+                    <p>@Helper.ToCurrencyString((_Overview?.Profit.Values.Sum(amount => amount) ?? 0) - (_IsRealisticPlanDone() ? 150_000_000 : 120_000_000), shortFormat: true, allowNegatives: true)</p>
                 </div>
             </div>
         </fieldset>
     </div>
     <div class="chart content">
-        <LineChart @ref="line_chart" TItem="decimal" OptionsJsonString="@GetChartOptions()" />
+        <LineChart @ref="_LineChart" TItem="decimal" OptionsJsonString="@_GetChartOptions()" />
     </div>
     <div class="allocation content">
-        @if (overview is not null)
-        {
-            <RadzenDataGrid TItem="Presale"
-                            Style="border: none !important;"
-                            Data="@sorted_presales">
-                <Columns>
-                    <RadzenDataGridColumn Property="Name" Title="@Localization["PresaleNameText"]" TItem=Presale FooterCssClass="pnyd-footer" Width="20%">
-                        <Template>
-                            @Helper.GetFirstAndLastName(context.Name)
-                        </Template>
-                        <FooterTemplate>
-                            @Localization["TotalText"]
-                        </FooterTemplate>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn Property="Statistics.Profit" Title="Сумма" TItem=Presale FooterCssClass="pnyd-footer" CssClass="pnyd-progress" Width="35%"
-                                          TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
-                        <Template>
-                            <div class="profit-layout">
-                                <div class="profit-progress" style="width: @GetProgressPercentString(context.Statistics.Profit, overview.Presales.Max(p => p.Statistics.Profit)); background-color: @ChartColor.FromRgba(12, 90, 74, 0.3f).ToJsRgba()"> &nbsp; </div>
-                                <span class="profit">
-                                    @Helper.ToCurrencyString(context.Statistics.Profit)
-                                </span>
-                            </div>
-                        </Template>
-                        <FooterTemplate>
-                            @Helper.ToCurrencyString(overview?.Presales.Sum(i => i.Statistics.Profit) ?? 0)
-                        </FooterTemplate>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn Property="Proportion" Title="Доля" TItem=Presale FooterCssClass="pnyd-footer" Width="10%"
-                                          TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
-                        <Template>
-                            @GetProgressPercentString(context.Statistics.Profit, overview.Presales.Sum(p => p.Statistics.Profit))
-                        </Template>
-                        <FooterTemplate>
-                            100&nbsp;%
-                        </FooterTemplate>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn Property="Invoices" Title="Счетов" TItem=Presale FooterCssClass="pnyd-footer" Width="10%"
-                                          TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
-                        <Template>
-                            @(context.Statistics.Invoices - context.Statistics.InvoicesShipped)
-                        </Template>
-                        <FooterTemplate>
-                            @(overview?.Presales.Sum(i => i.Statistics.Invoices - i.Statistics.InvoicesShipped) ?? 0)
-                        </FooterTemplate>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn Property="InvoicesShipped" Title="Отгружено" TItem=Presale FooterCssClass="pnyd-footer" CssClass="pnyd-progress" Width="25%"
-                                          TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
-                        <Template>
-                            <div class="profit-layout">
-                                <div class="profit-progress" style="width: @GetProgressPercentString(context.Statistics.InvoicesShipped, overview.Presales.Max(p => p.Statistics.InvoicesShipped)); background-color: @ChartColor.FromRgba(colors[sorted_presales.IndexOf(context)].R, colors[sorted_presales.IndexOf(context)].G, colors[sorted_presales.IndexOf(context)].B, 0.3f).ToJsRgba()"> &nbsp; </div>
-                                <span class="profit">
-                                    @($"{context.Statistics.InvoicesShipped}")
-                                </span>
-                            </div>
-                        </Template>
-                        <FooterTemplate>
-                            @(overview?.Presales.Sum(i => i.Statistics.InvoicesShipped) ?? 0)
-                        </FooterTemplate>
-                    </RadzenDataGridColumn>
-                </Columns>
-            </RadzenDataGrid>
-        }
+        <Carousel @bind-SelectedSlide="@_SelectedSlide" Interval="5000" ShowControls="false" ShowIndicators="false">
+            <CarouselSlide Name="_ProfitOverview">
+                @if(_Overview is not null)
+                {
+                    <RadzenDataGrid TItem="Presale"
+                                    Style="border: none !important;"
+                                    Data="@_SortedPresales">
+                        <Columns>
+                            <RadzenDataGridColumn Property="Name" Title="@Localization["PresaleNameText"]" TItem=Presale FooterCssClass="pnyd-footer" Width="20%">
+                                <Template>
+                                    @Helper.GetFirstAndLastName(context.Name)
+                                </Template>
+                                <FooterTemplate>
+                                    @Localization["TotalText"]
+                                </FooterTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Statistics.Profit" Title="Сумма" TItem=Presale FooterCssClass="pnyd-footer" CssClass="pnyd-progress" Width="35%"
+                                                  TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                                <Template>
+                                    <div class="profit-layout">
+                                        <div class="profit-progress" style="width: @_GetProgressPercentString(context.Statistics.Profit, _Overview.Presales.Max(p => p.Statistics.Profit)); background-color: @ChartColor.FromRgba(12, 90, 74, 0.3f).ToJsRgba()"> &nbsp; </div>
+                                        <span class="profit">
+                                            @Helper.ToCurrencyString(context.Statistics.Profit)
+                                        </span>
+                                    </div>
+                                </Template>
+                                <FooterTemplate>
+                                    @Helper.ToCurrencyString(_Overview?.Presales.Sum(i => i.Statistics.Profit) ?? 0)
+                                </FooterTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Proportion" Title="Доля" TItem=Presale FooterCssClass="pnyd-footer" Width="10%"
+                                                  TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                                <Template>
+                                    @_GetProgressPercentString(context.Statistics.Profit, _Overview.Presales.Sum(p => p.Statistics.Profit))
+                                </Template>
+                                <FooterTemplate>
+                                    100&nbsp;%
+                                </FooterTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Invoices" Title="Счетов" TItem=Presale FooterCssClass="pnyd-footer" Width="10%"
+                                                  TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                                <Template>
+                                    @(context.Statistics.Invoices - context.Statistics.InvoicesShipped)
+                                </Template>
+                                <FooterTemplate>
+                                    @(_Overview?.Presales.Sum(i => i.Statistics.Invoices - i.Statistics.InvoicesShipped) ?? 0)
+                                </FooterTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="InvoicesShipped" Title="Отгружено" TItem=Presale FooterCssClass="pnyd-footer" CssClass="pnyd-progress" Width="25%"
+                                                  TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
+                                <Template>
+                                    <div class="profit-layout">
+                                        <div class="profit-progress" style="width: @_GetProgressPercentString(context.Statistics.InvoicesShipped, _Overview.Presales.Max(p => p.Statistics.InvoicesShipped)); background-color: @ChartColor.FromRgba(colors[_SortedPresales.IndexOf(context)].R, colors[_SortedPresales.IndexOf(context)].G, colors[_SortedPresales.IndexOf(context)].B, 0.3f).ToJsRgba()"> &nbsp; </div>
+                                        <span class="profit">
+                                            @($"{context.Statistics.InvoicesShipped}")
+                                        </span>
+                                    </div>
+                                </Template>
+                                <FooterTemplate>
+                                    @(_Overview?.Presales.Sum(i => i.Statistics.InvoicesShipped) ?? 0)
+                                </FooterTemplate>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                }
+            </CarouselSlide>
+            <CarouselSlide Name="_PresalesArrival">
+                <RadzenDataGrid TItem="_Arrival"
+                                Style="border: none!important;"
+                                Data="@_Arrivals">
+                    <Columns>
+                        <RadzenDataGridColumn Property="Name" Title="@Localization["PresaleNameText"]" TItem="_Arrival" />
+                        <RadzenDataGridColumn Property="Timestamp" Title="Время" TItem="_Arrival" />
+                        <RadzenDataGridColumn Property="Delay" Title="Отставание" TItem="_Arrival">
+                            <Template>
+                                @(context.Timestamp - _Arrivals.First().Timestamp)
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </CarouselSlide>
+        </Carousel>
     </div>
     <div class="img-container content">
-        <img src="@img?.Regular" alt="@img?.AltDescription" />
+        <img src="@_Img?.Regular" alt="@_Img?.AltDescription" />
     </div>
     <div class="img-credits content">
         <p>
             @((MarkupString)Localization["UnsplashCredits",
-                (MarkupString)$"<a href=\"{img?.AuthorUrl}\" target=\"_blank\">{img?.AuthorName}</a>",
-                (MarkupString)$"<a href=\"{img?.SourceUrl}\" target=\"_blank\">{img?.SourceName}</a>"].Value)
+                (MarkupString)$"<a href=\"{_Img?.AuthorUrl}\" target=\"_blank\">{_Img?.AuthorName}</a>",
+                (MarkupString)$"<a href=\"{_Img?.SourceUrl}\" target=\"_blank\">{_Img?.SourceName}</a>"].Value)
         </p>
     </div>
     <div class="img-keyword content">
-        <RadzenIcon Icon="@Helper.GetIcon(keyword_type)" @onclick="@(() => OnImageKeywordTypeChange())" title="@Helper.GetIcon(keyword_type)" Style="cursor: default;" />
-        <input @bind="@image_keyword" @bind:event="oninput" @onkeydown="@OnManuallyImageUpdate" />
+        <RadzenIcon Icon="@Helper.GetIcon(_KeywordType)" @onclick="@(() => _OnImageKeywordTypeChange())" title="@Helper.GetIcon(_KeywordType)" Style="cursor: default;" />
+        <input @bind="@_ImageKeyword" @bind:event="oninput" @onkeydown="@_OnManuallyImageUpdate" />
     </div>
 </div>

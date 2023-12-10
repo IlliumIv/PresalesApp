@@ -1,8 +1,8 @@
-﻿using PresalesApp.Bridge1C.Controllers;
+﻿using PresalesApp.Service.Bridges;
 using PresalesApp.Database;
 using Serilog;
 
-namespace PresalesApp.Bridge1C.Startup
+namespace PresalesApp.Service.Startup
 {
     public static class ServicesConfiguration
     {
@@ -10,10 +10,6 @@ namespace PresalesApp.Bridge1C.Startup
         {
             var appSettings = new AppSettings(builder.Configuration);
             builder.Services.AddScoped(s => appSettings);
-
-            BridgeController.Configure(appSettings);
-            DbController.Configure(appSettings);
-            DbController.Start();
 
             builder.Services.AddGrpc();
 
