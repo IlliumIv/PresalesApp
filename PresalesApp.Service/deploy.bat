@@ -1,6 +1,6 @@
 @echo off
-cd /d D:\users\polyakov\github\PresalesApp\PresalesApp.Bridge1C
-set pkg_name=PresalesApp.Bridge1C
+cd /d D:\users\polyakov\github\PresalesApp\PresalesApp.Service
+set pkg_name=PresalesApp.Service
 del %pkg_name%.7z >nul 2>&1
 echo    Create %pkg_name% package...
 "C:\Program Files\7-Zip\7z.exe" a %pkg_name%.7z "./bin/Publish/Linux SC/*" >nul 2>&1 && echo    [102mPackage created successfully.[0m || echo    [101mError. Unable to create package.[0m && exit 1

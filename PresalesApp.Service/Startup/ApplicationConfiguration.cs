@@ -1,6 +1,6 @@
-﻿using PresalesApp.Bridge1C.Controllers;
+﻿using PresalesApp.Service.Controllers;
 
-namespace PresalesApp.Bridge1C.Startup
+namespace PresalesApp.Service.Startup
 {
     public static class ApplicationConfiguration
     {
