@@ -56,11 +56,11 @@ namespace PresalesApp.Database
             {
                 if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
 
-                optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
-                    $"port={DbSettings.Port};" +
-                    $"database={DbSettings.Database};" +
-                    $"username={DbSettings.Username};" +
-                    $"password={DbSettings.Password}");
+                optionsBuilder.UseNpgsql($"host={DbSettings.DbHost};" +
+                    $"port={DbSettings.DbPort};" +
+                    $"database={DbSettings.DbName};" +
+                    $"username={DbSettings.DbUsername};" +
+                    $"password={DbSettings.DbPassword}");
             }
 
             public new int SaveChanges() => base.BaseSaveChanges();
@@ -80,11 +80,11 @@ namespace PresalesApp.Database
             {
                 if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
 
-                optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
-                    $"port={DbSettings.Port};" +
-                    $"database={DbSettings.Database};" +
-                    $"username={DbSettings.Username};" +
-                    $"password={DbSettings.Password};" +
+                optionsBuilder.UseNpgsql($"host={DbSettings.DbHost};" +
+                    $"port={DbSettings.DbPort};" +
+                    $"database={DbSettings.DbName};" +
+                    $"username={DbSettings.DbUsername};" +
+                    $"password={DbSettings.DbPassword};" +
                     $"options=-c default_transaction_read_only=on")
                     // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                     ;
@@ -139,11 +139,11 @@ namespace PresalesApp.Database
             {
                 if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
 
-                optionsBuilder.UseNpgsql($"host={DbSettings.Host};" +
-                    $"port={DbSettings.Port};" +
-                    $"database={DbSettings.Database};" +
-                    $"username={DbSettings.Username};" +
-                    $"password={DbSettings.Password}");
+                optionsBuilder.UseNpgsql($"host={DbSettings.DbHost};" +
+                    $"port={DbSettings.DbPort};" +
+                    $"database={DbSettings.DbName};" +
+                    $"username={DbSettings.DbUsername};" +
+                    $"password={DbSettings.DbPassword}");
             }
         }
     }

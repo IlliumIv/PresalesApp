@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace PresalesApp.Bridge1C.Startup
+namespace PresalesApp.Service.Startup
 {
     public static class JsonConvertConfiguration
     {

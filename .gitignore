@@ -350,3 +350,5 @@ MigrationBackup/
 .ionide/
 
 *.7z
+
+**appsettings.Production.json

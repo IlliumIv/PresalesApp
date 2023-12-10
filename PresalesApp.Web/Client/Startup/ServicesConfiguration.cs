@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using PresalesApp.Web.Client.Services.Authorization;
 using Radzen;
 using AppApi = PresalesApp.Web.Shared.Api;
-using BridgeApi = PresalesApp.Bridge1C.Api;
+using BridgeApi = PresalesApp.Service.Api;
 
 namespace PresalesApp.Web.Client.Startup;
 
@@ -21,33 +21,33 @@ public static class ServicesConfiguration
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
-        _ = builder.Services.AddScoped<DialogService>();
-        _ = builder.Services.AddScoped<NotificationService>();
-        _ = builder.Services.AddScoped<TooltipService>();
-        _ = builder.Services.AddScoped<ContextMenuService>();
+        builder.Services.AddScoped<DialogService>();
+        builder.Services.AddScoped<NotificationService>();
+        builder.Services.AddScoped<TooltipService>();
+        builder.Services.AddScoped<ContextMenuService>();
 
-        _ = builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+        builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-        _ = builder.Services.AddSingleton(services =>
+        builder.Services.AddSingleton(services =>
         {
             var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-            var channel = GrpcChannel.ForAddress("https://127.0.0.1:33443", new GrpcChannelOptions { HttpClient = httpClient });
-            return new BridgeApi.ApiClient(channel);
+            var channel = GrpcChannel.ForAddress("https://localhost:33443",
+                new GrpcChannelOptions { HttpClient = httpClient }); return new BridgeApi.ApiClient(channel);
         });
 
-        _ = builder.Services.AddBlazorise();
-        _ = builder.Services.AddBootstrap5Providers();
-        _ = builder.Services.AddFontAwesomeIcons();
+        builder.Services.AddBlazorise();
+        builder.Services.AddBootstrap5Providers();
+        builder.Services.AddFontAwesomeIcons();
 
-        _ = builder.Services.AddBlazoredLocalStorage();
-        _ = builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
+        builder.Services.AddBlazoredLocalStorage();
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
 
         builder.Services.AddAuthGrpcClientTransient<AppApi.ApiClient>();
-        _ = builder.Services.AddScoped<AuthorizationService>();
-        _ = builder.Services.AddScoped<IdentityAuthenticationStateProvider>();
-        _ = builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<IdentityAuthenticationStateProvider>());
+        builder.Services.AddScoped<AuthorizationService>();
+        builder.Services.AddScoped<IdentityAuthenticationStateProvider>();
+        builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<IdentityAuthenticationStateProvider>());
 
-        _ = builder.Services.AddAuthorizationCore();
+        builder.Services.AddAuthorizationCore();
 
         return builder;
     }
