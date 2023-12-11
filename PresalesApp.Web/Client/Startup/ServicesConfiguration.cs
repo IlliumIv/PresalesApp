@@ -31,7 +31,7 @@ public static class ServicesConfiguration
         builder.Services.AddSingleton(services =>
         {
             var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-            var channel = GrpcChannel.ForAddress("https://localhost:33443",
+            var channel = GrpcChannel.ForAddress("https://127.0.0.1:33443",
                 new GrpcChannelOptions { HttpClient = httpClient }); return new BridgeApi.ApiClient(channel);
         });
 

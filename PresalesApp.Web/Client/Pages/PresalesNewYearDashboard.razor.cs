@@ -5,10 +5,8 @@ using PresalesApp.Web.Client.Enums;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
-using Radzen.Blazor.Rendering;
 using System.Globalization;
 using Google.Protobuf.WellKnownTypes;
-using PresalesApp.Service;
 
 namespace PresalesApp.Web.Client.Pages;
 
@@ -55,15 +53,17 @@ partial class PresalesNewYearDashboard
     private string _AerationWarning = "none";
     private TimeSpan _TimeLeft = new(0, 10, 0);
     private string _SelectedSlide = "_ProfitOverview";
+    private static bool _IsLate => DateTime.UtcNow.TimeOfDay > TimeSpan.FromHours(5);
     private static string _GetImageSrc(string imageBytes) => $"data:image/png;base64, {imageBytes}";
 
-    private readonly List<_Arrival> _Arrivals = [new _Arrival("Some name", DateTime.Now, "someimage")];
+    private List<_Arrival> _Arrivals = [];
 
     private static bool _IsRealisticPlanDone() => (_Overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000;
     private static string _GetHeaderCellStyling() => "text-align: right";
     private static string _GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
+    private static string _GetProgressPercentString(TimeSpan a, TimeSpan b) => $"{a / b * 100:N0}%";
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref _Period.Start);
         Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _Period.End);
@@ -74,7 +74,7 @@ partial class PresalesNewYearDashboard
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
 
         _RunTimer();
-        await _ArrivalsStream();
+        _ArrivalsStream();
     }
 
     private async void _RunTimer()
@@ -132,9 +132,9 @@ partial class PresalesNewYearDashboard
         }
     }
 
-    private async Task _ArrivalsStream()
+    private async void _ArrivalsStream()
     {
-        while(true)
+        while(true && !_IsLate)
         {
             try
             {
@@ -144,7 +144,7 @@ partial class PresalesNewYearDashboard
                 while(await call.ResponseStream.MoveNext(token))
                 {
                     var arrival = call.ResponseStream.Current;
-                    var dt = arrival.Timestamp.ToDateTime();
+                    var dt = arrival.Timestamp.ToDateTime().ToLocalTime();
 
                     var a = _Arrivals.FirstOrDefault(a => a?.Name == arrival.Name);
 
@@ -152,16 +152,12 @@ partial class PresalesNewYearDashboard
                     {
                         if(a.Timestamp.Date < dt.Date)
                         {
-                            a.Timestamp = dt;
-                            a.ImageBytes = arrival.ImageBytes;
+                            _Arrivals = [];
                         }
                     }
-                    else
-                    {
-                        _Arrivals.Add(new _Arrival(arrival.Name, dt, arrival.ImageBytes));
-                    }
-
-                    _Arrivals.Sort((a, b) => a.Timestamp.CompareTo(b.Timestamp));
+                    
+                    _Arrivals.Add(new _Arrival(arrival.Name, dt, arrival.ImageBytes));
+                    _Arrivals = [.. _Arrivals.OrderBy(a => a.Timestamp)];
 
                     StateHasChanged();
                 }

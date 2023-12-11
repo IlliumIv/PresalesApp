@@ -50,7 +50,7 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
 
     public override async Task GetPresalesArrival(Empty request, IServerStreamWriter<Arrival> responseStream, ServerCallContext context)
     {
-        if (string.IsNullOrEmpty(_AppSettings.Macroscop.Host) ||
+        if(string.IsNullOrEmpty(_AppSettings.Macroscop.Host) ||
             string.IsNullOrEmpty(_AppSettings.Macroscop.Username))
         {
             return;
@@ -71,50 +71,45 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
             _Send(responseStream, e);
         }
 
-        while(true)
+        try
         {
-            try
+            using var resp = await client.SendAsync(m, HttpCompletionOption.ResponseHeadersRead);
+
+            using var content = await resp.Content.ReadAsStreamAsync();
+            using var reader = new StreamReader(content);
+
+            var eventStrings = string.Empty;
+            var line = string.Empty;
+
+            while(true)
             {
-                using var resp = await client.SendAsync(m, HttpCompletionOption.ResponseHeadersRead);
-
-                Log.Information($"Send:\n{resp.RequestMessage}");
-
-                using var content = await resp.Content.ReadAsStreamAsync();
-                using var reader = new StreamReader(content);
-
-                var eventStrings = string.Empty;
-                var line = string.Empty;
-
-                while(true)
+                line = reader.ReadLine();
+                if(line == "}")
                 {
-                    line = reader.ReadLine();
-                    if(line == "}")
+                    var e = new Event(eventStrings + "}");
+                    if(_IsPresale(e))
                     {
-                        var e = new Event(eventStrings + "}");
-                        if(_IsPresale(e))
-                        {
-                            _Send(responseStream, e);
-                        }
+                        _Send(responseStream, e);
+                    }
 
-                        eventStrings = "";
-                    }
-                    else
-                    {
-                        eventStrings += line;
-                    }
+                    eventStrings = "";
+                }
+                else
+                {
+                    eventStrings += line;
                 }
             }
-            catch(Exception e) { Log.Information(e.Message); }
         }
+        catch(Exception e) { Log.Information(e.Message); }
     }
 
-    private static async void _Send(IServerStreamWriter<Arrival> responseStream, Event @event) =>
-        await responseStream.WriteAsync(new Arrival()
+    private static void _Send(IServerStreamWriter<Arrival> responseStream, Event @event) =>
+        responseStream.WriteAsync(new Arrival()
         {
             Name = $"{@event.LastName} {@event.FirstName}",
             Timestamp = Timestamp.FromDateTime(@event.Timestamp),
             ImageBytes = @event.ImageBytes
-        });
+        }).Wait();
 
     private HttpClient _GetClient(out string auth)
     {
@@ -143,7 +138,10 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
 
         while(events.Count % 1000 == 0)
         {
-            var r = $"specialarchiveevents?startTime={startTime.ToUniversalTime()}&endTime={startTime.AddDays(1).ToUniversalTime()}&eventId={_AppSettings.Macroscop.EventId}";
+            var r = $"specialarchiveevents?" +
+                $"startTime={startTime.ToUniversalTime():dd.MM.yyyy HH:mm:ss}" +
+                $"&endTime={startTime.AddDays(1).ToUniversalTime():dd.MM.yyyy HH:mm:ss}" +
+                $"&eventId={_AppSettings.Macroscop.EventId}";
             r += string.IsNullOrEmpty(_AppSettings.Macroscop.EntranceChannelId) ? "" : $"&channelid={_AppSettings.Macroscop.EntranceChannelId}";
             var m = new HttpRequestMessage(HttpMethod.Get, r);
             m.Headers.Add("Authorization", $"Basic {Convert.ToBase64String(Encoding.ASCII.GetBytes(auth))}");
@@ -151,6 +149,7 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
             try
             {
                 var resp = client.Send(m);
+
                 if(resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     var answer = resp.Content.ReadAsStringAsync().Result;
