@@ -85,6 +85,11 @@ partial class PresalesNewYearDashboard
         {
             if(count > 600)
             {
+                if(_IsLate)
+                {
+                    _SelectedSlide = "_ProfitOverview";
+                }
+
                 count = 0;
                 await _UpdateData();
                 await _UpdateImage();
