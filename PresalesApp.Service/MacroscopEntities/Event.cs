@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.Reflection;
 using Newtonsoft.Json;
+using System.Globalization;
 using System.Reflection;
 using static PresalesApp.Service.MacroscopEntities.Enums;
 
@@ -9,7 +10,8 @@ public class Event
 {
     private readonly dynamic _Event;
     public DateTime Timestamp => DateTime.SpecifyKind((string)_Event.Timestamp != string.Empty ?
-        DateTime.Parse((string)_Event.Timestamp) : DateTime.MinValue, DateTimeKind.Utc);
+        DateTime.ParseExact((string)_Event.Timestamp,
+            "dd.MM.yyyy hh:mm:ss", CultureInfo.InvariantCulture) : DateTime.MinValue, DateTimeKind.Utc);
     // public string ExternalId => _event.ExternalId;
     // public string ChannelId => _event.ChannelId;
     // public string ChannelName => _event.ChannelName;
