@@ -32,10 +32,7 @@ public static class DbController
                     query?.Start();
                     query?.Wait();
                 }
-                else
-                {
-                    _WhileQueueEmpty.WaitOne();
-                }
+                else _WhileQueueEmpty.WaitOne();
             }
         }).Start();
 
@@ -61,8 +58,8 @@ public static class DbController
 
         public new int SaveChanges(bool acceptAll) => BaseSaveChanges(acceptAll);
 
-        public new Task<int> SaveChangesAsync(CancellationToken token = default)
-            => BaseSaveChangesAsync(token);
+        public new Task<int> SaveChangesAsync(CancellationToken token = default) =>
+            BaseSaveChangesAsync(token);
 
         public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
             BaseSaveChangesAsync(acceptAll, token);
@@ -119,7 +116,8 @@ public static class DbController
 
         internal int BaseSaveChanges(bool acceptAll) => base.SaveChanges(acceptAll);
 
-        internal Task<int> BaseSaveChangesAsync(CancellationToken token = default) => base.SaveChangesAsync(token);
+        internal Task<int> BaseSaveChangesAsync(CancellationToken token = default) =>
+            base.SaveChangesAsync(token);
 
         internal Task<int> BaseSaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
             base.SaveChangesAsync(acceptAll, token);
