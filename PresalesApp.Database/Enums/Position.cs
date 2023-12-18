@@ -1,10 +1,9 @@
-﻿namespace PresalesApp.Database.Enums
+﻿namespace PresalesApp.Database.Enums;
+
+public enum Position
 {
-    public enum Position
-    {
-        None,
-        Engineer,
-        Account,
-        Director
-    }
+    None,
+    Engineer,
+    Account,
+    Director
 }

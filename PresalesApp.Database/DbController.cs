@@ -5,146 +5,133 @@ using PresalesApp.Database.Entities;
 using PresalesApp.Database.Entities.Updates;
 using Serilog;
 
-namespace PresalesApp.Database
+namespace PresalesApp.Database;
+
+public static class DbController
 {
-    public static class DbController
+    internal static readonly QueriesQueue<Task> Queries = new();
+
+    private readonly static ManualResetEvent _WhileQueueEmpty = new(false);
+
+    internal static Settings? DbSettings { get; private set; }
+
+    public static void Configure (Settings settings) => DbSettings = settings;
+
+    public static void Start()
     {
-        internal static readonly QueriesQueue<Task> Queries = new();
+        Queries.OnEnqueued += _Queries_OnEnqueued;
+        Queries.OnReachedEmpty += _Queries_OnReachedEmpty;
 
-        private readonly static ManualResetEvent _while_queue_empty = new(false);
-
-        internal static Settings? DbSettings { get; private set; }
-
-        public static void Configure (Settings settings) => DbSettings = settings;
-
-        public static void Start()
+        new Task(() =>
         {
-            Queries.OnEnqueued += Queries_OnEnqueued;
-            Queries.OnReachedEmpty += Queries_OnReachedEmpty;
-
-            new Task(() =>
+            while (true)
             {
-                while (true)
+                if (Queries.Any())
                 {
-                    if (Queries.Any())
-                    {
-                        var query = Queries.Dequeue();
-                        query?.Start();
-                        query?.Wait();
-                    }
-                    else
-                        _while_queue_empty.WaitOne();
+                    var query = Queries.Dequeue();
+                    query?.Start();
+                    query?.Wait();
                 }
-            }).Start();
-
-            Log.Information($"{typeof(DbController).FullName} started.");
-        }
-
-        private static void Queries_OnReachedEmpty(object? sender, EventArgs e)
-        {
-            _while_queue_empty.Reset();
-        }
-
-        private static void Queries_OnEnqueued(object? sender, EventArgs e)
-        {
-            _while_queue_empty.Set();
-        }
-
-        internal class ControllerContext : ReadOnlyContext
-        {
-            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            {
-                if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
-
-                optionsBuilder.UseNpgsql($"host={DbSettings.DbHost};" +
-                    $"port={DbSettings.DbPort};" +
-                    $"database={DbSettings.DbName};" +
-                    $"username={DbSettings.DbUsername};" +
-                    $"password={DbSettings.DbPassword}");
-            }
-
-            public new int SaveChanges() => base.BaseSaveChanges();
-
-            public new int SaveChanges(bool acceptAll) => base.BaseSaveChanges(acceptAll);
-
-            public new Task<int> SaveChangesAsync(CancellationToken token = default)
-                => base.BaseSaveChangesAsync(token);
-
-            public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
-                base.BaseSaveChangesAsync(acceptAll, token);
-        }
-
-        public class ReadOnlyContext : UsersContext
-        {
-            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            {
-                if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
-
-                optionsBuilder.UseNpgsql($"host={DbSettings.DbHost};" +
-                    $"port={DbSettings.DbPort};" +
-                    $"database={DbSettings.DbName};" +
-                    $"username={DbSettings.DbUsername};" +
-                    $"password={DbSettings.DbPassword};" +
-                    $"options=-c default_transaction_read_only=on")
-                    // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                    ;
-
-                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                else
                 {
-                    optionsBuilder.LogTo(Log.Logger.Information, LogLevel.Information, null)
-                    .EnableSensitiveDataLogging();
+                    _WhileQueueEmpty.WaitOne();
                 }
             }
+        }).Start();
 
-            public DbSet<Presale> Presales { get; set; }
-            public DbSet<Project> Projects { get; set; }
-            public DbSet<Invoice> Invoices { get; set; }
-            public DbSet<ProfitPeriod> ProfitPeriods { get; set; }
-            public DbSet<PresaleAction> PresaleActions { get; set; }
-            public DbSet<CacheLog> CacheLogsHistory { get; set; }
-            public DbSet<ProjectsUpdate> ProjectsUpdates { get; set; }
-            public DbSet<CacheLogsUpdate> CacheLogsUpdates { get; set; }
-            public DbSet<Update> Updates { get; set; }
+        Log.Information($"{typeof(DbController).FullName} started.");
+    }
 
-            // https://stackoverflow.com/a/10438977
-            [Obsolete("This context is read-only", true)]
-            public new int SaveChanges() =>
-                throw new InvalidOperationException("This context is read-only.");
+    private static void _Queries_OnReachedEmpty(object? sender, EventArgs e) =>
+        _WhileQueueEmpty.Reset();
 
-            [Obsolete("This context is read-only", true)]
-            public new int SaveChanges(bool acceptAll) =>
-                throw new InvalidOperationException("This context is read-only.");
+    private static void _Queries_OnEnqueued(object? sender, EventArgs e) =>
+        _WhileQueueEmpty.Set();
 
-            [Obsolete("This context is read-only", true)]
-            public new Task<int> SaveChangesAsync(CancellationToken token = default) =>
-                throw new InvalidOperationException("This context is read-only.");
+    internal class ControllerContext : ReadOnlyContext
+    {
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
+            optionsBuilder.UseNpgsql($"host={DbSettings!.DbHost};" +
+                $"port={DbSettings.DbPort};" +
+                $"database={DbSettings.DbName};" +
+                $"username={DbSettings.DbUsername};" +
+                $"password={DbSettings.DbPassword}");
 
-            [Obsolete("This context is read-only", true)]
-            public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
-                throw new InvalidOperationException("This context is read-only.");
+        public new int SaveChanges() => BaseSaveChanges();
 
-            internal int BaseSaveChanges() => base.SaveChanges();
+        public new int SaveChanges(bool acceptAll) => BaseSaveChanges(acceptAll);
 
-            internal int BaseSaveChanges(bool acceptAll) => base.SaveChanges(acceptAll);
+        public new Task<int> SaveChangesAsync(CancellationToken token = default)
+            => BaseSaveChangesAsync(token);
 
-            internal Task<int> BaseSaveChangesAsync(CancellationToken token = default) => base.SaveChangesAsync(token);
+        public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
+            BaseSaveChangesAsync(acceptAll, token);
+    }
 
-            internal Task<int> BaseSaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
-                base.SaveChangesAsync(acceptAll, token);
-        }
-
-        public class UsersContext : IdentityDbContext<User>
+    public class ReadOnlyContext : UsersContext
+    {
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            {
-                if (DbSettings == null) throw new ArgumentNullException(nameof(DbSettings));
+            optionsBuilder.UseNpgsql($"host={DbSettings!.DbHost};" +
+                $"port={DbSettings.DbPort};" +
+                $"database={DbSettings.DbName};" +
+                $"username={DbSettings.DbUsername};" +
+                $"password={DbSettings.DbPassword};" +
+                $"options=-c default_transaction_read_only=on")
+                // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                ;
 
-                optionsBuilder.UseNpgsql($"host={DbSettings.DbHost};" +
-                    $"port={DbSettings.DbPort};" +
-                    $"database={DbSettings.DbName};" +
-                    $"username={DbSettings.DbUsername};" +
-                    $"password={DbSettings.DbPassword}");
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
+                optionsBuilder.LogTo(Log.Logger.Information, LogLevel.Information, null)
+                .EnableSensitiveDataLogging();
             }
         }
+
+        public DbSet<Presale> Presales { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<ProfitPeriod> ProfitPeriods { get; set; }
+        public DbSet<PresaleAction> PresaleActions { get; set; }
+        public DbSet<CacheLog> CacheLogsHistory { get; set; }
+        public DbSet<ProjectsUpdate> ProjectsUpdates { get; set; }
+        public DbSet<CacheLogsUpdate> CacheLogsUpdates { get; set; }
+        public DbSet<Update> Updates { get; set; }
+
+        // https://stackoverflow.com/a/10438977
+        [Obsolete("This context is read-only", true)]
+        public new int SaveChanges() =>
+            throw new InvalidOperationException("This context is read-only.");
+
+        [Obsolete("This context is read-only", true)]
+        public new int SaveChanges(bool acceptAll) =>
+            throw new InvalidOperationException("This context is read-only.");
+
+        [Obsolete("This context is read-only", true)]
+        public new Task<int> SaveChangesAsync(CancellationToken token = default) =>
+            throw new InvalidOperationException("This context is read-only.");
+
+        [Obsolete("This context is read-only", true)]
+        public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
+            throw new InvalidOperationException("This context is read-only.");
+
+        internal int BaseSaveChanges() => base.SaveChanges();
+
+        internal int BaseSaveChanges(bool acceptAll) => base.SaveChanges(acceptAll);
+
+        internal Task<int> BaseSaveChangesAsync(CancellationToken token = default) => base.SaveChangesAsync(token);
+
+        internal Task<int> BaseSaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
+            base.SaveChangesAsync(acceptAll, token);
+    }
+
+    public class UsersContext : IdentityDbContext<User>
+    {
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
+            optionsBuilder.UseNpgsql($"host={DbSettings!.DbHost};" +
+                $"port={DbSettings.DbPort};" +
+                $"database={DbSettings.DbName};" +
+                $"username={DbSettings.DbUsername};" +
+                $"password={DbSettings.DbPassword}");
     }
 }

@@ -2,24 +2,19 @@
 
 #nullable disable
 
-namespace PresalesApp.Database.Migrations
-{
-    public partial class Project_Add_LastStatusChanged : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<DateTime>(
-                name: "LastStatusChanged",
-                table: "Projects",
-                type: "timestamp with time zone",
-                nullable: true);
-        }
+namespace PresalesApp.Database.Migrations;
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "LastStatusChanged",
-                table: "Projects");
-        }
-    }
+public partial class Project_Add_LastStatusChanged : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder) =>
+        migrationBuilder.AddColumn<DateTime>(
+            name: "LastStatusChanged",
+            table: "Projects",
+            type: "timestamp with time zone",
+            nullable: true);
+
+    protected override void Down(MigrationBuilder migrationBuilder) =>
+        migrationBuilder.DropColumn(
+            name: "LastStatusChanged",
+            table: "Projects");
 }

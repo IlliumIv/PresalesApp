@@ -19,7 +19,7 @@ public static class Extensions
 {
     public static Statistic GetStatistic(this Presale presale, DateTime? from = null, DateTime? to = null)
     {
-        if(from is null || to is null)
+        if (from is null || to is null)
         {
             return new Statistic();
         }
@@ -27,8 +27,8 @@ public static class Extensions
         var _from = (DateTime)from;
         var _to = (DateTime)to;
 
-        int won = presale.ClosedByStatus(ProjectStatus.Won, _from, _to);
-        int assign = presale.CountProjectsAssigned(_from, _to);
+        var won = presale.ClosedByStatus(ProjectStatus.Won, _from, _to);
+        var assign = presale.CountProjectsAssigned(_from, _to);
 
         return new Statistic()
         {
@@ -98,20 +98,16 @@ public static class Extensions
             Potential = project.PotentialAmount
         };
 
-        if(project.Invoices != null && project.Invoices.Count != 0)
+        if (project.Invoices != null && project.Invoices.Count != 0)
         {
             foreach(var invoice in project.Invoices)
-            {
                 proj.Invoices.Add(invoice.Translate());
-            }
         }
 
-        if(project.PresaleActions != null && project.PresaleActions.Count != 0)
+        if (project.PresaleActions != null && project.PresaleActions.Count != 0)
         {
             foreach(var action in project.PresaleActions.OrderBy(a => a.Number))
-            {
                 proj.Actions.Add(action.Translate());
-            }
         }
 
         return proj;

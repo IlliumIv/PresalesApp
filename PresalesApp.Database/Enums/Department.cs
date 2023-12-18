@@ -1,9 +1,8 @@
-﻿namespace PresalesApp.Database.Enums
+﻿namespace PresalesApp.Database.Enums;
+
+public enum Department
 {
-    public enum Department
-    {
-        None,
-        International,
-        Russian
-    }
+    None,
+    International,
+    Russian
 }
