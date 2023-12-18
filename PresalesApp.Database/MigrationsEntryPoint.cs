@@ -12,18 +12,18 @@ public class MigrationsEntryPoint
     internal class MigrationsContext : ReadOnlyContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-            optionsBuilder.UseNpgsql($"host=127.0.0.1;" +
-                $"port=5432;" +
-                $"database=presalesapp;" +
-                $"username=presale;" +
-                $"password=***REMOVED***");
+            optionsBuilder.UseNpgsql($"host=;" +
+                $"port=;" +
+                $"database=;" +
+                $"username=;" +
+                $"password=");
 
         public new int SaveChanges() => BaseSaveChanges();
 
         public new int SaveChanges(bool acceptAll) => BaseSaveChanges(acceptAll);
 
-        public new Task<int> SaveChangesAsync(CancellationToken token = default)
-            => BaseSaveChangesAsync(token);
+        public new Task<int> SaveChangesAsync(CancellationToken token = default) =>
+            BaseSaveChangesAsync(token);
 
         public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
             BaseSaveChangesAsync(acceptAll, token);
