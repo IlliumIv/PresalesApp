@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ControllerContext))]
+    [DbContext(typeof(MigrationsEntryPoint.MigrationsContext))]
     [Migration("20221220082843_AddPresaleStatus")]
     partial class AddPresaleStatus
     {
