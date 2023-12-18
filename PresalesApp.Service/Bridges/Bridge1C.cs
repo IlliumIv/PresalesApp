@@ -54,13 +54,13 @@ public class Bridge1C(AppSettings appSettings)
 
                     update.Save();
 
-                    if(DateTime.UtcNow - update.GetSynchronizedTo > _Settings._1C.RequestsTimeout)
+                    if(DateTime.UtcNow - update.SynchronizedTo > _Settings._1C.RequestsTimeout)
                     {
                         next_update_delay = TimeSpan.FromMilliseconds(1);
                     }
 
                     Log.Information($"{typeof(T).Name}s has been updated at " +
-                        $"{update.GetSynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}");
+                        $"{update.SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}");
                 }
                 catch (Exception e)
                 {
@@ -135,7 +135,7 @@ public class Bridge1C(AppSettings appSettings)
     {
         var previous_update = update.GetPrevious();
 
-        var from = previous_update.GetSynchronizedTo;
+        var from = previous_update.SynchronizedTo;
         var to = (DateTime.UtcNow - previous_update.Timestamp).TotalDays > 1 ?
             previous_update.Timestamp.AddDays(1) : DateTime.UtcNow;
 
@@ -145,14 +145,14 @@ public class Bridge1C(AppSettings appSettings)
         {
             if (previous_update is CacheLog cache_log)
             {
-                to = (cache_log.PeriodEnd - cache_log.GetSynchronizedTo).TotalDays > 1 ?
-                    cache_log.GetSynchronizedTo.AddDays(1) : cache_log.PeriodEnd;
+                to = (cache_log.PeriodEnd - cache_log.SynchronizedTo).TotalDays > 1 ?
+                    cache_log.SynchronizedTo.AddDays(1) : cache_log.PeriodEnd;
                 to = to > DateTime.UtcNow ? DateTime.UtcNow : to;
                 update = cache_log;
             }
         }
 
-        update.GetSynchronizedTo = to;
+        update.SynchronizedTo = to;
 
         // В 1С включен механизм фоновой записи, запрашиваем обновления проектов с задержкой, чтобы не промахнуться.
         var delay = typeof(T).Name == nameof(Project) ? _Settings._1C.ProjectsUpdateDelay : TimeSpan.Zero;
