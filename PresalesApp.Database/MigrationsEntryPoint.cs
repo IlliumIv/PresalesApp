@@ -12,11 +12,11 @@ public class MigrationsEntryPoint
     internal class MigrationsContext : ReadOnlyContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-            optionsBuilder.UseNpgsql($"host=;" +
-                $"port=;" +
-                $"database=;" +
-                $"username=;" +
-                $"password=");
+            optionsBuilder.UseNpgsql($"host=presalesapp.ru;" +
+                $"port=5432;" +
+                $"database=presalesapp;" +
+                $"username=presale;" +
+                $"password=Madmin1!");
 
         public new int SaveChanges() => BaseSaveChanges();
 
