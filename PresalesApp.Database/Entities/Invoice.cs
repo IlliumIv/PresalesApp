@@ -14,7 +14,7 @@ public class Invoice(string number) : Entity
     public DateTime Date { get; set; } = new(0, DateTimeKind.Utc);
 
     [JsonProperty("ПометкаУдаления")]
-    public bool IsDeleted { get; set; } = false;
+    public bool MarkedAsDeleted { get; set; } = false;
 
     [JsonProperty("Контрагент")]
     public string Counterpart { get; set; } = string.Empty;
