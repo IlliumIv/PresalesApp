@@ -10,7 +10,7 @@ public class CacheLogsUpdate : Update
         if (update_in_db != null)
         {
             update_in_db.Timestamp = Timestamp;
-            update_in_db.GetSynchronizedTo = GetSynchronizedTo;
+            update_in_db.SynchronizedTo = SynchronizedTo;
             update_in_db.ToLog(false);
         }
 

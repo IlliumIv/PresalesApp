@@ -10,12 +10,12 @@ public abstract class Update : Entity
     public DateTime Timestamp { get; set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
 
     [NotMapped, JsonIgnore]
-    protected DateTime SynchronizedTo = new(0, DateTimeKind.Utc);
+    protected DateTime Synchronized = new(0, DateTimeKind.Utc);
 
-    public virtual DateTime GetSynchronizedTo
+    public virtual DateTime SynchronizedTo
     {
-        get => Timestamp < SynchronizedTo ? SynchronizedTo : Timestamp;
-        set => SynchronizedTo = value;
+        get => Timestamp < Synchronized ? Synchronized : Timestamp;
+        set => Synchronized = value;
     }
 
     protected Update() { }
@@ -24,5 +24,5 @@ public abstract class Update : Entity
 
     public override string ToString() =>
         $"{{\"ДатаРасчета\":\"{Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
-        $"\"СинхронизированоПо\":\"{GetSynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
+        $"\"СинхронизированоПо\":\"{SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
 }

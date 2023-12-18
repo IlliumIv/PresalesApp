@@ -12,16 +12,16 @@ public class CacheLog : Update
     [JsonProperty("КонецПериода"), JsonConverter(typeof(DateTimeDeserializationConverter))]
     public DateTime PeriodEnd { get; private set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
 
-    public override DateTime GetSynchronizedTo
+    public override DateTime SynchronizedTo
     {
-        get => PeriodBegin < SynchronizedTo ? SynchronizedTo : PeriodBegin;
-        set => SynchronizedTo = value;
+        get => PeriodBegin < Synchronized ? Synchronized : PeriodBegin;
+        set => Synchronized = value;
     }
 
     public CacheLog(DateTime synchronizedTo)
     {
+        Synchronized = synchronizedTo.ToUniversalTime();
         SynchronizedTo = synchronizedTo.ToUniversalTime();
-        GetSynchronizedTo = synchronizedTo.ToUniversalTime();
         Timestamp = synchronizedTo.ToUniversalTime();
         PeriodBegin = synchronizedTo.ToUniversalTime();
         PeriodEnd = synchronizedTo.ToUniversalTime();
@@ -36,7 +36,7 @@ public class CacheLog : Update
         if (cache_log_in_db != null)
         {
             cache_log_in_db.Timestamp = Timestamp;
-            cache_log_in_db.GetSynchronizedTo = GetSynchronizedTo;
+            cache_log_in_db.SynchronizedTo = SynchronizedTo;
             cache_log_in_db.ToLog(false);
         }
 
@@ -63,13 +63,13 @@ public class CacheLog : Update
         $"{{\"НачалоПериода\":\"{PeriodBegin.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
         $"\"КонецПериода\":\"{PeriodEnd.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
         $"\"ДатаРасчета\":\"{Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
-        $"\"СинхронизированоПо\":\"{GetSynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
+        $"\"СинхронизированоПо\":\"{SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
 
     public override CacheLog GetPrevious()
     {
         using var db_context = new ReadOnlyContext();
         var cache_log = db_context.CacheLogsHistory
-            .Where(l => l.GetSynchronizedTo < l.PeriodEnd)
+            .Where(l => l.SynchronizedTo < l.PeriodEnd)
             .OrderBy(l => l.Timestamp)
             .FirstOrDefault()
             ?? new CacheLog(DateTime.UtcNow);
