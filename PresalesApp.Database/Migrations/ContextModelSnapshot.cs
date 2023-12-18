@@ -10,14 +10,14 @@ using PresalesApp.Database;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ControllerContext))]
+    [DbContext(typeof(MigrationsEntryPoint.MigrationsContext))]
     partial class ContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -171,6 +171,9 @@ namespace PresalesApp.Database.Migrations
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastPayAt")
                         .HasColumnType("timestamp with time zone");
@@ -353,7 +356,8 @@ namespace PresalesApp.Database.Migrations
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(21)
+                        .HasColumnType("character varying(21)");
 
                     b.Property<DateTime>("SynchronizedTo")
                         .HasColumnType("timestamp with time zone");

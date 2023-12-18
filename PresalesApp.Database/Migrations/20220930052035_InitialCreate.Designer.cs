@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ControllerContext))]
+    [DbContext(typeof(MigrationsEntryPoint.MigrationsContext))]
     [Migration("20220930052035_InitialCreate")]
     partial class InitialCreate
     {

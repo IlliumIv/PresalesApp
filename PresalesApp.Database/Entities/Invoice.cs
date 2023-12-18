@@ -13,6 +13,9 @@ namespace PresalesApp.Database.Entities
         [JsonProperty("Дата"), JsonConverter(typeof(DateTimeDeserializationConverter))]
         public DateTime Date { get; set; } = new(0, DateTimeKind.Utc);
 
+        [JsonProperty("ПометкаУдаления")]
+        public bool IsDeleted { get; set; } = false;
+
         [JsonProperty("Контрагент")]
         public string Counterpart { get; set; } = string.Empty;
 

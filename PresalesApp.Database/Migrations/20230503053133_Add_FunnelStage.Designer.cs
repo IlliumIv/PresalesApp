@@ -11,7 +11,7 @@ using PresalesApp.Database;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ControllerContext))]
+    [DbContext(typeof(MigrationsEntryPoint.MigrationsContext))]
     [Migration("20230503053133_Add_FunnelStage")]
     partial class Add_FunnelStage
     {
