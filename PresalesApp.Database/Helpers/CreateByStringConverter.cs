@@ -2,25 +2,25 @@
 using Newtonsoft.Json.Linq;
 using PresalesApp.Database.Entities;
 
-namespace PresalesApp.Database.Helpers
+namespace PresalesApp.Database.Helpers;
+
+public class CreateByStringConverter : JsonConverter
 {
-    public class CreateByStringConverter : JsonConverter
+    public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Presale);
+    public override bool CanWrite => false;
+    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) { }
+    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
-        public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Presale);
-        public override bool CanWrite => false;
-        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) { }
-        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        // Console.WriteLine($"{objectType}");
+        var token = JToken.ReadFrom(reader);
+        if (token.Type == JTokenType.String)
         {
-            // Console.WriteLine($"{objectType}");
-            var token = JToken.ReadFrom(reader);
-            if (token.Type == JTokenType.String)
-            {
-                var value = token.Value<string>();
-                if (value == null || value.Length == 0) return null;
-                if (objectType == typeof(Presale)) return new Presale(value.Split(";").First());
-                if (objectType == typeof(Project)) return new Project(value);
-            }
-            return null;
+            var value = token.Value<string>();
+            if (value == null || value.Length == 0) return null;
+            if (objectType == typeof(Presale)) return new Presale(value.Split(";").First());
+            if (objectType == typeof(Project)) return new Project(value);
         }
+
+        return null;
     }
 }

@@ -1,16 +1,15 @@
-﻿namespace PresalesApp.Database.Enums
+﻿namespace PresalesApp.Database.Enums;
+
+public enum FunnelStage
 {
-    public enum FunnelStage
-    {
-        None,
-        First,
-        Second,
-        Third,
-        Fourth,
-        Fifth,
-        Sixth,
-        Seventh,
-        Eigth,
-        Refused
-    }
+    None,
+    First,
+    Second,
+    Third,
+    Fourth,
+    Fifth,
+    Sixth,
+    Seventh,
+    Eigth,
+    Refused
 }
