@@ -15,15 +15,14 @@ public class Program
         JsonConvertConfiguration.ConfigureJsonConvert();
 
         var builder = WebApplication.CreateBuilder(args).ConfigureServices();
-
         var appSettings = new AppSettings(builder.Configuration);
+
+        DbController.Configure(appSettings);
+        DbController.Start();
 
         new Bridge1C(appSettings).Start<Project>(TimeSpan.Zero);
         new Bridge1C(appSettings).Start<CacheLog>(TimeSpan.FromSeconds(5));
         new Bridge1C(appSettings).Start<Invoice>(TimeSpan.FromSeconds(10));
-
-        DbController.Configure(appSettings);
-        DbController.Start();
 
         builder.Build().ConfigureApplication().Run();
     }
