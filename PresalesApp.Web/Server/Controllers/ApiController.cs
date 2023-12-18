@@ -784,9 +784,9 @@ public class ApiController(
         using var db = new ReadOnlyContext();
 
         var invQuery = db.Invoices
-            .Where(i => (i.Date >= from && i.Date <= to)
+            .Where(i => !i.MarkedAsDeleted && ((i.Date >= from && i.Date <= to)
                 || (i.LastPayAt >= from && i.LastPayAt <= to)
-                || (i.LastShipmentAt >= from && i.LastShipmentAt <= to))
+                || (i.LastShipmentAt >= from && i.LastShipmentAt <= to)))
             .Include(i => i.Presale)
             .Include(i => i.ProfitPeriods);
 
