@@ -11,7 +11,7 @@ using PresalesApp.Database;
 
 namespace PresalesApp.Database.Migrations
 {
-    [DbContext(typeof(DbController.ControllerContext))]
+    [DbContext(typeof(MigrationsEntryPoint.MigrationsContext))]
     [Migration("20230417115515_Add_TrackUpdates")]
     partial class Add_TrackUpdates
     {
