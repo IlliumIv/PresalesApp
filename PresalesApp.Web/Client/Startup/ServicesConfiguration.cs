@@ -18,6 +18,8 @@ public static class ServicesConfiguration
 {
     public static WebAssemblyHostBuilder ConfigureServices(this WebAssemblyHostBuilder builder)
     {
+        var settings = new Settings(builder.Configuration);
+
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
@@ -31,8 +33,10 @@ public static class ServicesConfiguration
         builder.Services.AddSingleton(services =>
         {
             var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
-            var channel = GrpcChannel.ForAddress("https://127.0.0.1:33443",
-                new GrpcChannelOptions { HttpClient = httpClient }); return new BridgeApi.ApiClient(channel);
+            var channel = GrpcChannel.ForAddress(
+                $"http{(settings.UseSSL ? "s" : "")}://{settings.ServiceHost}:{settings.ServicePort}",
+                new GrpcChannelOptions { HttpClient = httpClient });
+            return new BridgeApi.ApiClient(channel);
         });
 
         builder.Services.AddBlazorise();
