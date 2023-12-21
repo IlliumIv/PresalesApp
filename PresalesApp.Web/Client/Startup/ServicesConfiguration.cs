@@ -7,6 +7,7 @@ using Grpc.Net.Client.Web;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using pax.BlazorChartJs;
 using PresalesApp.Web.Client.Services.Authorization;
 using Radzen;
 using AppApi = PresalesApp.Web.Shared.Api;
@@ -45,6 +46,12 @@ public static class ServicesConfiguration
 
         builder.Services.AddBlazoredLocalStorage();
         builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");
+
+        builder.Services.AddChartJs(options =>
+        {
+            options.ChartJsLocation = "https://cdn.jsdelivr.net/npm/chart.js";
+            options.ChartJsPluginDatalabelsLocation = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2";
+        });
 
         builder.Services.AddAuthGrpcClientTransient<AppApi.ApiClient>();
         builder.Services.AddScoped<AuthorizationService>();

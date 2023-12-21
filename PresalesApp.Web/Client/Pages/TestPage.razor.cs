@@ -1,194 +1,188 @@
 ﻿using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
+using pax.BlazorChartJs;
 using PresalesApp.Service;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
 using Period = PresalesApp.Web.Client.Helpers.Period;
+using ChartType = pax.BlazorChartJs.ChartType;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using Blazorise.Extensions;
+using System.Globalization;
 
-namespace PresalesApp.Web.Client.Pages
+namespace PresalesApp.Web.Client.Pages;
+
+partial class TestPage
 {
-    partial class TestPage
+    private HelloReply? _Reply;
+
+    [CascadingParameter]
+    public MessageSnackbar GlobalMsgHandler { get; set; }
+
+    private int _Counter = 0;
+
+    #region UriQuery
+    private const string _QueryFrom = "from";
+    [SupplyParameterFromQuery(Name = _QueryFrom)] public string? From { get; set; }
+
+    private const string _QueryTo = "to";
+    [SupplyParameterFromQuery(Name = _QueryTo)] public string? To { get; set; }
+
+    private const string _QueryPeriod = "period";
+    [SupplyParameterFromQuery(Name = _QueryPeriod)] public string? PeriodType { get; set; }
+
+    private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        private HelloReply? reply;
+        [_QueryFrom] = Period.Start.ToString(Helper.UriDateTimeFormat),
+        [_QueryTo] = Period.End.ToString(Helper.UriDateTimeFormat),
+        [_QueryPeriod] = Period.Type.ToString(),
+    };
+    #endregion
 
-        [CascadingParameter]
-        public MessageSnackbar GlobalMsgHandler { get; set; }
+    public Period Period = new(DateTime.Now, Enums.PeriodType.Arbitrary);
 
-        private int counter = 0;
+    private void _CleanStorage()
+    {
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryFrom}");
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryTo}");
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryPeriod}");
+    }
 
-        #region UriQuery
-        private const string queryFrom = "from";
-        [SupplyParameterFromQuery(Name = queryFrom)] public string? From { get; set; }
+    private void _OnPeriodChanged(Period period)
+    {
+        Period = period;
 
-        private const string queryTo = "to";
-        [SupplyParameterFromQuery(Name = queryTo)] public string? To { get; set; }
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryFrom}", Period.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryTo}", Period.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryPeriod}", Period.Type);
 
-        private const string queryPeriod = "period";
-        [SupplyParameterFromQuery(Name = queryPeriod)] public string? PeriodType { get; set; }
+        _Counter++;
 
-        private Dictionary<string, object?> GetQueryKeyValues() => new()
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+    }
+
+    protected override void OnInitialized()
+    {
+        Helper.SetFromQueryOrStorage(value: From, query: _QueryFrom, uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
+        Helper.SetFromQueryOrStorage(value: To, query: _QueryTo, uri: Navigation.Uri, storage: Storage, param: ref Period.End);
+        Helper.SetFromQueryOrStorage(value: PeriodType, query: _QueryPeriod, uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        _LineChartConfig = _GenerateChartConfig(ChartType.line, [.. _Colors.Keys], null,
+            _GetLineDataset(1, "min point", "Blue", 60),
+            _GetLineDataset((ushort)_Colors.Count, "data", "Red"),
+            _GetLineDataset((ushort)_Colors.Count, "small line", "Yellow", 40),
+            _GetLineDataset((ushort)_Colors.Count, "big line", "Purple", 45));
+
+        _PieChartConfig = _GenerateChartConfig(ChartType.pie, [.. _Colors.Keys], null,
+            _GetLineDataset((ushort)_Colors.Count, "data", "Red"));
+    }
+
+    private async Task _HandleSayHello()
+    {
+        try
         {
-            [queryFrom] = Period.Start.ToString(Helper.UriDateTimeFormat),
-            [queryTo] = Period.End.ToString(Helper.UriDateTimeFormat),
-            [queryPeriod] = Period.Type.ToString(),
+            _Reply = await BridgeApi.SayHelloAsync(new HelloRequest() { Name = "Иван" });
+        }
+        catch(Exception e)
+        {
+            await GlobalMsgHandler.Show(e.Message);
+        }
+
+        StateHasChanged();
+    }
+
+    private int _NumberOfPoints = _Colors.Count;
+
+    private void _HandleRedraw()
+    {
+        // await pieChart.Clear();
+        // await pieChart.AddLabelsDatasetsAndUpdate([.. _Colors.Keys], GetPieChartDataset());
+
+        var chart_data = new List<ChartJsDataset>
+        {
+            _GetLineDataset(1, "min point", "Blue", 60),
+            _GetLineDataset((ushort)_NumberOfPoints, "data", "Red"),
+            _GetLineDataset((ushort)_NumberOfPoints, "small line", "Yellow", 40),
+            _GetLineDataset((ushort)_NumberOfPoints, "big line", "Purple", 45),
         };
-        #endregion
 
-        public Period Period = new(DateTime.Now, Enums.PeriodType.Arbitrary);
+        _LineChartConfig.SetLabels(_GetLabels((ushort)_NumberOfPoints));
+        _LineChartConfig.RemoveDatasets(_LineChartConfig.Data.Datasets);
+        _LineChartConfig.AddDatasets(chart_data);
+    }
 
-        private void CleanStorage()
+    private ChartJsConfig _LineChartConfig = null!;
+    private ChartJsConfig _PieChartConfig = null!;
+
+    private static ChartJsConfig _GenerateChartConfig(ChartType chartType, string[] labels,
+        ChartJsOptions? options = null, params ChartJsDataset[] datasets) => new()
         {
-            Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}");
-            Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}");
-            Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}");
-        }
-
-        private async void DoSomething() => await HandleSayHello();
-
-        private void OnPeriodChanged(Period period)
-        {
-            Period = period;
-
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{queryFrom}", Period.Start);
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{queryTo}", Period.End);
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{queryPeriod}", Period.Type);
-
-            counter++;
-
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-        }
-
-        protected override void OnInitialized()
-        {
-            Helper.SetFromQueryOrStorage(value: From, query: queryFrom, uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
-            Helper.SetFromQueryOrStorage(value: To, query: queryTo, uri: Navigation.Uri, storage: Storage, param: ref Period.End);
-            Helper.SetFromQueryOrStorage(value: PeriodType, query: queryPeriod, uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
-
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender) await HandleRedraw();
-        }
-
-        private async Task HandleSayHello()
-        {
-            try
+            Type = chartType,
+            // Options = options ?? new() { Plugins = new() { Legend = new() { Display = false } } },
+            Data = new()
             {
-                reply = await BridgeApi.SayHelloAsync(new HelloRequest() { Name = "Иван" });
+                Labels = labels,
+                Datasets = datasets.ToList(),
             }
-            catch (Exception e)
-            {
-                await GlobalMsgHandler.Show(e.Message);
-            }
-            StateHasChanged();
-        }
+        };
 
-        private async Task HandleRedraw()
+    private static LineDataset _GetLineDataset(ushort count, string label, string color, int? value = null) => new()
         {
-            await pieChart.Clear();
-            await pieChart.AddLabelsDatasetsAndUpdate(Labels, GetPieChartDataset());
+            Label = label,
+            Data = value is null ? _GetRandomizedData(count) : _GenerateLine(count, (int)value),
+            BackgroundColor = _GetColor(color, 0.2f),
+            BorderColor = _GetColor(color, 1f),
+            Fill = true,
+            PointRadius = 0,
+            // CubicInterpolationMode = "monotone",
+        };
 
-            await lineChart.Clear();
-            await lineChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset(), GetSmallPlanLine(), GetBigPlanLine(), GetMinPoint());
-        }
+    private readonly static Dictionary<string, (byte R, byte G, byte B)> _Colors = new()
+    {
+        { "Red", (255, 99, 132) },
+        { "Blue", (54, 162, 235) },
+        { "Yellow", (255, 206, 86) },
+        { "Green", (75, 192, 192) },
+        { "Purple", (153, 102, 255) },
+        { "Orange", (255, 159, 64) }
+    };
 
-        private PieChart<double> pieChart;
-        private LineChart<double> lineChart;
+    private static List<object> _GetRandomizedData(ushort count)
+    {
+        var rand = new Random();
+        var res = new double[count];
 
-        private static string GetChartOptions() => "{\"plugins\":{\"legend\":{\"display\": false}}}";
+        for (var i = 0; i < count; i++)
+            res[i] = rand.Next(3, 50) * rand.NextDouble();
 
-        private PieChartDataset<double> GetPieChartDataset()
-        {
-            return new PieChartDataset<double>
-            {
-                Label = "# of randoms",
-                Data = GetRandomizedData(),
-                BackgroundColor = backgroundColors,
-                BorderColor = borderColors,
-                // Fill = true,
-                // PointRadius = 3,
-                // CubicInterpolationMode = "monotone",
-            };
-        }
+        return res.Select(d => (object)d).ToList();
+    }
 
-        private LineChartDataset<double> GetLineChartDataset()
-        {
-            return new LineChartDataset<double>
-            {
-                Label = "# of randoms",
-                Data = GetRandomizedData(),
-                BackgroundColor = backgroundColors,
-                BorderColor = borderColors,
-                Fill = true,
-                PointRadius = 0,
-                // CubicInterpolationMode = "monotone",
-            };
-        }
+    private static string[] _GetLabels(ushort count)
+    {
+        var res = new string[count];
 
-        private LineChartDataset<double> GetSmallPlanLine()
-        {
-            return new LineChartDataset<double>
-            {
-                Label = "real plan",
-                Data = SmallPlanLine,
-                BackgroundColor = backgroundColors,
-                BorderColor = borderColors,
-                // Fill = true,
-                PointRadius = 0,
-                // CubicInterpolationMode = "monotone",
-            };
-        }
+        for(var i = 0; i < count; i++)
+            res[i] = _Colors.ElementAt(i % _Colors.Count).Key;
 
-        private LineChartDataset<double> GetBigPlanLine()
-        {
-            return new LineChartDataset<double>
-            {
-                Label = "big plan",
-                Data = BigPlanLine,
-                BackgroundColor = backgroundColors,
-                BorderColor = borderColors,
-                // Fill = true,
-                PointRadius = 0,
-                // CubicInterpolationMode = "monotone",
-            };
-        }
+        return res;
+    }
 
-        private LineChartDataset<double> GetMinPoint()
-        {
-            return new LineChartDataset<double>
-            {
-                Label = "min point",
-                Data = [35],
-                BackgroundColor = backgroundColors,
-                BorderColor = borderColors,
-                // Fill = true,
-                PointRadius = 0,
-                // CubicInterpolationMode = "monotone",
-            };
-        }
+    private static List<object> _GenerateLine(ushort count, int value)
+    {
+        var res = new int[count];
 
-        private readonly string[] Labels = ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"];
-        private readonly List<string> backgroundColors = [ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f)];
-        private readonly List<string> borderColors = [ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f)];
+        for(var i = 0; i < count; i++)
+            res[i] = value;
 
-        private List<double> GetRandomizedData()
-        {
-            var r = new Random();
+        return res.Select(d => (object)d).ToList();
+    }
 
-            return [
-                r.Next(3, 50) * r.NextDouble(),
-                r.Next(3, 50) * r.NextDouble(),
-                r.Next(3, 50) * r.NextDouble(),
-                r.Next(3, 50) * r.NextDouble(),
-                r.Next(3, 50) * r.NextDouble(),
-                r.Next(3, 50) * r.NextDouble()
-            ];
-        }
-
-        private static readonly List<double> SmallPlanLine = [25, 25, 25, 25, 25, 25];
-
-        private static readonly List<double> BigPlanLine = [30, 30, 30, 30, 30, 30];
+    private static string _GetColor(string color, float alfa)
+    {
+        var (R, G, B) = _Colors[color];
+        return ChartColor.FromRgba(R, G, B, alfa);
     }
 }
