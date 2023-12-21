@@ -2,14 +2,15 @@
 @layout Test
 
 <div class="d-flex">
-    <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=DoSomething>Say Hello</RadzenButton>
-    <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="(async () => await HandleRedraw())">Redraw Chart</Button>
+    <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click="(async() => await _HandleSayHello())">Say Hello</RadzenButton>
+    <input type="number" @bind=_NumberOfPoints />
+    <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="_HandleRedraw">Redraw Chart</Button>
 </div>
-<p>@reply?.Message</p>
-<p>@Period.Start - @Period.End, @Period.Type --- @counter</p>
-<PeriodPicker Period="@Period" PeriodChanged="OnPeriodChanged" />
-<RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=CleanStorage>Clean Storage</RadzenButton>
+<p>@_Reply?.Message</p>
+<p>@Period.Start - @Period.End, @Period.Type --- @_Counter</p>
+<PeriodPicker Period="@Period" PeriodChanged="_OnPeriodChanged" />
+<RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=_CleanStorage>Clean Storage</RadzenButton>
 <div style="width: 500px;height: 500px">
-    <LineChart @ref="lineChart" TItem="double" OptionsJsonString="@GetChartOptions()" />
-    <PieChart @ref="pieChart" TItem="double" />
+    <pax.BlazorChartJs.ChartComponent ChartJsConfig="_LineChartConfig" />
+    <pax.BlazorChartJs.ChartComponent ChartJsConfig="_PieChartConfig" />
 </div>
