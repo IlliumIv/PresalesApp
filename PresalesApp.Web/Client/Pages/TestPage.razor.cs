@@ -1,14 +1,10 @@
-﻿using Blazorise.Charts;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using pax.BlazorChartJs;
 using PresalesApp.Service;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
 using Period = PresalesApp.Web.Client.Helpers.Period;
-using ChartType = pax.BlazorChartJs.ChartType;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Blazorise.Extensions;
-using System.Globalization;
 
 namespace PresalesApp.Web.Client.Pages;
 
@@ -76,7 +72,7 @@ partial class TestPage
             _GetLineDataset((ushort)_Colors.Count, "big line", "Purple", 45));
 
         _PieChartConfig = _GenerateChartConfig(ChartType.pie, [.. _Colors.Keys], null,
-            _GetLineDataset((ushort)_Colors.Count, "data", "Red"));
+            _GetPieDataset((ushort)_Colors.Count));
     }
 
     private async Task _HandleSayHello()
@@ -97,20 +93,19 @@ partial class TestPage
 
     private void _HandleRedraw()
     {
-        // await pieChart.Clear();
-        // await pieChart.AddLabelsDatasetsAndUpdate([.. _Colors.Keys], GetPieChartDataset());
-
-        var chart_data = new List<ChartJsDataset>
+        _LineChartConfig.SetLabels(_GetLabels((ushort)_NumberOfPoints));
+        _LineChartConfig.RemoveDatasets(_LineChartConfig.Data.Datasets);
+        _LineChartConfig.AddDatasets(new List<ChartJsDataset>()
         {
             _GetLineDataset(1, "min point", "Blue", 60),
             _GetLineDataset((ushort)_NumberOfPoints, "data", "Red"),
             _GetLineDataset((ushort)_NumberOfPoints, "small line", "Yellow", 40),
-            _GetLineDataset((ushort)_NumberOfPoints, "big line", "Purple", 45),
-        };
+            _GetLineDataset((ushort)_NumberOfPoints, "big line", "Purple", 45)
+        });
 
-        _LineChartConfig.SetLabels(_GetLabels((ushort)_NumberOfPoints));
-        _LineChartConfig.RemoveDatasets(_LineChartConfig.Data.Datasets);
-        _LineChartConfig.AddDatasets(chart_data);
+        _PieChartConfig.SetLabels(_GetLabels((ushort)_NumberOfPoints));
+        _PieChartConfig.RemoveDatasets(_PieChartConfig.Data.Datasets);
+        _PieChartConfig.AddDataset(_GetPieDataset((ushort)_NumberOfPoints));
     }
 
     private ChartJsConfig _LineChartConfig = null!;
@@ -128,16 +123,26 @@ partial class TestPage
             }
         };
 
+    private static readonly float _BackgroundAlfa = 0.2f;
+    private static readonly float _BorderAlfa = 1f;
+
     private static LineDataset _GetLineDataset(ushort count, string label, string color, int? value = null) => new()
-        {
-            Label = label,
-            Data = value is null ? _GetRandomizedData(count) : _GenerateLine(count, (int)value),
-            BackgroundColor = _GetColor(color, 0.2f),
-            BorderColor = _GetColor(color, 1f),
-            Fill = true,
-            PointRadius = 0,
-            // CubicInterpolationMode = "monotone",
-        };
+    {
+        Label = label,
+        Data = value is null ? _GetRandomizedData(count) : _GenerateLine(count, (int)value),
+        BackgroundColor = _GetColor(color, _BackgroundAlfa),
+        BorderColor = _GetColor(color, _BorderAlfa),
+        Fill = true,
+        PointRadius = 0
+    };
+
+    private static PieDataset _GetPieDataset(ushort count) => new()
+    {
+        Data = _GetRandomizedData(count),
+        BackgroundColor = _GetColors(count, _BackgroundAlfa),
+        BorderColor = _GetColors(count, _BorderAlfa),
+        Cutout = "30%"
+    };
 
     private readonly static Dictionary<string, (byte R, byte G, byte B)> _Colors = new()
     {
@@ -183,6 +188,19 @@ partial class TestPage
     private static string _GetColor(string color, float alfa)
     {
         var (R, G, B) = _Colors[color];
-        return ChartColor.FromRgba(R, G, B, alfa);
+        return $"rgba({R}, {G}, {B}, {alfa.ToCultureInvariantString()})";
+    }
+
+    private static List<string> _GetColors(ushort count, float alfa)
+    {
+        var res = new List<string>();
+
+        for(var i = 0; i < count; i++)
+        {
+            var (R, G, B) = _Colors.ElementAt(i % _Colors.Count).Value;
+            res.Add($"rgba({R}, {G}, {B}, {alfa.ToCultureInvariantString()})");
+        }
+
+        return res;
     }
 }
