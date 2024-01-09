@@ -70,7 +70,7 @@ public class CacheLog : Update
         using var db_context = new ReadOnlyContext();
         var cache_log = db_context.CacheLogsHistory
             .Where(l => l.SynchronizedTo < l.PeriodEnd)
-            .OrderBy(l => l.Timestamp)
+            .OrderBy(l => l.PeriodBegin)
             .FirstOrDefault()
             ?? new CacheLog(DateTime.UtcNow);
 
