@@ -64,7 +64,7 @@ public class Bridge1C(AppSettings appSettings)
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e, "");
+                    Log.Error(e, $"Error while processing update for {typeof(T).Name}");
                 }
 
                 periodic_timer = new PeriodicTimer(next_update_delay);
@@ -94,7 +94,7 @@ public class Bridge1C(AppSettings appSettings)
         Log.Debug($"{http_client.BaseAddress}{message.RequestUri}");
 
         http_client.Timeout = TimeSpan.FromMinutes(3);
-        var response = http_client.SendAsync(message).Result;
+        var response = http_client.Send(message);
 
         if (response.IsSuccessStatusCode)
         {
