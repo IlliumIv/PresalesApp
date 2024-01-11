@@ -13,7 +13,7 @@
         <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
             <legend>@(_IsRealisticPlanDone() ? "Амбициозный" : "Реалистичный") план</legend>
             <div class="fs-content-layout">
-                <p class="fs-content">@_GetProgressPercentString(_Overview?.Presales.Sum(p => p.Statistics.Profit), _IsRealisticPlanDone() ? 150_000_000 : 120_000_000)</p>
+                <p class="fs-content">@_GetProgressPercentString(_Overview?.Presales.Sum(p => p.Statistics.Profit), _IsRealisticPlanDone() ? _Overview?.Plan : _Overview?.Actual ?? 1)</p>
                 <div class="fs-desc">
                     <p>@Helper.ToCurrencyString(_Overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
                 </div>
@@ -26,7 +26,7 @@
             <div class="fs-content-layout">
                 <p class="fs-content">@Helper.ToCurrencyString(_DayProfit, shortFormat: true)</p>
                 <div class="fs-desc">
-                    <p>@Helper.ToCurrencyString((_Overview?.Profit.Values.Sum(amount => amount) ?? 0) - (_IsRealisticPlanDone() ? 150_000_000 : 120_000_000), shortFormat: true, allowNegatives: true)</p>
+                    <p>@Helper.ToCurrencyString((_Overview?.Profit.Values.Sum(amount => amount) ?? 0) - (_IsRealisticPlanDone() ? _Overview?.Plan : _Overview?.Actual ?? 1), shortFormat: true, allowNegatives: true)</p>
                 </div>
             </div>
         </fieldset>
