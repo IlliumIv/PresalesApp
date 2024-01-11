@@ -58,7 +58,7 @@ partial class PresalesNewYearDashboard
 
     private List<_Arrival> _Arrivals = [];
 
-    private static bool _IsRealisticPlanDone() => (_Overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000;
+    private static bool _IsRealisticPlanDone() => (_Overview?.Profit.Values.Sum(amount => amount) ?? 0) > _Overview?.Actual;
     private static string _GetHeaderCellStyling() => "text-align: right";
     private static string _GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
     private static string _GetProgressPercentString(TimeSpan a, TimeSpan b) => $"{a / b * 100:N0}%";
@@ -246,10 +246,10 @@ partial class PresalesNewYearDashboard
         PointRadius = 0,
     };
 
-    private static LineChartDataset<decimal> _GetMinPointDataset() => new()
+    private static LineChartDataset<decimal> _GetMinPointDataset(decimal value) => new()
     {
         Label = "min point",
-        Data = [155_000_000],
+        Data = [value],
         PointRadius = 0,
     };
 
@@ -299,8 +299,8 @@ partial class PresalesNewYearDashboard
             amount += day_profit;
             labels.Add(dt.GetLocalizedDateNameByPeriodType(PeriodType.Day, Localization));
             profit.Add(amount);
-            realistic_plan.Add(120_000_000);
-            ambitious_plan.Add(150_000_000);
+            realistic_plan.Add(_Overview.Actual);
+            ambitious_plan.Add(_Overview.Plan);
         }
 
         var invoices = new List<int>();
@@ -313,7 +313,7 @@ partial class PresalesNewYearDashboard
             _GetChartDataset(profit),
             _GetRealisticPlanDataset(realistic_plan),
             _GetAmbitiousPlanDataset(ambitious_plan),
-            _GetMinPointDataset());
+            _GetMinPointDataset(_Overview.Plan * (decimal)1.03));
     }
     #endregion
 

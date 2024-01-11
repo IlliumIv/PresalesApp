@@ -98,6 +98,7 @@ message ProfitOverview {
 	types.DecimalValue plan = 2;
 	types.DecimalValue left = 3;
 	map<string, types.DecimalValue> profit = 4;
+	types.DecimalValue actual = 5;
 }
 
 message ImageRequest {
