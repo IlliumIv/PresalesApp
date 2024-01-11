@@ -1,4 +1,5 @@
-﻿using Blazorise.Extensions;
+﻿using Blazorise;
+using Blazorise.Extensions;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -36,7 +37,10 @@ public class ApiController(
 
     private static readonly bool _IsDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
     private const decimal _Handicap = (decimal)1.3;
-    private static readonly Dictionary<(DateTime Start, DateTime End), (decimal Value, DateTime CalculationTime)> _SalesTargetCache = [];
+    private static readonly Dictionary<(DateTime Start, DateTime End), (decimal Actual, decimal Target, DateTime CalculationTime)> _SalesTargetCache = new()
+    {
+        { (new(2023, 10, 1, 0, 0, 0), new (2023, 12, 31, 23, 59, 59)), (Actual: 120_000_000, Target: 150_000_000, CalculationTime: DateTime.Now) }
+    };
 
     private static string _CachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
 
@@ -536,10 +540,9 @@ public class ApiController(
             || value.CalculationTime.Month < DateTime.Now.Month
             || value.CalculationTime.Year < DateTime.Now.Year)
         {
-            _SalesTargetCache[(from, to)] = (Value: _GetProfitStatistic(
-                    from.AddYears(-1), to.AddYears(-1), position, department, onlyActive)
-                .Result.Profit.Values.Sum() * _Handicap,
-                CalculationTime: DateTime.Now);
+            var actual = _GetProfitStatistic(from.AddYears(-1), to.AddYears(-1), position, department, onlyActive)
+                    .Result.Profit.Values.Sum();
+            _SalesTargetCache[(from, to)] = (Actual: actual, Target: actual * _Handicap, CalculationTime: DateTime.Now);
         }
 
         var reply = new ProfitOverview();
@@ -549,8 +552,10 @@ public class ApiController(
             reply.Presales.Add(presale);
         }
 
-        reply.Plan = _SalesTargetCache[(from, to)].Value;
-        reply.Left = _SalesTargetCache[(from, to)].Value - profit.Values.Sum() > 0 ? _SalesTargetCache[(from, to)].Value - profit.Values.Sum() : 0;
+        reply.Plan = _SalesTargetCache[(from, to)].Target;
+        reply.Actual = _SalesTargetCache[(from, to)].Actual;
+        reply.Left = _SalesTargetCache[(from, to)].Target - profit.Values.Sum() > 0 ?
+            _SalesTargetCache[(from, to)].Target - profit.Values.Sum() : 0;
 
         foreach((var date, decimal amount) in profit)
         {
