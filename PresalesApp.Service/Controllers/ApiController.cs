@@ -56,6 +56,8 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
             return;
         }
 
+        foreach(var e in _GetArrived()) _Send(responseStream, e);
+
         using var client = _GetClient(out var auth);
         var r = $"event?responsetype=json";
         r += $"&filter={_AppSettings.Macroscop.EventId}";
@@ -66,15 +68,9 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
 
         client.Timeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
 
-        foreach(var e in _GetArrived())
-        {
-            _Send(responseStream, e);
-        }
-
         try
         {
-            using var resp = await client.SendAsync(m, HttpCompletionOption.ResponseHeadersRead);
-
+            using var resp = client.Send(m, HttpCompletionOption.ResponseHeadersRead);
             using var content = await resp.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(content);
 
