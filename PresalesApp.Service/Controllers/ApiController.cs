@@ -79,11 +79,9 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
             using var reader = new StreamReader(content);
 
             var eventStrings = string.Empty;
-            var line = string.Empty;
 
-            while(true)
+            while(reader.ReadLine() is string line)
             {
-                line = reader.ReadLine();
                 if(line == "}")
                 {
                     var e = new Event(eventStrings + "}");
