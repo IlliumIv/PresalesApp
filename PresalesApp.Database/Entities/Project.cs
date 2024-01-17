@@ -159,14 +159,16 @@ public class Project(string number) : Entity
         } 
         else
         {
-            rank = _CalcRankByTimeSpend(ActionType.Calculation, 5);
+            rank = _CalcRankByTimeSpend(ActionType.Calculation, 10);
             rank += _CalcRankByTimeSpend(ActionType.Consultation, 5);
             rank += _CalcRankByTimeSpend(ActionType.Negotiations, 10);
             rank += _CalcRankByTimeSpend(ActionType.ProblemDiagnostics, 15);
+            rank += _CalcRankByTimeSpend(ActionType.SettingsCheckup, 15);
             rank += PresaleActions?.Where(a => a.Type is not ActionType.Calculation
                                     and not ActionType.Consultation
                                     and not ActionType.Negotiations
                                     and not ActionType.ProblemDiagnostics
+                                    and not ActionType.SettingsCheckup
                                     and not ActionType.Unknown)
                             .Sum(a => a.Rank) ?? 0;
 
