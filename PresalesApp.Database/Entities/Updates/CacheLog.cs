@@ -7,10 +7,10 @@ namespace PresalesApp.Database.Entities.Updates;
 public class CacheLog : Update
 {
     [JsonProperty("НачалоПериода"), JsonConverter(typeof(DateTimeDeserializationConverter))]
-    public DateTime PeriodBegin { get; private set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
+    public DateTime PeriodBegin { get; private set; } = new(2022, 12, 31, 19, 0, 0, DateTimeKind.Utc);
 
     [JsonProperty("КонецПериода"), JsonConverter(typeof(DateTimeDeserializationConverter))]
-    public DateTime PeriodEnd { get; private set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
+    public DateTime PeriodEnd { get; private set; } = new(2022, 12, 31, 19, 0, 0, DateTimeKind.Utc);
 
     public override DateTime SynchronizedTo
     {
@@ -72,7 +72,7 @@ public class CacheLog : Update
             .Where(l => l.SynchronizedTo < l.PeriodEnd)
             .OrderBy(l => l.PeriodBegin)
             .FirstOrDefault()
-            ?? new CacheLog(DateTime.UtcNow);
+            ?? new CacheLog(new(2022, 12, 31, 19, 0, 0, DateTimeKind.Utc));
 
         db_context.Dispose();
         return cache_log;
