@@ -90,7 +90,7 @@ public static class DbController
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<ProfitPeriod> ProfitPeriods { get; set; }
         public DbSet<PresaleAction> PresaleActions { get; set; }
-        public DbSet<CacheLog> CacheLogsHistory { get; set; }
+        public DbSet<InvoicesCache> CacheLogsHistory { get; set; }
         public DbSet<ProjectsUpdate> ProjectsUpdates { get; set; }
         public DbSet<CacheLogsUpdate> CacheLogsUpdates { get; set; }
         public DbSet<Update> Updates { get; set; }
