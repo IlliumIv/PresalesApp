@@ -8,6 +8,28 @@ namespace PresalesApp.Database.Entities;
 
 public class Project(string number) : Entity
 {
+    private static readonly Dictionary<ActionType, (ActionCalculationType CalculationType, int Rank, int MinRankTime)> _ActionTypes =
+        new()
+    {
+            { ActionType.Unknown, (ActionCalculationType.Ignore, 0, 0) },
+            { ActionType.FullSetup, (ActionCalculationType.Unique, 4, 0) },
+            { ActionType.SettingsCheckup, (ActionCalculationType.TimeSpend, 1, 15) },
+            { ActionType.ProblemDiagnostics, (ActionCalculationType.TimeSpend, 1, 15) },
+            { ActionType.Calculation, (ActionCalculationType.TimeSpend, 1, 10) },
+            { ActionType.SpecificationCheckup, (ActionCalculationType.Unique, 1, 0) },
+            { ActionType.SpecificationCreateFromTemplate, (ActionCalculationType.Unique, 3, 0) },
+            { ActionType.SpecificationCreate, (ActionCalculationType.Unique, 5, 0) },
+            { ActionType.RequirementsCreate, (ActionCalculationType.Unique, 2, 0) },
+            { ActionType.Consultation, (ActionCalculationType.TimeSpend, 1, 5) },
+            { ActionType.Negotiations, (ActionCalculationType.TimeSpend, 1, 10) },
+            { ActionType.Presentation, (ActionCalculationType.Sum, 3, 0) },
+            { ActionType.DepartureFullSetup, (ActionCalculationType.Unique, 5, 0) },
+            { ActionType.DepartureSettingsCheckup, (ActionCalculationType.Unique, 2, 0) },
+            { ActionType.DepartureProblemDiagnosis, (ActionCalculationType.Unique, 2, 0) },
+            { ActionType.DeparturePresentation, (ActionCalculationType.Unique, 5, 0) },
+            { ActionType.DepartureConsultation, (ActionCalculationType.Unique, 2, 0) }
+    };
+
     [JsonProperty("Код")]
     public string Number { get; private set; } = number;
 
@@ -159,18 +181,16 @@ public class Project(string number) : Entity
         } 
         else
         {
-            rank = _CalcRankByTimeSpend(ActionType.Calculation, 10);
-            rank += _CalcRankByTimeSpend(ActionType.Consultation, 5);
-            rank += _CalcRankByTimeSpend(ActionType.Negotiations, 10);
-            rank += _CalcRankByTimeSpend(ActionType.ProblemDiagnostics, 15);
-            rank += _CalcRankByTimeSpend(ActionType.SettingsCheckup, 15);
-            rank += PresaleActions?.Where(a => a.Type is not ActionType.Calculation
-                                    and not ActionType.Consultation
-                                    and not ActionType.Negotiations
-                                    and not ActionType.ProblemDiagnostics
-                                    and not ActionType.SettingsCheckup
-                                    and not ActionType.Unknown)
-                            .Sum(a => a.Rank) ?? 0;
+            foreach(var actionType in _ActionTypes)
+            {
+                rank += actionType.Value.CalculationType switch
+                {
+                    ActionCalculationType.TimeSpend => _CalcRankByTimeSpend(actionType.Key, actionType.Value.MinRankTime),
+                    ActionCalculationType.Unique => _GetRankByActionType(actionType.Key, actionType.Value.Rank),
+                    ActionCalculationType.Sum => _GetRankByActionsSum(),
+                    _ => 0,
+                };
+            }
 
             actionsTallied.UnionWith(counted);
         }
@@ -194,6 +214,13 @@ public class Project(string number) : Entity
         return time_spend % 60 >= minTimeToRank ?
             (int)Math.Ceiling(time_spend / 60d) : (int)Math.Round(time_spend / 60d);
     }
+
+    private int _GetRankByActionType(ActionType actionType, int r) =>
+        (PresaleActions?.Any(a => a.Type == actionType) ?? false) ? r : 0;
+
+    private int _GetRankByActionsSum() => PresaleActions?.Where(a =>
+        _ActionTypes.Any(t => t.Key == a.Type && t.Value.CalculationType == ActionCalculationType.Sum))
+        .Sum(a => a.Rank) ?? 0;
 
     public static async Task<(bool IsSuccess, string ErrorMessage)> SetFunnelStageAsync(FunnelStage newStage, string projectNumber)
     {
