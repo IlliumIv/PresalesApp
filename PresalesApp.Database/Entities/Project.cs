@@ -94,6 +94,8 @@ public class Project(string number) : Entity
         MainProject = MainProject?.GetOrAddIfNotExist(dbContext);
 
         var project_in_db = dbContext.Projects.Where(p => p.Number == Number)
+            .Include(p => p.Presale)
+            .Include(p => p.MainProject)
             .Include(p => p.PresaleActions).SingleOrDefault();
 
         if (project_in_db != null)
