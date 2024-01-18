@@ -7,6 +7,28 @@ namespace PresalesApp.Database.Entities;
 
 public class PresaleAction : Entity
 {
+    public static readonly Dictionary<ActionType, (ActionCalculationType CalculationType, int Rank, int MinRankTime)> ActionTypes =
+        new()
+    {
+            { ActionType.Unknown, (ActionCalculationType.Sum, 0, 0) },
+            { ActionType.FullSetup, (ActionCalculationType.Unique, 4, 0) },
+            { ActionType.SettingsCheckup, (ActionCalculationType.TimeSpend, 1, 15) },
+            { ActionType.ProblemDiagnostics, (ActionCalculationType.TimeSpend, 1, 15) },
+            { ActionType.Calculation, (ActionCalculationType.TimeSpend, 1, 10) },
+            { ActionType.SpecificationCheckup, (ActionCalculationType.Unique, 1, 0) },
+            { ActionType.SpecificationCreateFromTemplate, (ActionCalculationType.Unique, 3, 0) },
+            { ActionType.SpecificationCreate, (ActionCalculationType.Unique, 5, 0) },
+            { ActionType.RequirementsCreate, (ActionCalculationType.Unique, 2, 0) },
+            { ActionType.Consultation, (ActionCalculationType.TimeSpend, 1, 5) },
+            { ActionType.Negotiations, (ActionCalculationType.TimeSpend, 1, 10) },
+            { ActionType.Presentation, (ActionCalculationType.Sum, 3, 0) },
+            { ActionType.DepartureFullSetup, (ActionCalculationType.Unique, 5, 0) },
+            { ActionType.DepartureSettingsCheckup, (ActionCalculationType.Unique, 2, 0) },
+            { ActionType.DepartureProblemDiagnosis, (ActionCalculationType.Unique, 2, 0) },
+            { ActionType.DeparturePresentation, (ActionCalculationType.Unique, 5, 0) },
+            { ActionType.DepartureConsultation, (ActionCalculationType.Unique, 2, 0) }
+    };
+
     [JsonProperty("НомерСтроки")]
     public int Number { get; set; } = 0;
 
@@ -25,6 +47,9 @@ public class PresaleAction : Entity
     [JsonProperty("Описание")]
     public string Description { get; set; } = string.Empty;
 
+    [JsonProperty("Ранг")]
+    public int Rank { get; set; }
+
     public virtual Project? Project { get; set; }
 
     internal PresaleAction() { }
@@ -32,21 +57,10 @@ public class PresaleAction : Entity
     public PresaleAction(Project project) => Project = project;
 
     [NotMapped]
-    public int Rank => Type switch
+    public int RegulationsRank => Type switch
     {
-        ActionType.FullSetup => 4,
-        ActionType.SettingsCheckup => 1,
-        ActionType.SpecificationCheckup => 1,
-        ActionType.SpecificationCreateFromTemplate => 3,
-        ActionType.SpecificationCreate => 5,
-        ActionType.RequirementsCreate => 2,
-        ActionType.Presentation => 3,
-        ActionType.DepartureFullSetup => 5,
-        ActionType.DepartureSettingsCheckup => 2,
-        ActionType.DepartureProblemDiagnosis => 2,
-        ActionType.DeparturePresentation => 5,
-        ActionType.DepartureConsultation => 2,
-        _ => 0,
+        ActionType.Unknown => Rank,
+        _ => ActionTypes[Type].Rank
     };
 
     public override string ToString() => $"{{\"НомерСтроки\":\"{Number}\"," +
