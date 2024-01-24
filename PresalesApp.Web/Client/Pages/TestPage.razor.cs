@@ -4,7 +4,6 @@ using PresalesApp.Service;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
 using Period = PresalesApp.Web.Client.Helpers.Period;
-using Blazorise.Extensions;
 
 namespace PresalesApp.Web.Client.Pages;
 
@@ -65,14 +64,8 @@ partial class TestPage
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
 
-        _LineChartConfig = _GenerateChartConfig(ChartType.line, [.. _Colors.Keys], null,
-            _GetLineDataset(1, "min point", "Blue", 60),
-            _GetLineDataset((ushort)_Colors.Count, "data", "Red"),
-            _GetLineDataset((ushort)_Colors.Count, "small line", "Yellow", 40),
-            _GetLineDataset((ushort)_Colors.Count, "big line", "Purple", 45));
-
-        _PieChartConfig = _GenerateChartConfig(ChartType.pie, [.. _Colors.Keys], null,
-            _GetPieDataset((ushort)_Colors.Count));
+        _HandleRedraw();
+        base.OnInitialized();
     }
 
     private async Task _HandleSayHello()
@@ -89,117 +82,28 @@ partial class TestPage
         StateHasChanged();
     }
 
-    private int _NumberOfPoints = _Colors.Count;
+    private int _NumberOfPoints = ChartHelpers.Colors.Count;
 
     private void _HandleRedraw()
     {
-        _LineChartConfig.SetLabels(_GetLabels((ushort)_NumberOfPoints));
-        _LineChartConfig.RemoveDatasets(_LineChartConfig.Data.Datasets);
-        _LineChartConfig.AddDatasets(new List<ChartJsDataset>()
-        {
-            _GetLineDataset(1, "min point", "Blue", 60),
-            _GetLineDataset((ushort)_NumberOfPoints, "data", "Red"),
-            _GetLineDataset((ushort)_NumberOfPoints, "small line", "Yellow", 40),
-            _GetLineDataset((ushort)_NumberOfPoints, "big line", "Purple", 45)
-        });
+        _LineChartConfig.Update(labels: _GetLabels((ushort)_NumberOfPoints),
+            ChartHelpers.GetLineDataset(ChartHelpers.GetRandomizedData(1), "min point", "Blue"),
+            ChartHelpers.GetLineDataset(ChartHelpers.GetRandomizedData((ushort)_NumberOfPoints), "data", "Red"),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)_NumberOfPoints, 40), "small line", "Yellow"),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)_NumberOfPoints, 45), "big line", "Purple"));
 
-        _PieChartConfig.SetLabels(_GetLabels((ushort)_NumberOfPoints));
-        _PieChartConfig.RemoveDatasets(_PieChartConfig.Data.Datasets);
-        _PieChartConfig.AddDataset(_GetPieDataset((ushort)_NumberOfPoints));
+        _PieChartConfig.Update(_GetLabels((ushort)_NumberOfPoints), ChartHelpers.GetPieDataset(ChartHelpers.GetRandomizedData((ushort)_NumberOfPoints)));
     }
 
-    private ChartJsConfig _LineChartConfig = null!;
-    private ChartJsConfig _PieChartConfig = null!;
-
-    private static ChartJsConfig _GenerateChartConfig(ChartType chartType, string[] labels,
-        ChartJsOptions? options = null, params ChartJsDataset[] datasets) => new()
-        {
-            Type = chartType,
-            // Options = options ?? new() { Plugins = new() { Legend = new() { Display = false } } },
-            Data = new()
-            {
-                Labels = labels,
-                Datasets = datasets.ToList(),
-            }
-        };
-
-    private static readonly float _BackgroundAlfa = 0.2f;
-    private static readonly float _BorderAlfa = 1f;
-
-    private static LineDataset _GetLineDataset(ushort count, string label, string color, int? value = null) => new()
-    {
-        Label = label,
-        Data = value is null ? _GetRandomizedData(count) : _GenerateLine(count, (int)value),
-        BackgroundColor = _GetColor(color, _BackgroundAlfa),
-        BorderColor = _GetColor(color, _BorderAlfa),
-        Fill = true,
-        PointRadius = 0
-    };
-
-    private static PieDataset _GetPieDataset(ushort count) => new()
-    {
-        Data = _GetRandomizedData(count),
-        BackgroundColor = _GetColors(count, _BackgroundAlfa),
-        BorderColor = _GetColors(count, _BorderAlfa),
-        Cutout = "30%"
-    };
-
-    private readonly static Dictionary<string, (byte R, byte G, byte B)> _Colors = new()
-    {
-        { "Red", (255, 99, 132) },
-        { "Blue", (54, 162, 235) },
-        { "Yellow", (255, 206, 86) },
-        { "Green", (75, 192, 192) },
-        { "Purple", (153, 102, 255) },
-        { "Orange", (255, 159, 64) }
-    };
-
-    private static List<object> _GetRandomizedData(ushort count)
-    {
-        var rand = new Random();
-        var res = new double[count];
-
-        for (var i = 0; i < count; i++)
-            res[i] = rand.Next(3, 50) * rand.NextDouble();
-
-        return res.Select(d => (object)d).ToList();
-    }
+    private readonly ChartJsConfig _LineChartConfig = ChartHelpers.GenerateChartConfig(ChartType.line);
+    private readonly ChartJsConfig _PieChartConfig = ChartHelpers.GenerateChartConfig(ChartType.pie);
 
     private static string[] _GetLabels(ushort count)
     {
         var res = new string[count];
 
         for(var i = 0; i < count; i++)
-            res[i] = _Colors.ElementAt(i % _Colors.Count).Key;
-
-        return res;
-    }
-
-    private static List<object> _GenerateLine(ushort count, int value)
-    {
-        var res = new int[count];
-
-        for(var i = 0; i < count; i++)
-            res[i] = value;
-
-        return res.Select(d => (object)d).ToList();
-    }
-
-    private static string _GetColor(string color, float alfa)
-    {
-        var (R, G, B) = _Colors[color];
-        return $"rgba({R}, {G}, {B}, {alfa.ToCultureInvariantString()})";
-    }
-
-    private static List<string> _GetColors(ushort count, float alfa)
-    {
-        var res = new List<string>();
-
-        for(var i = 0; i < count; i++)
-        {
-            var (R, G, B) = _Colors.ElementAt(i % _Colors.Count).Value;
-            res.Add($"rgba({R}, {G}, {B}, {alfa.ToCultureInvariantString()})");
-        }
+            res[i] = ChartHelpers.Colors.ElementAt(i % ChartHelpers.Colors.Count).Key;
 
         return res;
     }
