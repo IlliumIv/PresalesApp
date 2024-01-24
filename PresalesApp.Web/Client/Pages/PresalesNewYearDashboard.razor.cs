@@ -187,7 +187,7 @@ partial class PresalesNewYearDashboard
         }
         catch
         {
-            await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+            GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
             return;
         }
     }
