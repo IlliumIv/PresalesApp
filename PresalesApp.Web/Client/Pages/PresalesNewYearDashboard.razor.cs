@@ -215,10 +215,8 @@ partial class PresalesNewYearDashboard
     }
 
     #region Charts
-    private readonly ChartJsConfig _LineChartConfig = ChartHelpers.GenerateChartConfig(ChartType.line);
-
-    private static string _GetChartOptions() => "{\"aspectRatio\":2.43875, \"plugins\":{\"legend\":{\"display\": false}}}";
-    private static string _GetInvoicesChartOptions() => "{\"cutout\":\"80%\",\"animation\":{\"animateScale\": true}}";
+    private readonly ChartJsConfig _LineChartConfig = ChartHelpers.GenerateChartConfig(chartType: ChartType.line,
+        options: new() { AspectRatio = 2.43875, Plugins = new() { Legend = new() { Display = false  }}});
 
     private void _RedrawChart()
     {
@@ -245,11 +243,11 @@ partial class PresalesNewYearDashboard
 
         _LineChartConfig.Update(labels: labels,
             ChartHelpers.GetLineDataset(profit, "Сумма", "DeepGreen", 0.3f, 0.8f),
-            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, _Overview.Actual),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, (decimal)_Overview.Actual),
                 "Реалистичный план", "DeepBlue", 0.3f, 0.8f, false, 0),
-            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, _Overview.Plan),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, (decimal)_Overview.Plan),
                 "Амбициозный план", "DeepPurple", 0.3f, 0.8f, false, 0),
-            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine(1, _Overview.Plan * (decimal)1.03)),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine(1, _Overview.Plan * (decimal)1.03),
                 "min_point", null, null, null, false, 0));
     }
     #endregion
