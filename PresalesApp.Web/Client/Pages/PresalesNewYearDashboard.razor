@@ -57,7 +57,7 @@
                                                   TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
                                 <Template>
                                     <div class="profit-layout">
-                                        <div class="profit-progress" style="width: @_GetProgressPercentString(context.Statistics.Profit, _Overview.Presales.Max(p => p.Statistics.Profit)); background-color: @($"rgba({ChartHelpers.Colors["DeepGreen"].R}, {ChartHelpers.Colors["DeepGreen"].G}, {ChartHelpers.Colors["DeepGreen"].B}, 0.1)")"> &nbsp; </div>
+                                        <div class="profit-progress" style="width: @_GetProgressPercentString(context.Statistics.Profit, _Overview.Presales.Max(p => p.Statistics.Profit)); background-color: @($"rgba({ChartHelpers.Colors["DeepGreen"].R}, {ChartHelpers.Colors["DeepGreen"].G}, {ChartHelpers.Colors["DeepGreen"].B}, 0.3)")"> &nbsp; </div>
                                         <span class="profit">
                                             @Helper.ToCurrencyString(context.Statistics.Profit)
                                         </span>
@@ -117,7 +117,7 @@
                         <RadzenDataGridColumn Property="Delay" Title="Отставание" TItem="_Arrival">
                             <Template>
                                 <div class="profit-layout">
-                                    <div class="profit-progress" style="width: @_GetProgressPercentString(context.Timestamp.TimeOfDay - _Arrivals.Min(a => a.Timestamp).TimeOfDay, _Arrivals.Max(a => a.Timestamp).TimeOfDay - _Arrivals.Min(a => a.Timestamp).TimeOfDay); background-color: @($"rgba({ChartHelpers.Colors["DeepGreen"].R}, {ChartHelpers.Colors["DeepGreen"].G}, {ChartHelpers.Colors["DeepGreen"].B}, 0.1)")"> &nbsp; </div>
+                                    <div class="profit-progress" style="width: @_GetProgressPercentString(context.Timestamp.TimeOfDay - _Arrivals.Min(a => a.Timestamp).TimeOfDay, _Arrivals.Max(a => a.Timestamp).TimeOfDay - _Arrivals.Min(a => a.Timestamp).TimeOfDay); background-color: @($"rgba({ChartHelpers.Colors["DeepGreen"].R}, {ChartHelpers.Colors["DeepGreen"].G}, {ChartHelpers.Colors["DeepGreen"].B}, 0.3)")"> &nbsp; </div>
                                     <span class="profit">
                                         @(context.Timestamp - _Arrivals.First().Timestamp)
                                     </span>
