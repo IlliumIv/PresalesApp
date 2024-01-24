@@ -98,9 +98,9 @@ public static class ChartHelpers
         (format == null) ? FormattableString.Invariant($"{obj}")
             : string.Format(CultureInfo.InvariantCulture.NumberFormat, $"{{0:{format}}}", obj);
 
-    public static List<object> GenerateLine(ushort count, int value)
+    public static List<object> GenerateLine<T>(ushort count, T value) where T : notnull
     {
-        var res = new int[count];
+        var res = new T[count];
 
         for(var i = 0; i < count; i++)
             res[i] = value;
