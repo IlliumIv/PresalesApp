@@ -55,10 +55,11 @@ partial class PresalesNewYearDashboard
     private string _SelectedSlide = "_ProfitOverview";
     private static bool _IsLate => DateTime.UtcNow.TimeOfDay > TimeSpan.FromHours(5);
     private static string _GetImageSrc(string imageBytes) => $"data:image/png;base64, {imageBytes}";
+    private readonly CancellationTokenSource _ArrivalsStreamCancelTokenSource = new();
 
     private List<_Arrival> _Arrivals = [];
 
-    private static bool _IsRealisticPlanDone() => (_Overview?.Profit.Values.Sum(amount => amount) ?? 0) > 120_000_000;
+    private static bool _IsRealisticPlanDone() => (_Overview?.Profit.Values.Sum(amount => amount) ?? 0) > _Overview?.Actual;
     private static string _GetHeaderCellStyling() => "text-align: right";
     private static string _GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
     private static string _GetProgressPercentString(TimeSpan a, TimeSpan b) => $"{a / b * 100:N0}%";
@@ -74,7 +75,7 @@ partial class PresalesNewYearDashboard
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
 
         _RunTimer();
-        _ArrivalsStream();
+        _ArrivalsStream(_ArrivalsStreamCancelTokenSource.Token);
     }
 
     private async void _RunTimer()
@@ -137,41 +138,37 @@ partial class PresalesNewYearDashboard
         }
     }
 
-    private async void _ArrivalsStream()
+    private async void _ArrivalsStream(CancellationToken token)
     {
-        while(true && !_IsLate)
+        while(true && !_IsLate && !token.IsCancellationRequested)
         {
             try
             {
-                var call = BridgeApi.GetPresalesArrival(new Empty());
-                var token = new CancellationToken();
+                var call = BridgeApi.GetPresalesArrival(new Empty(), cancellationToken: token);
 
-                while(await call.ResponseStream.MoveNext(token))
-                {
-                    var arrival = call.ResponseStream.Current;
-                    var dt = arrival.Timestamp.ToDateTime().ToLocalTime();
-
-                    var a = _Arrivals.FirstOrDefault(a => a?.Name == arrival.Name);
-
-                    if(a is not null)
-                    {
-                        if(a.Timestamp.Date < dt.Date)
-                        {
-                            _Arrivals = [];
-                        }
-                    }
-                    
-                    _Arrivals.Add(new _Arrival(arrival.Name, dt, arrival.ImageBytes));
-                    _Arrivals = [.. _Arrivals.OrderBy(a => a.Timestamp)];
-
-                    StateHasChanged();
-                }
+                while(await call.ResponseStream.MoveNext(token).ConfigureAwait(false))
+                    _AddOrUpdateArrival(call.ResponseStream.Current);
             }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
             }
         }
+    }
+
+    private void _AddOrUpdateArrival(Service.Arrival arrival)
+    {
+        var dt = arrival.Timestamp.ToDateTime().ToLocalTime();
+
+        if(_Arrivals.Any(a => a?.Timestamp.Date < dt.Date))
+            _Arrivals.Clear();
+
+        if(!_Arrivals.Exists(a => a?.Name == arrival.Name))
+            _Arrivals.Add(new _Arrival(arrival.Name, dt, arrival.ImageBytes));
+
+        _Arrivals = [.. _Arrivals.OrderBy(a => a?.Timestamp)];
+
+        StateHasChanged();
     }
 
     private async Task _UpdateImage()
@@ -215,10 +212,8 @@ partial class PresalesNewYearDashboard
     }
 
     #region Charts
-    private readonly ChartJsConfig _LineChartConfig = ChartHelpers.GenerateChartConfig(ChartType.line);
-
-    private static string _GetChartOptions() => "{\"aspectRatio\":2.43875, \"plugins\":{\"legend\":{\"display\": false}}}";
-    private static string _GetInvoicesChartOptions() => "{\"cutout\":\"80%\",\"animation\":{\"animateScale\": true}}";
+    private readonly ChartJsConfig _LineChartConfig = ChartHelpers.GenerateChartConfig(chartType: ChartType.line,
+        options: new() { AspectRatio = 2.43875, Plugins = new() { Legend = new() { Display = false  }}});
 
     private void _RedrawChart()
     {
@@ -245,17 +240,18 @@ partial class PresalesNewYearDashboard
 
         _LineChartConfig.Update(labels: labels,
             ChartHelpers.GetLineDataset(profit, "Сумма", "DeepGreen", 0.3f, 0.8f),
-            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, 120_000_000),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, (decimal)_Overview.Actual),
                 "Реалистичный план", "DeepBlue", 0.3f, 0.8f, false, 0),
-            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, 150_000_000),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, (decimal)_Overview.Plan),
                 "Амбициозный план", "DeepPurple", 0.3f, 0.8f, false, 0),
-            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine(1, 160_000_000),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine(1, _Overview.Plan * (decimal)1.03),
                 "min_point", null, null, null, false, 0));
     }
     #endregion
 
     public void Dispose()
     {
+        _ArrivalsStreamCancelTokenSource.Cancel();
         GC.SuppressFinalize(this);
         _PeriodicTimer?.Dispose();
     }
