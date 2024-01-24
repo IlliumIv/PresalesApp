@@ -1,8 +1,9 @@
-﻿using Blazorise.Charts;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+using pax.BlazorChartJs;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
+using System.Data;
 using Period = PresalesApp.Web.Client.Helpers.Period;
 
 namespace PresalesApp.Web.Client.Pages
@@ -46,14 +47,20 @@ namespace PresalesApp.Web.Client.Pages
         private string class_hide = "hide";
         private string class_rotatePin = "rotatePin";
         private SalesOverview? overview;
-        private List<string> dataset_colors = [];
-        private List<string> border_colors = [];
 
         private static DateTime GetFirstDay() => new(DateTime.Now.Year, ((DateTime.Now.Month - 1) / 3 + 1) * 3 - 2, 1);
         private Period Current = new(GetFirstDay(), Enums.PeriodType.Quarter);
         private Period Previous = new(GetFirstDay().AddYears(-1), Enums.PeriodType.Quarter);
 
-        private PieChart<decimal> profitChart;
+        private ChartJsConfig _ProfitChartConfig { get; set; } = ChartHelpers.GenerateChartConfig(ChartType.pie);
+
+        /*
+        private readonly ChartJsConfig _ProfitChartConfig = ChartHelpers.GenerateChartConfig(ChartType.pie, null, new()
+        {
+            Animation = new PieDatasetAnimation() { AnimateScale = true },
+            Plugins = new() { Tooltip = new Tooltip() { Enabled = false }}
+        });
+        */
 
         private async Task OnPeriodChanged()
         {
@@ -67,7 +74,7 @@ namespace PresalesApp.Web.Client.Pages
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
 
-            await HandleRedrawChart();
+            await HandleRedrawChartAsync();
         }
 
         private void PinParams()
@@ -101,10 +108,9 @@ namespace PresalesApp.Web.Client.Pages
             catch {  GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value); }
         }
 
-        // private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = "happy new year", Orientation = ImageOrientation.Landscape });
-
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
+            Console.WriteLine("OnInitialized");
             Helper.SetFromQueryOrStorage(value: PrevStart, query: q_prev_start, uri: Navigation.Uri, storage: Storage, param: ref Previous.Start);
             Helper.SetFromQueryOrStorage(value: PrevEnd, query: q_prev_end, uri: Navigation.Uri, storage: Storage, param: ref Previous.End);
             Helper.SetFromQueryOrStorage(value: PrevPeriodType, query: q_prev_period_type, uri: Navigation.Uri, storage: Storage, param: ref Previous.Type);
@@ -115,7 +121,8 @@ namespace PresalesApp.Web.Client.Pages
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
 
-            RunTimer();
+            await HandleRedrawChartAsync();
+            await base.OnInitializedAsync();
         }
 
         public void Dispose()
@@ -124,17 +131,15 @@ namespace PresalesApp.Web.Client.Pages
             periodic_timer?.Dispose();
         }
 
-        private static string GetPieChartOptions() => "{\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
-
         private async void RunTimer()
         {
             while (await periodic_timer.WaitForNextTickAsync())
             {
-                await HandleRedrawChart();
+                await HandleRedrawChartAsync();
             }
         }
 
-        private async Task HandleRedrawChart()
+        private async Task HandleRedrawChartAsync()
         {
             if (Previous.Start > Previous.End)
             {
@@ -149,62 +154,25 @@ namespace PresalesApp.Web.Client.Pages
             }
 
             await UpdateData();
+
             if (overview == null) return;
 
-            await profitChart.Clear();
-            dataset_colors = [];
-            border_colors = [];
-            float colors_alfa = 0.5f;
-
-            var dataset = new List<decimal>();
-            var rnd = new Random();
+            List<decimal> dataset = [];
 
             foreach (var manager in overview.CurrentTopSalesManagers)
-            {
                 dataset.Add(manager.Profit);
-                var r = rnd.Next(255);
-                var g = rnd.Next(255);
-                var b = rnd.Next(255);
-                dataset_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), colors_alfa));
-                border_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), 1));
-            }
 
             var sum = overview.CurrentTopSalesManagers.Sum(m => m.Profit);
+
             if (overview.CurrentActualProfit > sum)
-            {
                 dataset.Add(overview.CurrentActualProfit - sum);
-                var r = rnd.Next(255);
-                var g = rnd.Next(255);
-                var b = rnd.Next(255);
-                dataset_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), colors_alfa));
-                border_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), 1));
-            }
 
             if (overview.CurrentSalesTarget > overview.CurrentActualProfit)
-            {
                 dataset.Add(overview.CurrentSalesTarget - overview.CurrentActualProfit);
-                dataset_colors.Add(ChartColor.FromRgba(240, 240, 240, colors_alfa));
-                border_colors.Add(ChartColor.FromRgba(240, 240, 240, 1));
-            }
 
-            await profitChart.AddDatasetsAndUpdate(new PieChartDataset<decimal>()
-            {
-                Data = dataset,
-                BackgroundColor = dataset_colors,
-                BorderColor = border_colors
-                // BorderAlign = "center",
-                // BorderWidth = 1,
-            });
+            _ProfitChartConfig.Update(null, ChartHelpers.GetPieDataset(dataset.Cast<object>().ToList(), (240, 240, 240), 0.5f, 1f));
 
             StateHasChanged();
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                await HandleRedrawChart();
-            }
         }
     }
 }

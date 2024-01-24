@@ -4,6 +4,7 @@
 @implements IDisposable
 @layout Infographic
 @inject IJSRuntime js
+@using pax.BlazorChartJs
 
 <PageTitle>@Localization["SalesDashboardPage"]</PageTitle>
 
@@ -46,7 +47,7 @@
     }
     <div class="chart">
         <div class="charts">
-            <PieChart @ref="profitChart" TItem="decimal" OptionsJsonString="@GetPieChartOptions()" />
+            <ChartComponent ChartJsConfig="_ProfitChartConfig" />
             <div class="percent">
                 <p>
                     @if (overview != null)
@@ -66,7 +67,7 @@
                         {
                             var manager = item.manager;
                             <tr>
-                                <td><div style="background:@dataset_colors[item.index]">&nbsp;</div></td>
+                                <td><div style="background:@ChartHelpers.GetColorAt((ushort)item.index, 0.5f)">&nbsp;</div></td>
                                 <td>@(item.index + 1). </td>
                                 <td>@manager.Name</td>
                                 <td>@Helper.ToCurrencyString(manager.Profit)</td>
@@ -89,7 +90,7 @@
         <button class="btn btn-primary" title="@title_pin" @onclick="PinParams">
             <span class="oi oi-pin @class_rotatePin" />
         </button>
-        <button class="btn btn-primary" title="Обновить данные" @onclick="HandleRedrawChart">
+        <button class="btn btn-primary" title="Обновить данные" @onclick="(async () => await HandleRedrawChartAsync())">
             <span class="oi oi-reload" />
         </button>
     </div>

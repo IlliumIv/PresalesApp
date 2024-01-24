@@ -18,6 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="C:\Users\polyakov\.nuget\packages\pax.blazorchartjs\0.8.2\contentFiles\any\net8.0\tsconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
     <PackageReference Include="Blazorise.Bootstrap5" Version="1.4.1" />
     <PackageReference Include="Blazorise.Charts" Version="1.4.1" />
