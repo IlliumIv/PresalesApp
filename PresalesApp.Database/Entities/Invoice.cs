@@ -82,6 +82,8 @@ public class Invoice(string number) : Entity
         var invoice_in_db = dbContext.Invoices
             .Where(i => (i.Number == Number && i.Date.Date == Date.Date)
                 || (i.Number == Number && i.Counterpart == Counterpart))
+            .Include(i => i.Presale)
+            .Include(i => i.Project)
             .Include(i => i.ProfitPeriods)
             .SingleOrDefault();
 

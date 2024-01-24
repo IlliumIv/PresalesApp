@@ -21,7 +21,7 @@ public class Program
         DbController.Start();
 
         new Bridge1C(appSettings).Start<Project>(TimeSpan.Zero);
-        new Bridge1C(appSettings).Start<CacheLog>(TimeSpan.FromSeconds(5));
+        new Bridge1C(appSettings).Start<InvoicesCache>(TimeSpan.FromSeconds(5));
         new Bridge1C(appSettings).Start<Invoice>(TimeSpan.FromSeconds(10));
 
         builder.Build().ConfigureApplication().Run();

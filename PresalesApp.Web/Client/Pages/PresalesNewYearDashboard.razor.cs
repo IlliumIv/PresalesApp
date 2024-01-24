@@ -55,6 +55,7 @@ partial class PresalesNewYearDashboard
     private string _SelectedSlide = "_ProfitOverview";
     private static bool _IsLate => DateTime.UtcNow.TimeOfDay > TimeSpan.FromHours(5);
     private static string _GetImageSrc(string imageBytes) => $"data:image/png;base64, {imageBytes}";
+    private readonly CancellationTokenSource _ArrivalsStreamCancelTokenSource = new();
 
     private List<_Arrival> _Arrivals = [];
 
@@ -74,7 +75,7 @@ partial class PresalesNewYearDashboard
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
 
         _RunTimer();
-        _ArrivalsStream();
+        _ArrivalsStream(_ArrivalsStreamCancelTokenSource.Token);
     }
 
     private async void _RunTimer()
@@ -137,41 +138,37 @@ partial class PresalesNewYearDashboard
         }
     }
 
-    private async void _ArrivalsStream()
+    private async void _ArrivalsStream(CancellationToken token)
     {
-        while(true && !_IsLate)
+        while(true && !_IsLate && !token.IsCancellationRequested)
         {
             try
             {
-                var call = BridgeApi.GetPresalesArrival(new Empty());
-                var token = new CancellationToken();
+                var call = BridgeApi.GetPresalesArrival(new Empty(), cancellationToken: token);
 
-                while(await call.ResponseStream.MoveNext(token))
-                {
-                    var arrival = call.ResponseStream.Current;
-                    var dt = arrival.Timestamp.ToDateTime().ToLocalTime();
-
-                    var a = _Arrivals.FirstOrDefault(a => a?.Name == arrival.Name);
-
-                    if(a is not null)
-                    {
-                        if(a.Timestamp.Date < dt.Date)
-                        {
-                            _Arrivals = [];
-                        }
-                    }
-                    
-                    _Arrivals.Add(new _Arrival(arrival.Name, dt, arrival.ImageBytes));
-                    _Arrivals = [.. _Arrivals.OrderBy(a => a.Timestamp)];
-
-                    StateHasChanged();
-                }
+                while(await call.ResponseStream.MoveNext(token).ConfigureAwait(false))
+                    _AddOrUpdateArrival(call.ResponseStream.Current);
             }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
             }
         }
+    }
+
+    private void _AddOrUpdateArrival(Service.Arrival arrival)
+    {
+        var dt = arrival.Timestamp.ToDateTime().ToLocalTime();
+
+        if(_Arrivals.Any(a => a?.Timestamp.Date < dt.Date))
+            _Arrivals.Clear();
+
+        if(!_Arrivals.Exists(a => a?.Name == arrival.Name))
+            _Arrivals.Add(new _Arrival(arrival.Name, dt, arrival.ImageBytes));
+
+        _Arrivals = [.. _Arrivals.OrderBy(a => a?.Timestamp)];
+
+        StateHasChanged();
     }
 
     private async Task _UpdateImage()
@@ -254,6 +251,7 @@ partial class PresalesNewYearDashboard
 
     public void Dispose()
     {
+        _ArrivalsStreamCancelTokenSource.Cancel();
         GC.SuppressFinalize(this);
         _PeriodicTimer?.Dispose();
     }

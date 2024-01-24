@@ -4,13 +4,13 @@ using static PresalesApp.Database.DbController;
 
 namespace PresalesApp.Database.Entities.Updates;
 
-public class CacheLog : Update
+public class InvoicesCache : Update
 {
     [JsonProperty("НачалоПериода"), JsonConverter(typeof(DateTimeDeserializationConverter))]
-    public DateTime PeriodBegin { get; private set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
+    public DateTime PeriodBegin { get; private set; } = new(2022, 12, 31, 19, 0, 0, DateTimeKind.Utc);
 
     [JsonProperty("КонецПериода"), JsonConverter(typeof(DateTimeDeserializationConverter))]
-    public DateTime PeriodEnd { get; private set; } = new(2023, 3, 31, 19, 0, 0, DateTimeKind.Utc);
+    public DateTime PeriodEnd { get; private set; } = new(2022, 12, 31, 19, 0, 0, DateTimeKind.Utc);
 
     public override DateTime SynchronizedTo
     {
@@ -18,7 +18,7 @@ public class CacheLog : Update
         set => Synchronized = value;
     }
 
-    public CacheLog(DateTime synchronizedTo)
+    public InvoicesCache(DateTime synchronizedTo)
     {
         Synchronized = synchronizedTo.ToUniversalTime();
         SynchronizedTo = synchronizedTo.ToUniversalTime();
@@ -43,7 +43,7 @@ public class CacheLog : Update
         return cache_log_in_db != null;
     }
 
-    internal override CacheLog GetOrAddIfNotExist(ControllerContext dbContext)
+    internal override InvoicesCache GetOrAddIfNotExist(ControllerContext dbContext)
     {
         var cache_log_in_db = dbContext.CacheLogsHistory
             .Where(i => i.PeriodBegin == PeriodBegin && i.PeriodEnd == PeriodEnd)
@@ -65,14 +65,14 @@ public class CacheLog : Update
         $"\"ДатаРасчета\":\"{Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
         $"\"СинхронизированоПо\":\"{SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
 
-    public override CacheLog GetPrevious()
+    public override InvoicesCache GetPrevious()
     {
         using var db_context = new ReadOnlyContext();
         var cache_log = db_context.CacheLogsHistory
             .Where(l => l.SynchronizedTo < l.PeriodEnd)
             .OrderBy(l => l.PeriodBegin)
             .FirstOrDefault()
-            ?? new CacheLog(DateTime.UtcNow);
+            ?? new InvoicesCache(new(2022, 12, 31, 19, 0, 0, DateTimeKind.Utc));
 
         db_context.Dispose();
         return cache_log;

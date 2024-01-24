@@ -72,6 +72,8 @@ public class Project(string number) : Entity
         MainProject = MainProject?.GetOrAddIfNotExist(dbContext);
 
         var project_in_db = dbContext.Projects.Where(p => p.Number == Number)
+            .Include(p => p.Presale)
+            .Include(p => p.MainProject)
             .Include(p => p.PresaleActions).SingleOrDefault();
 
         if (project_in_db != null)
@@ -146,11 +148,8 @@ public class Project(string number) : Entity
         if (projectsFound.Contains(this)) return 0;
         else projectsFound.Add(this);
 
-        var ignored = PresaleActions?.Where(a => a.Type == ActionType.Unknown)?.ToHashSet();
-        if (ignored != null) actionsIgnored.UnionWith(ignored);
-
         var rank = 0;
-        var counted = PresaleActions?.Where(a => a.Type != ActionType.Unknown)?.ToHashSet();
+        var counted = PresaleActions?.ToHashSet();
 
         if (counted == null || counted.Count == 0 || IsClosedAfter(ignoreProjectsClosedAfter))
         {
@@ -159,16 +158,16 @@ public class Project(string number) : Entity
         } 
         else
         {
-            rank = _CalcRankByTimeSpend(ActionType.Calculation, 5);
-            rank += _CalcRankByTimeSpend(ActionType.Consultation, 5);
-            rank += _CalcRankByTimeSpend(ActionType.Negotiations, 10);
-            rank += _CalcRankByTimeSpend(ActionType.ProblemDiagnostics, 15);
-            rank += PresaleActions?.Where(a => a.Type is not ActionType.Calculation
-                                    and not ActionType.Consultation
-                                    and not ActionType.Negotiations
-                                    and not ActionType.ProblemDiagnostics
-                                    and not ActionType.Unknown)
-                            .Sum(a => a.Rank) ?? 0;
+            foreach(var actionType in PresaleAction.ActionTypes)
+            {
+                rank += actionType.Value.CalculationType switch
+                {
+                    ActionCalculationType.TimeSpend => _CalcRankByTimeSpend(actionType.Key, actionType.Value.MinRankTime),
+                    ActionCalculationType.Unique => _GetRankByActionType(actionType.Key, actionType.Value.Rank),
+                    ActionCalculationType.Sum => _GetRankByActionsSum(actionType.Key, actionType.Value.Rank),
+                    _ => 0,
+                };
+            }
 
             actionsTallied.UnionWith(counted);
         }
@@ -192,6 +191,13 @@ public class Project(string number) : Entity
         return time_spend % 60 >= minTimeToRank ?
             (int)Math.Ceiling(time_spend / 60d) : (int)Math.Round(time_spend / 60d);
     }
+
+    private int _GetRankByActionType(ActionType actionType, int r) =>
+        (PresaleActions?.Any(a => a.Type == actionType) ?? false) ? r : 0;
+
+    private int _GetRankByActionsSum(ActionType actionType, int rank) =>
+        PresaleActions?.Where(a => a.Type == actionType)
+        .Sum(a => actionType is ActionType.Unknown ? a.RegulationsRank : rank) ?? 0;
 
     public static async Task<(bool IsSuccess, string ErrorMessage)> SetFunnelStageAsync(FunnelStage newStage, string projectNumber)
     {

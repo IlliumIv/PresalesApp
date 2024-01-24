@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PresalesApp.Database;
@@ -11,9 +12,11 @@ using PresalesApp.Database;
 namespace PresalesApp.Database.Migrations
 {
     [DbContext(typeof(MigrationsEntryPoint.MigrationsContext))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240118100940_Actions_Add_Rank")]
+    partial class Actions_Add_Rank
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
