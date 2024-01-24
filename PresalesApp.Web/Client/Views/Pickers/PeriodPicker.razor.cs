@@ -130,7 +130,7 @@ namespace PresalesApp.Web.Client.Views.Pickers
 
             items_set = [.. result.OrderBy(x => x.Value)];
             selected_item = new(dt, dt.ToString(Helper.YearFormat).ToUpperFirstLetterString());
-            select.SetSelectedIndex(4);
+            select?.SetSelectedIndex(4);
 
             Period.Start = dt;
             Period.SetPeriodByType(PeriodType.Year);
