@@ -1,4 +1,5 @@
 ﻿@page "/testpage"
+@using pax.BlazorChartJs
 @layout Test
 
 <div class="d-flex">
@@ -11,6 +12,6 @@
 <PeriodPicker Period="@Period" PeriodChanged="_OnPeriodChanged" />
 <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=_CleanStorage>Clean Storage</RadzenButton>
 <div style="width: 500px;height: 500px">
-    <pax.BlazorChartJs.ChartComponent ChartJsConfig="_LineChartConfig" />
-    <pax.BlazorChartJs.ChartComponent ChartJsConfig="_PieChartConfig" />
+    <ChartComponent ChartJsConfig="_LineChartConfig" />
+    <ChartComponent ChartJsConfig="_PieChartConfig" />
 </div>
