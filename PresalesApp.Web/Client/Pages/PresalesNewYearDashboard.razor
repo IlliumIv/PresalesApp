@@ -1,6 +1,7 @@
 ﻿@page "/presales-ny-dashboard"
 @implements IDisposable
 @layout Infographic
+@using pax.BlazorChartJs
 
 <div class="layout">
     <div class="aeration-warning content" style="display: @_AerationWarning">
@@ -10,7 +11,7 @@
         </h2>
     </div>
     <div class="percent plan content">
-        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
+        <fieldset style="background-color: @($"rgba({ChartHelpers.Colors["DeepYellow"].R}, {ChartHelpers.Colors["DeepYellow"].G}, {ChartHelpers.Colors["DeepYellow"].B}, 0.1)")">
             <legend>@(_IsRealisticPlanDone() ? "Амбициозный" : "Реалистичный") план</legend>
             <div class="fs-content-layout">
                 <p class="fs-content">@_GetProgressPercentString(_Overview?.Presales.Sum(p => p.Statistics.Profit), _IsRealisticPlanDone() ? _Overview?.Plan : _Overview?.Actual ?? 1)</p>
@@ -21,7 +22,7 @@
         </fieldset>
     </div>
     <div class="day-profit plan content">
-        <fieldset style="background-color: @ChartColor.FromRgba(255, 206, 86, 0.1f).ToJsRgba()">
+        <fieldset style="background-color: @($"rgba({ChartHelpers.Colors["DeepYellow"].R}, {ChartHelpers.Colors["DeepYellow"].G}, {ChartHelpers.Colors["DeepYellow"].B}, 0.1)")">
             <legend>Прирост за день</legend>
             <div class="fs-content-layout">
                 <p class="fs-content">@Helper.ToCurrencyString(_DayProfit, shortFormat: true)</p>
@@ -32,7 +33,7 @@
         </fieldset>
     </div>
     <div class="chart content">
-        <LineChart @ref="_LineChart" TItem="decimal" OptionsJsonString="@_GetChartOptions()" />
+        <ChartComponent ChartJsConfig="_LineChartConfig" />
     </div>
     <div class="allocation content">
         <Carousel @bind-SelectedSlide="@_SelectedSlide" Interval="30000" ShowControls="false" ShowIndicators="false"
@@ -56,7 +57,7 @@
                                                   TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
                                 <Template>
                                     <div class="profit-layout">
-                                        <div class="profit-progress" style="width: @_GetProgressPercentString(context.Statistics.Profit, _Overview.Presales.Max(p => p.Statistics.Profit)); background-color: @ChartColor.FromRgba(12, 90, 74, 0.3f).ToJsRgba()"> &nbsp; </div>
+                                        <div class="profit-progress" style="width: @_GetProgressPercentString(context.Statistics.Profit, _Overview.Presales.Max(p => p.Statistics.Profit)); background-color: @($"rgba({ChartHelpers.Colors["DeepGreen"].R}, {ChartHelpers.Colors["DeepGreen"].G}, {ChartHelpers.Colors["DeepGreen"].B}, 0.1)")"> &nbsp; </div>
                                         <span class="profit">
                                             @Helper.ToCurrencyString(context.Statistics.Profit)
                                         </span>
@@ -88,7 +89,7 @@
                                                   TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
                                 <Template>
                                     <div class="profit-layout">
-                                        <div class="profit-progress" style="width: @_GetProgressPercentString(context.Statistics.InvoicesShipped, _Overview.Presales.Max(p => p.Statistics.InvoicesShipped)); background-color: @ChartColor.FromRgba(colors[_SortedPresales.IndexOf(context)].R, colors[_SortedPresales.IndexOf(context)].G, colors[_SortedPresales.IndexOf(context)].B, 0.3f).ToJsRgba()"> &nbsp; </div>
+                                        <div class="profit-progress" style="width: @_GetProgressPercentString(context.Statistics.InvoicesShipped, _Overview.Presales.Max(p => p.Statistics.InvoicesShipped)); background-color: @($"rgba({ChartHelpers.Colors.ElementAt(_SortedPresales.IndexOf(context)).Value.R}, {ChartHelpers.Colors.ElementAt(_SortedPresales.IndexOf(context)).Value.G}, {ChartHelpers.Colors.ElementAt(_SortedPresales.IndexOf(context)).Value.B}, 0.3)")"> &nbsp; </div>
                                         <span class="profit">
                                             @($"{context.Statistics.InvoicesShipped}")
                                         </span>
@@ -116,7 +117,7 @@
                         <RadzenDataGridColumn Property="Delay" Title="Отставание" TItem="_Arrival">
                             <Template>
                                 <div class="profit-layout">
-                                    <div class="profit-progress" style="width: @_GetProgressPercentString(context.Timestamp.TimeOfDay - _Arrivals.Min(a => a.Timestamp).TimeOfDay, _Arrivals.Max(a => a.Timestamp).TimeOfDay - _Arrivals.Min(a => a.Timestamp).TimeOfDay); background-color: @ChartColor.FromRgba(12, 90, 74, 0.3f).ToJsRgba()"> &nbsp; </div>
+                                    <div class="profit-progress" style="width: @_GetProgressPercentString(context.Timestamp.TimeOfDay - _Arrivals.Min(a => a.Timestamp).TimeOfDay, _Arrivals.Max(a => a.Timestamp).TimeOfDay - _Arrivals.Min(a => a.Timestamp).TimeOfDay); background-color: @($"rgba({ChartHelpers.Colors["DeepGreen"].R}, {ChartHelpers.Colors["DeepGreen"].G}, {ChartHelpers.Colors["DeepGreen"].B}, 0.1)")"> &nbsp; </div>
                                     <span class="profit">
                                         @(context.Timestamp - _Arrivals.First().Timestamp)
                                     </span>

@@ -1,5 +1,4 @@
-﻿using Blazorise.Charts;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using PresalesApp.Web.Client.Enums;
 using PresalesApp.Web.Client.Helpers;
@@ -7,6 +6,7 @@ using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
 using System.Globalization;
 using Google.Protobuf.WellKnownTypes;
+using pax.BlazorChartJs;
 
 namespace PresalesApp.Web.Client.Pages;
 
@@ -93,7 +93,7 @@ partial class PresalesNewYearDashboard
                 count = 0;
                 await _UpdateData();
                 await _UpdateImage();
-                await _RedrawChart();
+                _RedrawChart();
             }
 
             count++;
@@ -132,7 +132,7 @@ partial class PresalesNewYearDashboard
         }
         catch
         {
-            await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+            GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
             return;
         }
     }
@@ -187,7 +187,7 @@ partial class PresalesNewYearDashboard
         }
         catch
         {
-            await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+            GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
             return;
         }
     }
@@ -215,81 +215,17 @@ partial class PresalesNewYearDashboard
     }
 
     #region Charts
-    private static LineChart<decimal> _LineChart;
+    private readonly ChartJsConfig _LineChartConfig = ChartHelpers.GenerateChartConfig(ChartType.line);
 
     private static string _GetChartOptions() => "{\"aspectRatio\":2.43875, \"plugins\":{\"legend\":{\"display\": false}}}";
     private static string _GetInvoicesChartOptions() => "{\"cutout\":\"80%\",\"animation\":{\"animateScale\": true}}";
 
-    private static LineChartDataset<decimal> _GetChartDataset(List<decimal> data) => new()
+    private void _RedrawChart()
     {
-        Label = "Сумма",
-        Data = data,
-        BackgroundColor = GetColors(0.3f, max: 1),
-        BorderColor = GetColors(0.8f, max: 1),
-        Fill = true,
-        PointRadius = 1,
-    };
-
-    private static LineChartDataset<decimal> _GetRealisticPlanDataset(List<decimal> data) => new()
-    {
-        Label = "Реалистичный план",
-        Data = data,
-        BorderColor = GetColors(0.8f),
-        PointRadius = 0,
-    };
-
-    private static LineChartDataset<decimal> _GetAmbitiousPlanDataset(List<decimal> data) => new()
-    {
-        Label = "Амбициозный план",
-        Data = data,
-        BorderColor = GetColors(0.8f),
-        PointRadius = 0,
-    };
-
-    private static LineChartDataset<decimal> _GetMinPointDataset(decimal value) => new()
-    {
-        Label = "min point",
-        Data = [value],
-        PointRadius = 0,
-    };
-
-    #region Colors
-    private static readonly (byte R, byte G, byte B)[] colors = [(12, 90, 74),
-        (5, 47, 91),
-        (165, 14, 130),
-        (232, 125, 55),
-        (106, 158, 31),
-        (20, 150, 124),
-        (99, 8, 78),
-        (198, 35, 36),
-        (3, 28, 58)];
-
-    private static List<string> GetColors(float alfa, int max = int.MaxValue)
-    {
-        var r = new List<string>();
-
-        for (int i = 0; i < colors.Length && i < max; i++)
-        {
-            r.Add(ChartColor.FromRgba(colors[i].R, colors[i].G, colors[i].B, alfa));
-        }
-
-        return r;
-    }
-    #endregion
-
-    private async Task _RedrawChart()
-    {
-        if(_Overview == null)
-        {
-            return;
-        }
-
-        await _LineChart.Clear();
+        if(_Overview == null) return;
 
         var labels = new List<string>();
-        var profit = new List<decimal>();
-        var realistic_plan = new List<decimal>();
-        var ambitious_plan = new List<decimal>();
+        var profit = new List<object>();
         decimal amount = 0;
 
         foreach ((var date, var day_profit) in _Overview.Profit)
@@ -299,8 +235,6 @@ partial class PresalesNewYearDashboard
             amount += day_profit;
             labels.Add(dt.GetLocalizedDateNameByPeriodType(PeriodType.Day, Localization));
             profit.Add(amount);
-            realistic_plan.Add(_Overview.Actual);
-            ambitious_plan.Add(_Overview.Plan);
         }
 
         var invoices = new List<int>();
@@ -309,11 +243,14 @@ partial class PresalesNewYearDashboard
             invoices.Add(presale.Statistics.InvoicesShipped);
         }
 
-        await _LineChart.AddLabelsDatasetsAndUpdate(labels: labels,
-            _GetChartDataset(profit),
-            _GetRealisticPlanDataset(realistic_plan),
-            _GetAmbitiousPlanDataset(ambitious_plan),
-            _GetMinPointDataset(_Overview.Plan * (decimal)1.03));
+        _LineChartConfig.Update(labels: labels,
+            ChartHelpers.GetLineDataset(profit, "Сумма", "DeepGreen", 0.3f, 0.8f),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, _Overview.Actual),
+                "Реалистичный план", "DeepBlue", 0.3f, 0.8f, false, 0),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, _Overview.Plan),
+                "Амбициозный план", "DeepPurple", 0.3f, 0.8f, false, 0),
+            ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine(1, _Overview.Plan * (decimal)1.03)),
+                "min_point", null, null, null, false, 0));
     }
     #endregion
 
