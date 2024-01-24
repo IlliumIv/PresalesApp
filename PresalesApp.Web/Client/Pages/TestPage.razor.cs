@@ -83,7 +83,7 @@ partial class TestPage
         }
         catch(Exception e)
         {
-            await GlobalMsgHandler.Show(e.Message);
+            GlobalMsgHandler.Show(e.Message);
         }
 
         StateHasChanged();
