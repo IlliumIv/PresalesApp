@@ -37,8 +37,8 @@ public class Bridge1C(AppSettings appSettings)
                     Update update = typeof(T).Name switch
                     {
                         nameof(Project) => new ProjectsUpdate(),
-                        nameof(CacheLog) => new CacheLogsUpdate(),
-                        nameof(Invoice) => new CacheLog(DateTime.UtcNow),
+                        nameof(InvoicesCache) => new CacheLogsUpdate(),
+                        nameof(Invoice) => new InvoicesCache(DateTime.UtcNow),
                         _ => throw new NotImplementedException(),
                     };
 
@@ -124,8 +124,8 @@ public class Bridge1C(AppSettings appSettings)
         return typeof(T).Name switch
         {
             nameof(Project) => ("GetProjects", _GetPeriod<ProjectsUpdate>(ref update)),
-            nameof(CacheLog) => ("GetLog", _GetPeriod<CacheLogsUpdate>(ref update)),
-            nameof(Invoice) => ("GetInvoices", _GetPeriod<CacheLog>(ref update)),
+            nameof(InvoicesCache) => ("GetLog", _GetPeriod<CacheLogsUpdate>(ref update)),
+            nameof(Invoice) => ("GetInvoices", _GetPeriod<InvoicesCache>(ref update)),
             _ => throw new NotImplementedException()
         };
 
@@ -141,9 +141,9 @@ public class Bridge1C(AppSettings appSettings)
 
         update.Timestamp = to;
 
-        if (update.GetType().Name == nameof(CacheLog))
+        if (update.GetType().Name == nameof(InvoicesCache))
         {
-            if (previous_update is CacheLog cache_log)
+            if (previous_update is InvoicesCache cache_log)
             {
                 to = (cache_log.PeriodEnd - cache_log.SynchronizedTo).TotalDays > 1 ?
                     cache_log.SynchronizedTo.AddDays(1) : cache_log.PeriodEnd;
