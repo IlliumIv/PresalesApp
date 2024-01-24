@@ -88,7 +88,7 @@ namespace PresalesApp.Web.Client.Pages
 
             if (string.IsNullOrEmpty(_presale_name))
             {
-                await GlobalMsgHandler.Show($"{Localization["NeedSelectPresaleMessageText"]}");
+                GlobalMsgHandler.Show($"{Localization["NeedSelectPresaleMessageText"]}");
                 return;
             }
 
@@ -112,7 +112,7 @@ namespace PresalesApp.Web.Client.Pages
                 _ => ($"{Localization["UnknownServerResponseMessageText"]}", SnackbarColor.Danger)
             };
 
-            await GlobalMsgHandler.Show(message, color);
+            GlobalMsgHandler.Show(message, color);
             StateHasChanged();
         }
         #endregion

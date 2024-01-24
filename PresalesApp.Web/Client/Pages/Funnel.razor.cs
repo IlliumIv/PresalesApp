@@ -59,7 +59,7 @@ namespace PresalesApp.Web.Client.Pages
             }
             catch (Exception e)
             {
-                await GlobalMsgHandler.Show(e.Message);
+                GlobalMsgHandler.Show(e.Message);
             }
 
             StateHasChanged();
