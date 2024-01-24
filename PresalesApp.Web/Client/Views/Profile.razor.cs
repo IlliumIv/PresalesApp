@@ -41,7 +41,7 @@ namespace PresalesApp.Web.Client.Views
             }
             catch (Exception e)
             {
-                await GlobalMsgHandler.Show(e.Message);
+                GlobalMsgHandler.Show(e.Message);
             }
             _registerDisabled = false;
         }
@@ -62,7 +62,7 @@ namespace PresalesApp.Web.Client.Views
             }
             catch (Exception e)
             {
-                await GlobalMsgHandler.Show(e.Message);
+                GlobalMsgHandler.Show(e.Message);
             }
             _loginDisabled = false;
         }

@@ -73,7 +73,7 @@ namespace PresalesApp.Web.Client.Pages
             catch (Exception e)
             {
                 _btn_attrs = new() { { "disabled", "disabled" } };
-                await GlobalMsgHandler.Show(e.Message);
+                GlobalMsgHandler.Show(e.Message);
             }
             StateHasChanged();
         }

@@ -25,7 +25,7 @@ namespace PresalesApp.Web.Client.Views.Pickers
             }
             catch (Exception e)
             {
-                await GlobalMsgHandler.Show(e.Message);
+                GlobalMsgHandler.Show(e.Message);
             }
         }
 

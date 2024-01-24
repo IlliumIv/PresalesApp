@@ -70,7 +70,7 @@ public partial class FunnelStagePicker
         _SelectedStage = Project.FunnelStage;
         _Disabled = false;
 
-        await GlobalMsgHandler.Show(message, color);
+        GlobalMsgHandler.Show(message, color);
 
         if (isExpanded) { await DataGrid.ExpandRows(new Project[] { Project }); }
         await OnChange.InvokeAsync((FunnelStage)stage);

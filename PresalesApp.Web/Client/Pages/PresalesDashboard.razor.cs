@@ -115,7 +115,7 @@ namespace PresalesApp.Web.Client.Pages
             }
             catch
             {
-                await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+                GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
                 return;
             }
         }
@@ -133,7 +133,7 @@ namespace PresalesApp.Web.Client.Pages
             }
             catch
             {
-                await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+                GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
                 return;
             }
         }

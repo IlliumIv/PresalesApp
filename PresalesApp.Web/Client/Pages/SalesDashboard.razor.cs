@@ -98,12 +98,7 @@ namespace PresalesApp.Web.Client.Pages
                     Current = Current.Translate()
                 });
             }
-            catch
-            {
-                await GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
-                StateHasChanged();
-                return;
-            }
+            catch {  GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value); }
         }
 
         // private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = "happy new year", Orientation = ImageOrientation.Landscape });
@@ -143,15 +138,13 @@ namespace PresalesApp.Web.Client.Pages
         {
             if (Previous.Start > Previous.End)
             {
-                await GlobalMsgHandler.Show("Начало предыдущего периода должно быть меньше окончания!");
-                StateHasChanged();
+                GlobalMsgHandler.Show("Начало предыдущего периода должно быть меньше окончания!");
                 return;
             }
 
             if (Current.Start > Current.End)
             {
-                await GlobalMsgHandler.Show("Начало текущего периода должно быть меньше окончания!");
-                StateHasChanged();
+                GlobalMsgHandler.Show("Начало текущего периода должно быть меньше окончания!");
                 return;
             }
 
