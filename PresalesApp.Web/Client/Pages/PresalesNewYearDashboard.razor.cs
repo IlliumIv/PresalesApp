@@ -238,6 +238,9 @@ partial class PresalesNewYearDashboard
             invoices.Add(presale.Statistics.InvoicesShipped);
         }
 
+        // Plan lines always must be
+        if (labels.Count == 1) labels.Add(labels.First());
+
         _LineChartConfig.Update(labels: labels,
             ChartHelpers.GetLineDataset(profit, "Сумма", "DeepGreen", 0.3f, 0.8f),
             ChartHelpers.GetLineDataset(ChartHelpers.GenerateLine((ushort)labels.Count, (decimal)_Overview.Actual),
