@@ -52,7 +52,8 @@ partial class PresalesNewYearDashboard
     private readonly PeriodicTimer _PeriodicTimer = new(TimeSpan.FromSeconds(1));
     private string _AerationWarning = "none";
     private TimeSpan _TimeLeft = new(0, 10, 0);
-    private string _SelectedSlide = "_ProfitOverview";
+    private string _OverviewDisableClass = "";
+    private string _ArrivalDisableClass = "disable";
     private static bool _IsLate => DateTime.UtcNow.TimeOfDay > TimeSpan.FromHours(5);
     private static string _GetImageSrc(string imageBytes) => $"data:image/png;base64, {imageBytes}";
     private readonly CancellationTokenSource _ArrivalsStreamCancelTokenSource = new();
@@ -84,13 +85,22 @@ partial class PresalesNewYearDashboard
         var hour = new TimeSpan(1, 0, 0);
         while(await _PeriodicTimer.WaitForNextTickAsync())
         {
+            if (count % 30 == 0)
+            {
+                if (_IsLate || _ArrivalDisableClass == "")
+                {
+                    _ArrivalDisableClass = "disable";
+                    _OverviewDisableClass = "";
+                }
+                else
+                {
+                    _ArrivalDisableClass = "";
+                    _OverviewDisableClass = "disable";
+                }
+            }
+
             if(count > 600)
             {
-                if(_IsLate)
-                {
-                    _SelectedSlide = "_ProfitOverview";
-                }
-
                 count = 0;
                 await _UpdateData();
                 await _UpdateImage();
