@@ -118,11 +118,11 @@ namespace PresalesApp.Web.Client.Pages
             await UpdateData();
         }
 
-        private static string Format(Project project) =>
+        private static string _Format(Project project) =>
+            $"{(string.IsNullOrEmpty(project.Presale?.Name.GetFirstAndLastName()) ? "" : $"{project.Presale?.Name.GetFirstAndLastName()}, ")}" +
             $"{project.Number}, {project.Name}, " +
             $"{Helper.ToOneDateString(project.ApprovalByTechDirectorAt, project.ApprovalBySalesDirectorAt)}" +
-            $"{Helper.ToDateString(project.PresaleStartAt, " - ")}" +
-            $"{(string.IsNullOrEmpty(project.Presale?.Name.GetFirstAndLastName()) ? "" : $", {project.Presale?.Name.GetFirstAndLastName()}")}";
+            $"{Helper.ToDateString(project.PresaleStartAt, " - ")}";
 
         private async void RunTimer()
         {

@@ -92,7 +92,7 @@ else
             <summary>Проекты с нарушением пунктов 3.1 и 3.2 Регламента (просроченные): @_overview.Escalations.Count</summary>
             @foreach (var project in _overview.Escalations)
             {
-                <p>@Format(project)</p>
+                <p>@_Format(project)</p>
             }
         </details>
     }
@@ -102,7 +102,7 @@ else
             <summary>Проекты без отметки начала работы пресейлом (забытые): @_overview.Forgotten.Count</summary>
             @foreach (var project in _overview.Forgotten)
             {
-                <p>@Format(project)</p>
+                <p>@_Format(project)</p>
             }
         </details>
     }
@@ -112,7 +112,7 @@ else
             <summary>Новые проекты (ожидают распределения): @_overview.New.Count</summary>
             @foreach (var project in _overview.New)
             {
-                <p>@Format(project)</p>
+                <p>@_Format(project)</p>
             }
         </details>
     }
