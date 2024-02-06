@@ -179,6 +179,10 @@ legend {
     grid-row-end: 37;
 }
 
+::deep .disable {
+    display: none;
+}
+
 ::deep .pnyd-footer {
     text-align: right;
     font-size: inherit !important;
