@@ -540,8 +540,12 @@ public class ApiController(
             || value.CalculationTime.Month < DateTime.Now.Month
             || value.CalculationTime.Year < DateTime.Now.Year)
         {
-            var actual = _GetProfitStatistic(from.AddYears(-1), to.AddYears(-1), position, department, onlyActive)
-                    .Result.Profit.Values.Sum();
+            var calendar = new GregorianCalendar();
+
+            var actual = _GetProfitStatistic(
+                calendar.IsLeapDay(from.Year, from.Month, from.Day) ? from.AddYears(-1).AddDays(1) : from.AddYears(-1),
+                calendar.IsLeapDay(to.Year, to.Month, to.Day) ? to.AddYears(-1).AddDays(-1) : to.AddYears(-1),
+                position, department, onlyActive).Result.Profit.Values.Sum();
             _SalesTargetCache[(from, to)] = (Actual: actual, Target: actual * _Handicap, CalculationTime: DateTime.Now);
         }
 
