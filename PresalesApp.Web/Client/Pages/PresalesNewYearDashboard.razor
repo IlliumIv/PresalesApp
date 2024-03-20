@@ -16,7 +16,7 @@
             <div class="fs-content-layout">
                 <p class="fs-content">@_GetProgressPercentString(_Overview?.Presales.Sum(p => p.Statistics.Profit), _IsRealisticPlanDone() ? _Overview?.Plan : _Overview?.Actual ?? 1)</p>
                 <div class="fs-desc">
-                    <p>@Helper.ToCurrencyString(_Overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
+                    <p>@(_IsAmbitiousPlanDone() ? "План перевыполнен на: " : "До выполнения плана: ") @Helper.ToCurrencyString(Math.Abs((_Overview?.Profit.Values.Sum(amount => amount) ?? 0) - (_IsRealisticPlanDone() ? _Overview?.Plan : _Overview?.Actual ?? 1)), shortFormat: true, allowNegatives: true)</p>
                 </div>
             </div>
         </fieldset>
@@ -27,7 +27,7 @@
             <div class="fs-content-layout">
                 <p class="fs-content">@Helper.ToCurrencyString(_DayProfit, shortFormat: true)</p>
                 <div class="fs-desc">
-                    <p>@Helper.ToCurrencyString((_Overview?.Profit.Values.Sum(amount => amount) ?? 0) - (_IsRealisticPlanDone() ? _Overview?.Plan : _Overview?.Actual ?? 1), shortFormat: true, allowNegatives: true)</p>
+                    <p>Получено суммарно: @Helper.ToCurrencyString(_Overview?.Profit.Values.Sum(amount => amount) ?? 0, shortFormat: true)</p>
                 </div>
             </div>
         </fieldset>
