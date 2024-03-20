@@ -61,6 +61,7 @@ partial class PresalesNewYearDashboard
     private List<_Arrival> _Arrivals = [];
 
     private static bool _IsRealisticPlanDone() => (_Overview?.Profit.Values.Sum(amount => amount) ?? 0) > _Overview?.Actual;
+    private static bool _IsAmbitiousPlanDone() => (_Overview?.Profit.Values.Sum(amount => amount) ?? 0) > _Overview?.Plan;
     private static string _GetHeaderCellStyling() => "text-align: right";
     private static string _GetProgressPercentString(DecimalValue? a, DecimalValue? b) => $"{(decimal)a / (decimal)b * 100:N0}%";
     private static string _GetProgressPercentString(TimeSpan a, TimeSpan b) => $"{a / b * 100:N0}%";
