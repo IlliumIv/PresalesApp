@@ -93,19 +93,19 @@ legend {
 }
 
 .fs-desc {
-    grid-column-start: 2;
+    grid-column-start: 1;
     grid-column-end: 3;
     grid-row-start: 1;
     grid-row-end: 2;
     color: gray;
-    font-size: calc(2vw * 9/16);
+    font-size: calc(1.8vw * 9/16);
     display: flex;
     justify-content: end;
     align-items: start;
 }
 
 .fs-desc p {
-    margin: 0;
+    margin: -0.5em 0 0 0;
 }
 
 .percent {
