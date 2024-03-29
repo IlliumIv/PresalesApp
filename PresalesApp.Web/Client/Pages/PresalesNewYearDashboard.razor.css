@@ -143,10 +143,10 @@ legend {
     grid-column-end: 15;
     grid-row-start: 1;
     grid-row-end: 35;
-}
-
-.img-container img {
-    height: 100%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    margin: 5px 5px 0 0;
 }
 
 .img-credits, .allocation {

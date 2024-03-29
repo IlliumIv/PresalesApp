@@ -122,9 +122,7 @@
             </Columns>
         </RadzenDataGrid>
     </div>
-    <div class="img-container content">
-        <img src="@_Img?.Regular" alt="@_Img?.AltDescription" />
-    </div>
+    <div class="img-container content" style="background-image: url(@_Img?.Regular)" />
     <div class="img-credits content">
         <p>
             @((MarkupString)Localization["UnsplashCredits",
