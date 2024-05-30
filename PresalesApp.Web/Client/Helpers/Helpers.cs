@@ -89,6 +89,9 @@ namespace PresalesApp.Web.Client.Helpers
         public static string ToPercentString(this double value, int digits = 0) =>
             value == 0 ? "" : string.Format($"{{0:P{digits}}}", value);
 
+        public static string ToPercentString(this decimal value, int digits = 0) =>
+            value == 0 ? "" : string.Format($"{{0:P{digits}}}", value);
+
         public static string ToDaysString(TimeSpan avgTTW) => avgTTW == TimeSpan.Zero ? "" : $"{avgTTW.TotalDays:f0}";
 
         public static string ToMinutesString(TimeSpan avgTTR) => avgTTR == TimeSpan.Zero ? "" : $"{avgTTR.TotalMinutes:f0}";
