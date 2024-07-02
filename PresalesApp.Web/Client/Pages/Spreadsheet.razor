@@ -86,6 +86,16 @@ else
     {
         <p>Среднее время реакции руководителя (среднее время до назначения) в минутах: @Helper.ToMinutesString(_overview.AvgDirectorTimeToReaction.ToTimeSpan())</p>
     }
+    @if (_overview.Waiting.Count > 0)
+    {
+        <details class="pmspoiler">
+            <summary>Проекты, ожидающие реакции пресейла: @_overview.Waiting.Count</summary>
+            @foreach (var project in _overview.Waiting)
+            {
+                <p>@_Format(project)</p>
+            }
+        </details>
+    }
     @if (_overview.Escalations.Count > 0)
     {
         <details class="pmspoiler">

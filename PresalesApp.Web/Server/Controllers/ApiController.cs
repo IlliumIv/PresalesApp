@@ -444,6 +444,14 @@ public class ApiController(
             reply.New.Add(proj.Translate());
         }
         #endregion
+        #region Проекты, ожидающие реакции пресейла
+        foreach(var proj in projects
+                .Where(p => p.ApprovalByTechDirectorAt >= from && p.ApprovalByTechDirectorAt <= to)
+                .Where(p => p.PresaleStartAt == DateTime.MinValue))
+        {
+            reply.Waiting.Add(proj.Translate());
+        }
+        #endregion
         #region Среднее время реакции руководителя
         reply.AvgDirectorTimeToReaction = Duration.FromTimeSpan(TimeSpan.FromMinutes(projects?
             .Where(p => p.ApprovalBySalesDirectorAt >= from && p.ApprovalBySalesDirectorAt <= to)?

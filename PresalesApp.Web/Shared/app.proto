@@ -184,6 +184,7 @@ message Overview {
 	repeated Project escalations = 4;
 	repeated Project forgotten = 5;
 	repeated Project new = 6;
+	repeated Project waiting = 7;
 }
 
 message Presale {
