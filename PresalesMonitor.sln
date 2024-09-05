@@ -51,10 +51,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		RESX_ShowErrorsInErrorList = False
-		RESX_TaskErrorCategory = Message
-		RESX_ExcelExportMode = MultipleSheets
-		SolutionGuid = {17F5E084-7F1B-401C-AC9B-8962A8CF066F}
 		RESX_NeutralResourcesLanguage = ru-RU
+		SolutionGuid = {17F5E084-7F1B-401C-AC9B-8962A8CF066F}
+		RESX_ExcelExportMode = MultipleSheets
+		RESX_TaskErrorCategory = Message
+		RESX_ShowErrorsInErrorList = False
 	EndGlobalSection
 EndGlobal
