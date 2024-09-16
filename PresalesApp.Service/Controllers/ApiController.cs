@@ -23,6 +23,8 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
         new ("Бузмаков", "Андрей"),
         new ("Гущин", "Антон"),
         new ("Попов", "Александр"),
+        new ("Мочалов", "Александр"),
+        new ("Латышев", "Никита"),
     ];
 
     public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
