@@ -156,7 +156,9 @@ partial class PresalesNewYearDashboard
 
     private async void _ArrivalsStream(CancellationToken token)
     {
-        while(true && !_IsLate && !token.IsCancellationRequested)
+        var timeout = DateTime.Now.AddMinutes(-5);
+
+        while(timeout.AddMinutes(5) < DateTime.Now && !_IsLate && !token.IsCancellationRequested)
         {
             try
             {
@@ -169,6 +171,8 @@ partial class PresalesNewYearDashboard
             {
                 Console.WriteLine(e.Message);
             }
+
+            timeout = DateTime.Now;
         }
     }
 
