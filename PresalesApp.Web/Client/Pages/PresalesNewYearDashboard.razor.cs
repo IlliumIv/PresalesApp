@@ -66,7 +66,7 @@ partial class PresalesNewYearDashboard
     private static string _GetProgressPercentString(DecimalValue? a, DecimalValue? b)
     {
         var d = (decimal)a / (decimal)b * 100;
-        return string.Format($"{{0:N{(d is > ((decimal)0.99) and < 1 ? 2 : 0)}}}%", d);
+        return string.Format($"{{0:N0}}%", d);
     }
 
     private static string _GetProgressPercentString(TimeSpan a, TimeSpan b) => $"{a / b * 100:N0}%";

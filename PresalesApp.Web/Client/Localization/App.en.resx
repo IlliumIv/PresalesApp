@@ -345,4 +345,7 @@
   <data name="DataGridItemsPerPageText" xml:space="preserve">
     <value>items per page</value>
   </data>
+  <data name="PresalesNYDashboardPage" xml:space="preserve">
+    <value>Presales dashboard</value>
+  </data>
 </root>

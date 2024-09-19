@@ -426,4 +426,7 @@
   <data name="DataGridItemsPerPageText" xml:space="preserve">
     <value>записей на странице</value>
   </data>
+  <data name="PresalesNYDashboardPage" xml:space="preserve">
+    <value>Инфографика пресейлов</value>
+  </data>
 </root>
