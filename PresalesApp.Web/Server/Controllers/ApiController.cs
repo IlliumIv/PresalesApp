@@ -19,6 +19,7 @@ using AppApi = PresalesApp.Web.Shared.Api;
 using Department = PresalesApp.Database.Enums.Department;
 using Position = PresalesApp.Database.Enums.Position;
 using Project = PresalesApp.Database.Entities.Project;
+using Presale = PresalesApp.Database.Entities.Presale;
 using ProjectStatus = PresalesApp.Database.Enums.ProjectStatus;
 
 namespace PresalesApp.Web.Controllers;
@@ -41,6 +42,24 @@ public class ApiController(
     {
         { (new(2023, 10, 1, 0, 0, 0), new (2023, 12, 31, 23, 59, 59)), (Actual: 120_000_000, Target: 150_000_000, CalculationTime: DateTime.Now) }
     };
+
+    private static double _GetPercent(int rank, DateTime from, Presale? presale) => 
+        (presale is not null && presale.Name.Contains("Латышев") && presale.Name.Contains("Никита"))
+            || from >= new DateTime(2024, 11, 1).ToUniversalTime()
+            ? rank switch
+            {
+                int n when n is >= 1 and <= 3 => .003,
+                int n when n is >= 4 and <= 6 => .005,
+                int n when n >= 7 => .007,
+                _ => 0,
+            }
+            : rank switch
+            {
+                int n when n is >= 1 and <= 3 => .004,
+                int n when n is >= 4 and <= 6 => .007,
+                int n when n >= 7 => .01,
+                _ => 0,
+            };
 
     private static string _CachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
 
@@ -207,17 +226,9 @@ public class ApiController(
             var startAt = invoice.Project?.PresaleStartAt is null ? DateTime.MinValue : invoice.Project.PresaleStartAt;
             var dtToCompare = startAt > DateTime.MinValue.AddDays(180) ? startAt.AddDays(-180) : DateTime.MinValue;
 
-            int rank = invoice.Project is null ? 0 : invoice.Project.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound, dtToCompare);
-            double percent = rank switch
-            {
-                int n when n is >= 1 and <= 3 => .004,
-                int n when n is >= 4 and <= 6 => .007,
-                int n when n >= 7 => .01,
-                _ => 0,
-            };
-
-            decimal profit = invoice.GetProfit(from, to);
-
+            var rank = invoice.Project is null ? 0 : invoice.Project.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound, dtToCompare);
+            var percent = _GetPercent(rank, from, invoice.Presale);
+            var profit = invoice.GetProfit(from, to);
             var invoiceReply = invoice.Translate();
 
             invoiceReply.Cost = DecimalValue.FromDecimal(invoice.Amount - profit);
