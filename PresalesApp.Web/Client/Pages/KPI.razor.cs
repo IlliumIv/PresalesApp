@@ -18,6 +18,7 @@ namespace PresalesApp.Web.Client.Pages
         private Period _period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
         private string _presale_name = string.Empty;
         private Kpi? _response;
+        private KpiCalculation _KpiCalculationType = KpiCalculation.Default;
         #endregion
 
         #region UriQuery
@@ -33,12 +34,16 @@ namespace PresalesApp.Web.Client.Pages
         private const string q_presale = "Presale";
         [SupplyParameterFromQuery(Name = q_presale)] public string? PresaleName { get; set; }
 
+        private const string q_method = "Method";
+        [SupplyParameterFromQuery(Name = q_method)] public string? CalculationMethod { get; set; }
+
         private Dictionary<string, object?> GetQueryKeyValues() => new()
         {
             [q_start] = _period.Start.ToString(Helper.UriDateTimeFormat),
             [q_end] = _period.End.ToString(Helper.UriDateTimeFormat),
             [q_period_type] = _period.Type.ToString(),
             [q_presale] = _presale_name,
+            [q_method] = _KpiCalculationType.ToString(),
         };
         #endregion
 
@@ -48,6 +53,7 @@ namespace PresalesApp.Web.Client.Pages
             Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _period.End);
             Helper.SetFromQueryOrStorage(value: PeriodType, query: q_period_type, uri: Navigation.Uri, storage: Storage, param: ref _period.Type);
             Helper.SetFromQueryOrStorage(value: PresaleName, query: q_presale, uri: Navigation.Uri, storage: Storage, param: ref _presale_name);
+            Helper.SetFromQueryOrStorage(value: CalculationMethod, query: q_method, uri: Navigation.Uri, storage: Storage, param: ref _KpiCalculationType);
 
             Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
             await GenerateReport();
@@ -79,6 +85,16 @@ namespace PresalesApp.Web.Client.Pages
             await GenerateReport();
         }
 
+        private async Task OnCalcMethodChanged(KpiCalculation method)
+        {
+            _KpiCalculationType = method;
+
+            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_method}", _KpiCalculationType);
+            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
+
+            await GenerateReport();
+        }
+
         private async Task DownloadReport() => await _response.Download(js, _presale_name, _period, Localization);
 
         private async Task GenerateReport()
@@ -95,7 +111,8 @@ namespace PresalesApp.Web.Client.Pages
             var response = await AppApi.GetKpiAsync(new KpiRequest
             {
                 PresaleName = _presale_name,
-                Period = _period.Translate()
+                Period = _period.Translate(),
+                KpiCalculationType = _KpiCalculationType
             });
 
             if (response.ResultCase == KpiResponse.ResultOneofCase.Kpi)
