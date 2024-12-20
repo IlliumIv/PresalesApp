@@ -6,7 +6,7 @@
 <h1>@Localization["KpiPage"]</h1>
 <div class="d-flex">
     <PresalePicker SelectedPresale="@_presale_name" OnSelectCallback="OnPresaleChanged" />
-    <PeriodPicker Period="@_period" PeriodChanged="OnPeriodChanged" />
+    <PeriodPicker Period="@_period" PeriodChanged="OnPeriodChanged" ExcludePeriods="@_ExcludedPeriods" />
     <label>@Localization["KpiCalculationTypeLabel"]</label>
     <KpiCalculationTypePicker KpiCalculationType="@_KpiCalculationType" OnSelectCallback="OnCalcMethodChanged" />
     <Button Disabled="@_is_btn_disabled" Color="Color.Dark" Clicked="DownloadReport">@Localization["DownloadReportButtonText"]</Button>
