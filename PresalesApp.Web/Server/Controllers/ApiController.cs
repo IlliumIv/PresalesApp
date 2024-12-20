@@ -43,10 +43,8 @@ public class ApiController(
         { (new(2023, 10, 1, 0, 0, 0), new (2023, 12, 31, 23, 59, 59)), (Actual: 120_000_000, Target: 150_000_000, CalculationTime: DateTime.Now) }
     };
 
-    private static double _GetPercent(int rank, DateTime from, Presale? presale) => 
-        (presale is not null && presale.Name.Contains("Латышев") && presale.Name.Contains("Никита"))
-            || from >= new DateTime(2024, 11, 1).ToUniversalTime()
-            ? rank switch
+    private static double _GetPercent(int rank, DateTime from, Presale? presale) =>
+        _ShouldFitOrder26(from, presale) ? rank switch
             {
                 int n when n is >= 1 and <= 3 => .003,
                 int n when n is >= 4 and <= 6 => .005,
@@ -60,6 +58,9 @@ public class ApiController(
                 int n when n >= 7 => .01,
                 _ => 0,
             };
+
+    private static bool _ShouldFitOrder26(DateTime from, Presale? presale) => (presale is not null && presale.Name.Contains("Латышев") && presale.Name.Contains("Никита"))
+            || from >= new DateTime(2024, 11, 1).ToUniversalTime();
 
     private static string _CachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
 
@@ -218,6 +219,8 @@ public class ApiController(
 
         var reply = new Kpi();
 
+        Dictionary<Project, decimal> ограничитель_дохуя_большой_зарплаты = [];
+
         foreach(var invoice in invoices.OrderBy(i => (int)i.Counterpart[0]).ThenBy(i => i.Counterpart).ThenBy(i => i.Number))
         {
             HashSet<PresaleAction> actionsIgnored = [], actionsTallied = [];
@@ -234,7 +237,23 @@ public class ApiController(
             invoiceReply.Cost = DecimalValue.FromDecimal(invoice.Amount - profit);
             invoiceReply.SalesAmount = DecimalValue.FromDecimal(profit);
             invoiceReply.Percent = percent;
-            invoiceReply.Profit = DecimalValue.FromDecimal(profit * (decimal)percent);
+            var invoiceSalary = profit * (decimal)percent;
+
+            if(invoice.Project is not null)
+            {
+                if(!ограничитель_дохуя_большой_зарплаты.ContainsKey(invoice.Project))
+                    ограничитель_дохуя_большой_зарплаты.Add(invoice.Project, 0);
+            }
+
+            if (invoice.Project is not null && ограничитель_дохуя_большой_зарплаты.TryGetValue(invoice.Project, out var projSalary))
+            {
+                ограничитель_дохуя_большой_зарплаты[invoice.Project] = ограничитель_дохуя_большой_зарплаты[invoice.Project] + invoiceSalary;
+                var слишком_дохуя = ограничитель_дохуя_большой_зарплаты[invoice.Project] > 100_000;
+                if(слишком_дохуя && _ShouldFitOrder26(from, invoice.Presale))
+                    invoiceSalary -= ограничитель_дохуя_большой_зарплаты[invoice.Project] - 100_000;
+            }
+
+            invoiceReply.Profit = DecimalValue.FromDecimal(invoiceSalary);
             invoiceReply.Rank = rank;
 
             foreach(var inv in projectsIgnored.OrderBy(p => p.Number))
