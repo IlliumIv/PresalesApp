@@ -1,6 +1,7 @@
 ﻿using Blazorise.DataGrid;
 using Blazorise.Snackbar;
 using Microsoft.AspNetCore.Components;
+using PresalesApp.Web.Client.Enums;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
 using PresalesApp.Web.Shared;
@@ -19,6 +20,14 @@ namespace PresalesApp.Web.Client.Pages
         private string _presale_name = string.Empty;
         private Kpi? _response;
         private KpiCalculation _KpiCalculationType = KpiCalculation.Default;
+        private HashSet<PeriodType> _ExcludedPeriods =
+        [
+            Enums.PeriodType.Day,
+            Enums.PeriodType.Quarter,
+            Enums.PeriodType.Year,
+            Enums.PeriodType.Arbitrary,
+        ];
+
         #endregion
 
         #region UriQuery
