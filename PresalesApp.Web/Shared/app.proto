@@ -126,6 +126,7 @@ message ImageResponse {
 message KpiRequest{
 	string presale_name = 1;
 	Period period = 2;
+	enums.KpiCalculation kpi_calculation_type = 3;
 }
 
 message KpiResponse {

@@ -43,8 +43,8 @@ public class ApiController(
         { (new(2023, 10, 1, 0, 0, 0), new (2023, 12, 31, 23, 59, 59)), (Actual: 120_000_000, Target: 150_000_000, CalculationTime: DateTime.Now) }
     };
 
-    private static double _GetPercent(int rank, DateTime from, Presale? presale) =>
-        _ShouldFitOrder26(from, presale) ? rank switch
+    private static double _GetPercent(int rank, DateTime from, Presale? presale, KpiCalculation calculationType) =>
+        _ShouldFitOrder26(from, presale, calculationType) ? rank switch
             {
                 int n when n is >= 1 and <= 3 => .003,
                 int n when n is >= 4 and <= 6 => .005,
@@ -59,8 +59,15 @@ public class ApiController(
                 _ => 0,
             };
 
-    private static bool _ShouldFitOrder26(DateTime from, Presale? presale) => (presale is not null && presale.Name.Contains("Латышев") && presale.Name.Contains("Никита"))
-            || from >= new DateTime(2024, 11, 1).ToUniversalTime();
+    private static bool _ShouldFitOrder26(DateTime from, Presale? presale, KpiCalculation calculationType) =>
+        calculationType switch
+        {
+            KpiCalculation.Default => (presale is not null && presale.Name.Contains("Латышев") && presale.Name.Contains("Никита"))
+                || from >= new DateTime(2024, 11, 1).ToUniversalTime(),
+            KpiCalculation.PreOrder26 => false,
+            KpiCalculation.PostOrder26 => true,
+            _ => throw new NotImplementedException()
+        };
 
     private static string _CachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
 
@@ -230,7 +237,7 @@ public class ApiController(
             var dtToCompare = startAt > DateTime.MinValue.AddDays(180) ? startAt.AddDays(-180) : DateTime.MinValue;
 
             var rank = invoice.Project is null ? 0 : invoice.Project.Rank(ref actionsIgnored, ref actionsTallied, ref projectsIgnored, ref projectsFound, dtToCompare);
-            var percent = _GetPercent(rank, from, invoice.Presale);
+            var percent = _GetPercent(rank, from, invoice.Presale, request.KpiCalculationType);
             var profit = invoice.GetProfit(from, to);
             var invoiceReply = invoice.Translate();
 
@@ -249,7 +256,7 @@ public class ApiController(
             {
                 ограничитель_дохуя_большой_зарплаты[invoice.Project] = ограничитель_дохуя_большой_зарплаты[invoice.Project] + invoiceSalary;
                 var слишком_дохуя = ограничитель_дохуя_большой_зарплаты[invoice.Project] > 100_000;
-                if(слишком_дохуя && _ShouldFitOrder26(from, invoice.Presale))
+                if(слишком_дохуя && _ShouldFitOrder26(from, invoice.Presale, request.KpiCalculationType))
                     invoiceSalary -= ограничитель_дохуя_большой_зарплаты[invoice.Project] - 100_000;
             }
 

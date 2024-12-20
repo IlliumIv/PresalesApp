@@ -348,4 +348,16 @@
   <data name="PresalesNYDashboardPage" xml:space="preserve">
     <value>Presales dashboard</value>
   </data>
+  <data name="KpiCalculationTypeDefaultText" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="KpiCalculationTypePreOrder26Text" xml:space="preserve">
+    <value>Pre Order 26</value>
+  </data>
+  <data name="KpiCalculationTypePostOrder26Text" xml:space="preserve">
+    <value>Post Order 26</value>
+  </data>
+  <data name="KpiCalculationTypeLabel" xml:space="preserve">
+    <value>Calculation method:</value>
+  </data>
 </root>

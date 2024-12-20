@@ -276,6 +276,14 @@ namespace PresalesApp.Web.Client.Helpers
             _ => throw new NotImplementedException()
         };
 
+        public static string GetLocalizedName(this KpiCalculation kpiCalculationType, IStringLocalizer<App> localization) => kpiCalculationType switch
+        {
+            KpiCalculation.Default => localization["KpiCalculationTypeDefaultText"],
+            KpiCalculation.PreOrder26 => localization["KpiCalculationTypePreOrder26Text"],
+            KpiCalculation.PostOrder26 => localization["KpiCalculationTypePostOrder26Text"],
+            _ => throw new NotImplementedException()
+        };
+
         // TODO: Реализовать поддержку рабочего времени пресейла.
         public static DateTime ToPresaleTime(this DateTime dateTime)
         {

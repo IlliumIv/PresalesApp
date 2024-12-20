@@ -429,4 +429,16 @@
   <data name="PresalesNYDashboardPage" xml:space="preserve">
     <value>Инфографика пресейлов</value>
   </data>
+  <data name="KpiCalculationTypeDefaultText" xml:space="preserve">
+    <value>По умолчанию</value>
+  </data>
+  <data name="KpiCalculationTypePreOrder26Text" xml:space="preserve">
+    <value>До приказа 26</value>
+  </data>
+  <data name="KpiCalculationTypePostOrder26Text" xml:space="preserve">
+    <value>После приказа 26</value>
+  </data>
+  <data name="KpiCalculationTypeLabel" xml:space="preserve">
+    <value>Метод расчёта:</value>
+  </data>
 </root>
