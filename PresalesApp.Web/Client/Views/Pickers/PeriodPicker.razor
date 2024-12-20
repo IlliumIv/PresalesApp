@@ -2,7 +2,7 @@
 @using PresalesApp.Web.Client.Enums
 @using PresalesApp.Web.Client.Views.Pickers.DropDown
 
-<RadzenDropDown Data=@(System.Enum.GetValues(typeof(PeriodType)).Cast<PeriodType>())
+<RadzenDropDown Data=@(System.Enum.GetValues(typeof(PeriodType)).Cast<PeriodType>().Where(p => !ExcludePeriods.Contains(p)))
                 @bind-Value=@(Period.Type) Change="SelectedPeriodChanged">
     <Template>
         @(((PeriodType)context).GetLocalizedName(Localization))
