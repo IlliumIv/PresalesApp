@@ -18,6 +18,9 @@ namespace PresalesApp.Web.Client.Views.Pickers
         [Parameter]
         public EventCallback<Period> PeriodChanged { get; set; }
 
+        [Parameter]
+        public HashSet<PeriodType> ExcludePeriods { get; set; } = [];
+
         protected override void OnInitialized() => GenerateItemsSet(Period.Start, false);
 
         protected async Task SelectedItemChanged(object item)
