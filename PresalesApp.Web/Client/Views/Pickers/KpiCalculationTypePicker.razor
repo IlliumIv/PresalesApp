@@ -1,0 +1,10 @@
+﻿@using Enum = System.Enum
+@using KpiCalculation = PresalesApp.Web.Shared.KpiCalculation
+
+<select title="Тип расчёта" value="@KpiCalculationType" @onchange="_OnPositionChanged" class="form-select form-select-combobox">
+    <option selected="@KpiCalculationType"></option>
+    @foreach (KpiCalculation type in Enum.GetValues(typeof(KpiCalculation)))
+    {
+        <option value="@type">@type.GetLocalizedName(Localization)</option>
+    }
+</select>
