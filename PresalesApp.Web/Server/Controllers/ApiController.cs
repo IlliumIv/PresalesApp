@@ -257,7 +257,10 @@ public class ApiController(
                 ограничитель_дохуя_большой_зарплаты[invoice.Project] = ограничитель_дохуя_большой_зарплаты[invoice.Project] + invoiceSalary;
                 var слишком_дохуя = ограничитель_дохуя_большой_зарплаты[invoice.Project] > 100_000;
                 if(слишком_дохуя && _ShouldFitOrder26(from, invoice.Presale, request.KpiCalculationType))
+                {
                     invoiceSalary -= ограничитель_дохуя_большой_зарплаты[invoice.Project] - 100_000;
+                    invoiceSalary = invoiceSalary < 0 ? 0 : invoiceSalary;
+                }
             }
 
             invoiceReply.Profit = DecimalValue.FromDecimal(invoiceSalary);
