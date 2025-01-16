@@ -1,0 +1,50 @@
+﻿::deep .rz-dropdown {
+    background-color: transparent;
+    box-shadow: rgb(33, 33, 33) 0px 0px 0px 1px inset !important;
+    border: none !important;
+}
+
+::deep .rz-dropdown:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+    box-shadow: rgb(33, 33, 33) 0px 0px 0px 1px inset !important;
+    border: none !important;
+}
+
+.layout-header {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: flex-end;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.layout-header ::deep a, .layout-header ::deep .btn-link {
+    white-space: nowrap;
+    margin-left: 1.5rem;
+    text-decoration: none;
+}
+
+.layout-header ::deep a:hover, .layout-header ::deep .btn-link:hover {
+    text-decoration: underline;
+}
+
+.layout-header ::deep a:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+::deep button {
+    text-transform: initial;
+    font-weight: initial;
+    font-size: 16px;
+    letter-spacing: initial;
+}
+
+::deep button span {
+    line-height: 1.1rem !important;
+}
+
+.version {
+    margin-right: auto;
+}

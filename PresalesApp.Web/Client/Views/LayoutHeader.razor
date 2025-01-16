@@ -1,0 +1,14 @@
+﻿@using System.Reflection
+
+@inject IJSRuntime js
+
+<div class="layout-header px-4 d-flex">
+    <div class="version">v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
+    <Profile />
+    <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
+                  Click=@(async () => await js.InvokeAsync<object>("open", new []
+                  { "https://git.127.0.0.1/polyakov/PresalesApp/issues/new", "_blank" }))>
+        @Localization["SuggestImprovementsButtonText"]
+    </RadzenButton>
+    <CulturePicker />
+</div>

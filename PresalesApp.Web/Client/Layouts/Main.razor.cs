@@ -1,9 +1,8 @@
 ﻿using PresalesApp.Web.Client.Views;
 
-namespace PresalesApp.Web.Client.Layouts
+namespace PresalesApp.Web.Client.Layouts;
+
+public partial class Main
 {
-    public partial class Main
-    {
-        private MessageSnackbar GlobalMsgHandler = new();
-    }
+    private MessageSnackbar _GlobalMsgHandler = new();
 }
