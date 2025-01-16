@@ -150,3 +150,22 @@ html, body * {
 .rz-grid-table td .rz-cell-data {
     font-size: inherit !important;
 }
+
+input {
+    accent-color: #212529;
+}
+
+.rz-dropdown {
+    height: 36px !important;
+    padding: 5px 15px !important;
+}
+
+select {
+    height: 36px !important;
+    border-radius: 4px !important;
+    border-color: rgb(189, 189, 189) !important;
+}
+
+select:hover {
+    border-color: rgb(33, 33, 33) !important;
+}
