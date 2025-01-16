@@ -1,9 +1,6 @@
 ﻿@using System.Globalization
+@using PresalesApp.Web.Client.Views.Pickers.DropDown
 @using Enum = System.Enum
 
-<select value="@CultureInfo.CurrentCulture" @onchange="((ChangeEventArgs e) => OnChanged(e?.Value))" class="form-select form-select-combobox ">
-    @foreach (CultureInfo culture in _supportedCultures)
-    {
-        <option value="@culture">@culture.NativeName</option>
-    }
-</select>
+<CustomRadzenDropDown Data=@_SupportedCultures @bind-Value=@_Item
+                        TextProperty="Text" Change="@SelectedItemChanged" />
