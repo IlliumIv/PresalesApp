@@ -17,20 +17,20 @@ public static class ServicesConfiguration
     public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
     {
         var appSettings = new AppSettings(builder.Configuration);
-        _ = builder.Services.AddScoped(s => appSettings);
+        builder.Services.AddScoped(s => appSettings);
 
         DbController.Configure(appSettings);
 
-        _ = builder.Logging.ClearProviders();
-        _ = builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
+        builder.Logging.ClearProviders();
+        builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
 
-        _ = builder.Services.AddControllersWithViews();
-        _ = builder.Services.AddRazorPages();
-        _ = builder.Services.AddScoped<DialogService>();
-        _ = builder.Services.AddScoped<NotificationService>();
-        _ = builder.Services.AddScoped<TooltipService>();
-        _ = builder.Services.AddScoped<ContextMenuService>();
-        _ = builder.Services.AddSingleton(sp =>
+        builder.Services.AddControllersWithViews();
+        builder.Services.AddRazorPages();
+        builder.Services.AddScoped<DialogService>();
+        builder.Services.AddScoped<NotificationService>();
+        builder.Services.AddScoped<TooltipService>();
+        builder.Services.AddScoped<ContextMenuService>();
+        builder.Services.AddSingleton(sp =>
         {
             // Get the address that the app is currently running at
             var server = sp.GetRequiredService<IServer>();
@@ -39,18 +39,20 @@ public static class ServicesConfiguration
             return new HttpClient { BaseAddress = new Uri(baseAddress) };
         });
 
-        _ = builder.Services.AddGrpc();
 
-        _ = builder.Services.AddDbContext<UsersContext>();
 
-        _ = builder.Services.AddIdentity<User, IdentityRole>()
+        builder.Services.AddGrpc();
+
+        builder.Services.AddDbContext<UsersContext>();
+
+        builder.Services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<UsersContext>()
             .AddDefaultTokenProviders();
 
         var tokenParams = new TokenParameters(appSettings);
-        _ = builder.Services.AddSingleton(tokenParams);
+        builder.Services.AddSingleton(tokenParams);
 
-        _ = builder.Services.AddAuthentication(options =>
+        builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -62,7 +64,7 @@ public static class ServicesConfiguration
             options.SecurityTokenValidators.Add(new JwtTokenValidator(tokenParams));
         });
 
-        _ = builder.Services.Configure<IdentityOptions>(options =>
+        builder.Services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequiredLength = 6;
             options.Password.RequireNonAlphanumeric = false;
@@ -85,7 +87,7 @@ public static class ServicesConfiguration
         });
         //*/
 
-        _ = builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization();
 
         return builder;
     }

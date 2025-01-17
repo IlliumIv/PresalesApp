@@ -44,11 +44,6 @@
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
-    <Protobuf Include="enums.proto" />
-	<Protobuf Include="app.proto" />
-	<Protobuf Include="bridge.proto" />
-	<Protobuf Include="identity.proto" />
-	<Protobuf Include="types.proto" />
   </ItemGroup>
 
 </Project>
