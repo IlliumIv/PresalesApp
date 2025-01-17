@@ -22,7 +22,7 @@ public partial class AddRole
     {
         try
         {
-            _ = await ApiClient.CreateRoleAsync(Role);
+            await ApiClient.CreateRoleAsync(Role);
             DialogService.Close(Role);
         }
         catch(Exception)

@@ -1,5 +1,4 @@
-﻿using Blazorise;
-using Blazorise.Extensions;
+﻿using Blazorise.Extensions;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -15,26 +14,28 @@ using System.Globalization;
 using System.Linq.Dynamic.Core;
 using System.Security.Authentication;
 using static PresalesApp.Database.DbController;
-using AppApi = PresalesApp.Web.Shared.Api;
+using Api = PresalesApp.Web.Shared.Api;
 using Department = PresalesApp.Database.Enums.Department;
 using Position = PresalesApp.Database.Enums.Position;
 using Project = PresalesApp.Database.Entities.Project;
 using Presale = PresalesApp.Database.Entities.Presale;
 using ProjectStatus = PresalesApp.Database.Enums.ProjectStatus;
 
-namespace PresalesApp.Web.Controllers;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace PresalesApp.Web.Services;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 [Authorize]
-public class ApiController(
-    RoleManager<IdentityRole> roleManager,
-    UserManager<User> userManager,
-    TokenParameters tokenParameters,
-    ILogger<ApiController> logger) : AppApi.ApiBase
+public class ApiService(RoleManager<IdentityRole> roleManager,
+                        UserManager<User> userManager,
+                        TokenParameters tokenParameters,
+                        ILogger<ApiService> logger)
+    : Api.ApiBase
 {
     private readonly RoleManager<IdentityRole> _RoleManager = roleManager;
     private readonly UserManager<User> _UserManager = userManager;
     private readonly TokenParameters _TokenParameters = tokenParameters;
-    private readonly ILogger<ApiController> _Logger = logger;
+    private readonly ILogger<ApiService> _Logger = logger;
 
     private static readonly bool _IsDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
     private const decimal _Handicap = (decimal)1.3;
@@ -217,7 +218,7 @@ public class ApiController(
         HashSet<Project> projects = [];
         _RecursiveLoad(presale.Projects?.ToList(), db, ref projects);
 
-        _ = presale.SumProfit(from, to, out var invoices);
+        presale.SumProfit(from, to, out var invoices);
 
         if(invoices == null || invoices.Count == 0)
         {
@@ -798,7 +799,7 @@ public class ApiController(
 
         if(role is not null)
         {
-            _ = await _RoleManager.DeleteAsync(role);
+            await _RoleManager.DeleteAsync(role);
         }
 
         return new() { Null = new() };
@@ -823,7 +824,7 @@ public class ApiController(
                 continue;
             }
 
-            _ = (db.PresaleActions?.Where(a => a.Project!.Number == project.Number)?.ToList());
+            db.PresaleActions?.Where(a => a.Project!.Number == project.Number)?.ToList();
 
             var prj = db.Projects?.Where(p => p.Number == project.Number)?.Include(p => p.MainProject).FirstOrDefault();
             if(prj?.MainProject?.Number != null)
@@ -867,7 +868,7 @@ public class ApiController(
                     continue;
                 }
 
-                _ = filteredPresales.Add(new Shared.Presale()
+                filteredPresales.Add(new Shared.Presale()
                 {
                     Name = presale.Name,
                     Statistics = presale.GetStatistic(from, to)
