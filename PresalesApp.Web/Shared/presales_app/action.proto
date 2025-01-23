@@ -1,0 +1,17 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "presales_app/action_type_enum.proto";
+
+message Action {
+	string project_number = 1;
+	int32 number = 2;
+	google.protobuf.Timestamp date = 3;
+	ActionType type = 4;
+	google.protobuf.Duration timespend = 5;
+	string description = 6;
+	bool sales_funnel = 7;
+}

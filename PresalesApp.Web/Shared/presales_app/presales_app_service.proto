@@ -1,0 +1,41 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/get_kpi_request.proto";
+import "presales_app/get_kpi_response.proto";
+
+import "presales_app/get_profit_overview_request.proto";
+import "presales_app/get_profit_overview_response.proto";
+
+import "presales_app/get_overview_response.proto";
+
+import "presales_app/get_sales_overview_request.proto";
+import "presales_app/get_sales_overview_response.proto";
+
+import "presales_app/custom_types/queryable_request.proto";
+
+import "presales_app/get_projects_response.proto";
+import "presales_app/get_presales_response.proto";
+
+import "presales_app/get_names_response.proto";
+import "google/protobuf/empty.proto";
+import "presales_app/get_unpaid_projects_request.proto";
+
+service PresalesAppService {
+	rpc GetKpi(GetKpiRequest) returns (GetKpiResponse);
+	
+	rpc GetProfitOverview(GetProfitOverviewRequest) returns (GetProfitOverviewResponse);
+	rpc GetOverview(GetProfitOverviewRequest) returns (GetOverviewResponse);
+	rpc GetSalesOverview(GetSalesOverviewRequest) returns (GetSalesOverviewResponse);
+	
+	rpc GetPresales(presales_app.custom_types.QueryableRequest) returns (GetPresalesResponse);
+	rpc GetProjects(presales_app.custom_types.QueryableRequest) returns (GetProjectsResponse);
+
+	// Use GetPresales with filters instead.
+	rpc GetNames(google.protobuf.Empty) returns (GetNamesResponse) { option deprecated = true; }
+	// Use GetProjects with filters instead.
+	rpc GetUnpaidProjects(GetUnpaidProjectsRequest) returns (GetProjectsResponse) { option deprecated = true; }
+	// Use GetProjects with filters instead.
+	rpc GetFunnelProjects(google.protobuf.Empty) returns (GetProjectsResponse) { option deprecated = true; }
+}

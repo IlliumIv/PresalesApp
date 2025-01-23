@@ -1,0 +1,8 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+message GetNamesResponse{
+	option deprecated = true;
+	repeated string names = 1;
+}

@@ -2,209 +2,228 @@
 using Microsoft.AspNetCore.Components;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
-using PresalesApp.Web.Shared;
-using Period = PresalesApp.Web.Client.Helpers.Period;
+using PresalesApp.Shared;
+using PresalesApp.CustomTypes;
 
-namespace PresalesApp.Web.Client.Pages
+namespace PresalesApp.Web.Client.Pages;
+
+partial class SalesDashboard
 {
-    partial class SalesDashboard
+    [CascadingParameter]
+    public MessageSnackbar GlobalMsgHandler { get; set; }
+
+    #region UriQuery
+    private const string _Q_PrevStart = "pStart";
+    [SupplyParameterFromQuery(Name = _Q_PrevStart)]
+    public string? PrevStart { get; set; }
+
+    private const string _Q_PrevEnd = "pEnd";
+    [SupplyParameterFromQuery(Name = _Q_PrevEnd)]
+    public string? PrevEnd { get; set; }
+
+    private const string _Q_PrevPeriodType = "pPeriod";
+    [SupplyParameterFromQuery(Name = _Q_PrevPeriodType)]
+    public string? PrevPeriodType { get; set; }
+
+    private const string _Q_CurrStart = "cStart";
+    [SupplyParameterFromQuery(Name = _Q_CurrStart)]
+    public string? CurrStart { get; set; }
+
+    private const string _Q_CurrEnd = "cEnd";
+    [SupplyParameterFromQuery(Name = _Q_CurrEnd)]
+    public string? CurrEnd { get; set; }
+
+    private const string _Q_CurrPeriodType = "cPeriod";
+    [SupplyParameterFromQuery(Name = _Q_CurrPeriodType)]
+    public string? CurrPeriodType { get; set; }
+
+    private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        [CascadingParameter]
-        public MessageSnackbar GlobalMsgHandler { get; set; }
+        [_Q_PrevStart] = _Previous.Start.ToString(Helper.UriDateTimeFormat),
+        [_Q_PrevEnd] = _Previous.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_PrevPeriodType] = _Previous.Type.ToString(),
+        [_Q_CurrStart] = _Current.Start.ToString(Helper.UriDateTimeFormat),
+        [_Q_CurrEnd] = _Current.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_CurrPeriodType] = _Current.Type.ToString(),
+    };
+    #endregion
 
-        #region UriQuery
-        private const string q_prev_start = "pStart";
-        [SupplyParameterFromQuery(Name = q_prev_start)] public string? PrevStart { get; set; }
+    private string _TitlePin = "Закрепить";
 
-        private const string q_prev_end = "pEnd";
-        [SupplyParameterFromQuery(Name = q_prev_end)] public string? PrevEnd { get; set; }
+    private string _ClassHide = "hide";
 
-        private const string q_prev_period_type = "pPeriod";
-        [SupplyParameterFromQuery(Name = q_prev_period_type)] public string? PrevPeriodType { get; set; }
+    private string _ClassRotatePin = "rotatePin";
 
-        private const string q_curr_start = "cStart";
-        [SupplyParameterFromQuery(Name = q_curr_start)] public string? CurrStart { get; set; }
+    private GetSalesOverviewResponse? _OverviewResponse;
 
-        private const string q_curr_end = "cEnd";
-        [SupplyParameterFromQuery(Name = q_curr_end)] public string? CurrEnd { get; set; }
+    private List<string> _DatasetColors = [];
 
-        private const string q_curr_period_type = "cPeriod";
-        [SupplyParameterFromQuery(Name = q_curr_period_type)] public string? CurrPeriodType { get; set; }
+    private List<string> _BorderColors = [];
 
-        private Dictionary<string, object?> GetQueryKeyValues() => new()
+    private static DateTime _GetFirstDay()
+        => new(DateTime.Now.Year, ((((DateTime.Now.Month - 1) / 3) + 1) * 3) - 2, 1);
+
+    private Helpers.Period _Current = new(_GetFirstDay(), PeriodType.Quarter);
+
+    private Helpers.Period _Previous = new(_GetFirstDay().AddYears(-1), PeriodType.Quarter);
+
+    private PieChart<decimal> _ProfitChart;
+
+    private async Task _OnPeriodChanged()
+    {
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PrevStart}", _Previous.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PrevEnd}", _Previous.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PrevPeriodType}", _Previous.Type);
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_CurrStart}", _Current.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_CurrEnd}", _Current.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_CurrPeriodType}", _Current.Type);
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _HandleRedrawChart();
+    }
+
+    private void _PinParams()
+    {
+        if (_ClassHide.Length > 0)
         {
-            [q_prev_start] = Previous.Start.ToString(Helper.UriDateTimeFormat),
-            [q_prev_end] = Previous.End.ToString(Helper.UriDateTimeFormat),
-            [q_prev_period_type] = Previous.Type.ToString(),
-            [q_curr_start] = Current.Start.ToString(Helper.UriDateTimeFormat),
-            [q_curr_end] = Current.End.ToString(Helper.UriDateTimeFormat),
-            [q_curr_period_type] = Current.Type.ToString(),
-        };
-        #endregion
-
-        private string title_pin = "Закрепить";
-        private string class_hide = "hide";
-        private string class_rotatePin = "rotatePin";
-        private SalesOverview? overview;
-        private List<string> dataset_colors = [];
-        private List<string> border_colors = [];
-
-        private static DateTime GetFirstDay() => new(DateTime.Now.Year, ((DateTime.Now.Month - 1) / 3 + 1) * 3 - 2, 1);
-        private Period Current = new(GetFirstDay(), Enums.PeriodType.Quarter);
-        private Period Previous = new(GetFirstDay().AddYears(-1), Enums.PeriodType.Quarter);
-
-        private PieChart<decimal> profitChart;
-
-        private async Task OnPeriodChanged()
-        {
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_prev_start}", Previous.Start);
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_prev_end}", Previous.End);
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_prev_period_type}", Previous.Type);
-
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_start}", Current.Start);
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_end}", Current.End);
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_curr_period_type}", Current.Type);
-
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-
-            await HandleRedrawChart();
+            _ClassHide = "";
+            _TitlePin = "Открепить";
+            _ClassRotatePin = "";
         }
-
-        private void PinParams()
+        else
         {
-            if (class_hide.Length > 0)
-            {
-                class_hide = "";
-                title_pin = "Открепить";
-                class_rotatePin = "";
-            }
-            else
-            {
-                class_hide = "hide";
-                title_pin = "Закрепить";
-                class_rotatePin = "rotatePin";
-            }
+            _ClassHide = "hide";
+            _TitlePin = "Закрепить";
+            _ClassRotatePin = "rotatePin";
         }
+    }
 
-        private readonly PeriodicTimer periodic_timer = new(TimeSpan.FromMinutes(10));
+    private readonly PeriodicTimer _PeriodicTimer = new(TimeSpan.FromMinutes(10));
 
-        private async Task UpdateData()
+    private async Task _UpdateData()
+    {
+        try
         {
-            try
+            _OverviewResponse = await PresalesAppApi.GetSalesOverviewAsync(new()
             {
-                overview = await AppApi.GetSalesOverviewAsync(new SalesOverviewRequest
-                {
-                    Previous = Previous.Translate(),
-                    Current = Current.Translate()
-                });
-            }
-            catch {  GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value); }
-        }
-
-        // private async Task UpdateImage() => _img = await PresalesClient.GetImageAsync(new ImageRequest { Keyword = "happy new year", Orientation = ImageOrientation.Landscape });
-
-        protected override void OnInitialized()
-        {
-            Helper.SetFromQueryOrStorage(value: PrevStart, query: q_prev_start, uri: Navigation.Uri, storage: Storage, param: ref Previous.Start);
-            Helper.SetFromQueryOrStorage(value: PrevEnd, query: q_prev_end, uri: Navigation.Uri, storage: Storage, param: ref Previous.End);
-            Helper.SetFromQueryOrStorage(value: PrevPeriodType, query: q_prev_period_type, uri: Navigation.Uri, storage: Storage, param: ref Previous.Type);
-
-            Helper.SetFromQueryOrStorage(value: CurrStart, query: q_curr_start, uri: Navigation.Uri, storage: Storage, param: ref Current.Start);
-            Helper.SetFromQueryOrStorage(value: CurrEnd, query: q_curr_end, uri: Navigation.Uri, storage: Storage, param: ref Current.End);
-            Helper.SetFromQueryOrStorage(value: CurrPeriodType, query: q_curr_period_type, uri: Navigation.Uri, storage: Storage, param: ref Current.Type);
-
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-
-            RunTimer();
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            periodic_timer?.Dispose();
-        }
-
-        private static string GetPieChartOptions() => "{\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
-
-        private async void RunTimer()
-        {
-            while (await periodic_timer.WaitForNextTickAsync())
-            {
-                await HandleRedrawChart();
-            }
-        }
-
-        private async Task HandleRedrawChart()
-        {
-            if (Previous.Start > Previous.End)
-            {
-                GlobalMsgHandler.Show("Начало предыдущего периода должно быть меньше окончания!");
-                return;
-            }
-
-            if (Current.Start > Current.End)
-            {
-                GlobalMsgHandler.Show("Начало текущего периода должно быть меньше окончания!");
-                return;
-            }
-
-            await UpdateData();
-            if (overview == null) return;
-
-            await profitChart.Clear();
-            dataset_colors = [];
-            border_colors = [];
-            float colors_alfa = 0.5f;
-
-            var dataset = new List<decimal>();
-            var rnd = new Random();
-
-            foreach (var manager in overview.CurrentTopSalesManagers)
-            {
-                dataset.Add(manager.Profit);
-                var r = rnd.Next(255);
-                var g = rnd.Next(255);
-                var b = rnd.Next(255);
-                dataset_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), colors_alfa));
-                border_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), 1));
-            }
-
-            var sum = overview.CurrentTopSalesManagers.Sum(m => m.Profit);
-            if (overview.CurrentActualProfit > sum)
-            {
-                dataset.Add(overview.CurrentActualProfit - sum);
-                var r = rnd.Next(255);
-                var g = rnd.Next(255);
-                var b = rnd.Next(255);
-                dataset_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), colors_alfa));
-                border_colors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), 1));
-            }
-
-            if (overview.CurrentSalesTarget > overview.CurrentActualProfit)
-            {
-                dataset.Add(overview.CurrentSalesTarget - overview.CurrentActualProfit);
-                dataset_colors.Add(ChartColor.FromRgba(240, 240, 240, colors_alfa));
-                border_colors.Add(ChartColor.FromRgba(240, 240, 240, 1));
-            }
-
-            await profitChart.AddDatasetsAndUpdate(new PieChartDataset<decimal>()
-            {
-                Data = dataset,
-                BackgroundColor = dataset_colors,
-                BorderColor = border_colors
-                // BorderAlign = "center",
-                // BorderWidth = 1,
+                Previous = _Previous.Translate(),
+                Current = _Current.Translate(),
             });
+        }
+        catch {  GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value); }
+    }
 
-            StateHasChanged();
+    protected override void OnInitialized()
+    {
+        Helper.SetFromQueryOrStorage(value: PrevStart, query: _Q_PrevStart,
+            uri: Navigation.Uri, storage: Storage, param: ref _Previous.Start);
+        Helper.SetFromQueryOrStorage(value: PrevEnd, query: _Q_PrevEnd,
+            uri: Navigation.Uri, storage: Storage, param: ref _Previous.End);
+        Helper.SetFromQueryOrStorage(value: PrevPeriodType, query: _Q_PrevPeriodType,
+            uri: Navigation.Uri, storage: Storage, param: ref _Previous.Type);
+
+        Helper.SetFromQueryOrStorage(value: CurrStart, query: _Q_CurrStart,
+            uri: Navigation.Uri, storage: Storage, param: ref _Current.Start);
+        Helper.SetFromQueryOrStorage(value: CurrEnd, query: _Q_CurrEnd,
+            uri: Navigation.Uri, storage: Storage, param: ref _Current.End);
+        Helper.SetFromQueryOrStorage(value: CurrPeriodType, query: _Q_CurrPeriodType,
+            uri: Navigation.Uri, storage: Storage, param: ref _Current.Type);
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        _RunTimer();
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _PeriodicTimer?.Dispose();
+    }
+
+    private static string _GetPieChartOptions()
+        => "{\"animation\":{\"animateScale\": true},\"plugins\":{\"tooltip\":{\"enabled\": false}}}";
+
+    private async void _RunTimer()
+    {
+        while (await _PeriodicTimer.WaitForNextTickAsync())
+        {
+            await _HandleRedrawChart();
+        }
+    }
+
+    private async Task _HandleRedrawChart()
+    {
+        if (_Previous.Start > _Previous.End)
+        {
+            GlobalMsgHandler.Show("Начало предыдущего периода должно быть меньше окончания!");
+            return;
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        if (_Current.Start > _Current.End)
         {
-            if (firstRender)
-            {
-                await HandleRedrawChart();
-            }
+            GlobalMsgHandler.Show("Начало текущего периода должно быть меньше окончания!");
+            return;
+        }
+
+        await _UpdateData();
+        if (_OverviewResponse == null) return;
+
+        await _ProfitChart.Clear();
+
+        _DatasetColors = [];
+        _BorderColors = [];
+
+        var colors_alfa = 0.5f;
+        var dataset = new List<decimal>();
+        var rnd = new Random();
+
+        foreach (var manager in _OverviewResponse.CurrentTopSalesManagers)
+        {
+            dataset.Add(manager.Profit);
+            var r = rnd.Next(255);
+            var g = rnd.Next(255);
+            var b = rnd.Next(255);
+            _DatasetColors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), colors_alfa));
+            _BorderColors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), 1));
+        }
+
+        var sum = _OverviewResponse.CurrentTopSalesManagers.Sum(m => m.Profit);
+        if (_OverviewResponse.CurrentActualProfit > sum)
+        {
+            dataset.Add(_OverviewResponse.CurrentActualProfit - sum);
+            var r = rnd.Next(255);
+            var g = rnd.Next(255);
+            var b = rnd.Next(255);
+            _DatasetColors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), colors_alfa));
+            _BorderColors.Add(ChartColor.FromRgba(Convert.ToByte(r), Convert.ToByte(g), Convert.ToByte(b), 1));
+        }
+
+        if (_OverviewResponse.CurrentSalesTarget > _OverviewResponse.CurrentActualProfit)
+        {
+            dataset.Add(_OverviewResponse.CurrentSalesTarget - _OverviewResponse.CurrentActualProfit);
+            _DatasetColors.Add(ChartColor.FromRgba(240, 240, 240, colors_alfa));
+            _BorderColors.Add(ChartColor.FromRgba(240, 240, 240, 1));
+        }
+
+        await _ProfitChart.AddDatasetsAndUpdate(new PieChartDataset<decimal>()
+        {
+            Data = dataset,
+            BackgroundColor = _DatasetColors,
+            BorderColor = _BorderColors
+            // BorderAlign = "center",
+            // BorderWidth = 1,
+        });
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _HandleRedrawChart();
         }
     }
 }

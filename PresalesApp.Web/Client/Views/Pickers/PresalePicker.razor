@@ -1,13 +1,14 @@
-﻿@if (presales == null)
+﻿@if (_PresalesResponse == null)
 {
     <em>Loading...</em>
 }
 else
 {
     <label>@Localization["PresaleNameText"]:</label>
-    <select value="@SelectedPresale" @onchange="OnPresaleChanged" class="form-select form-select-combobox">
+    <select value="@SelectedPresale" @onchange="_OnPresaleChanged"
+            class="form-select form-select-combobox">
         <option selected="@SelectedPresale"></option>
-        @foreach (var name in presales.Names)
+        @foreach (var name in _PresalesResponse.Names)
         {
             <option value="@name">@name.GetFirstAndLastName()</option>
         }

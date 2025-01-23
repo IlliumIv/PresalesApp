@@ -119,17 +119,13 @@ public class Bridge1C(AppSettings appSettings)
     }
 
     private (string request, (DateTime from, DateTime to) period)
-        _DefineVariables<T>(ref Update update) where T : Entity
-    {
-        return typeof(T).Name switch
+        _DefineVariables<T>(ref Update update) where T : Entity => typeof(T).Name switch
         {
             nameof(Project) => ("GetProjects", _GetPeriod<ProjectsUpdate>(ref update)),
             nameof(InvoicesCache) => ("GetLog", _GetPeriod<CacheLogsUpdate>(ref update)),
             nameof(Invoice) => ("GetInvoices", _GetPeriod<InvoicesCache>(ref update)),
             _ => throw new NotImplementedException()
         };
-
-    }
 
     private (DateTime from, DateTime to) _GetPeriod<T>(ref Update update) where T : Update
     {

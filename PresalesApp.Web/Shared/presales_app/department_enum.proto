@@ -1,0 +1,10 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+enum Department {
+	DEPARTMENT_NONE = 0;
+	DEPARTMENT_INTERNATIONAL = 1;
+	DEPARTMENT_RUSSIAN = 2;
+	DEPARTMENT_ANY = 3;
+}

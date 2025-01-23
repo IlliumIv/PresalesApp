@@ -1,163 +1,203 @@
 ﻿using Microsoft.AspNetCore.Components;
+using PresalesApp.CustomTypes;
+using PresalesApp.Shared;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
-using PresalesApp.Web.Shared;
-using Department = PresalesApp.Web.Shared.Department;
-using Period = PresalesApp.Web.Client.Helpers.Period;
-using Position = PresalesApp.Web.Shared.Position;
 
-namespace PresalesApp.Web.Client.Pages
+namespace PresalesApp.Web.Client.Pages;
+
+partial class Spreadsheet
 {
-    partial class Spreadsheet
+    [CascadingParameter]
+    public MessageSnackbar GlobalMsgHandler { get; set; }
+
+    #region Private Members
+
+    private Helpers.Period _Period = new(new DateTime(DateTime.Now.Year,
+        DateTime.Now.Month, 1).ToUniversalTime(),
+        CustomTypes.PeriodType.Month);
+
+    private Department _Department = Department.Any;
+    
+    private Position _Position = Position.Any;
+    
+    private bool _OnlyActiveOnes = true;
+    
+    private readonly PeriodicTimer _PeriodicTimer = new(TimeSpan.FromMinutes(10));
+    
+    private GetOverviewResponse? _OverviewResponse;
+
+    #region Descriptions
+
+    private string _GetTitleInWork() => $"В работе (есть действия за " +
+        $"{_Period.GetLocalizedPeriodName(Localization)})";
+
+    private readonly string _TitleAssign = "Назначено";
+
+    private readonly string _TitleWon = "Выиграно";
+
+    private readonly string _TitleLoss = "Проиграно";
+
+    private readonly string _TitleConversion = "Конверсия";
+
+    private readonly string _TitleAbandoned = "Заброшено (нет действий за последние 30 дней)";
+
+    private readonly string _TitleAvgTimeToWin = "Среднее время жизни проекта до выигрыша в днях";
+
+    private readonly string _TtitleAvgTimeToReaction = "Среднее время реакции пресейла в минутах";
+    
+    private readonly string _TitleAvgRank = "Средний ранг проектов";
+
+    private readonly string _TitleTimeSpend = "Потрачено времени на проекты, суммарно в часах";
+
+    private readonly string _TitleAvtTimeSpend = "Потрачено времени на проекты, в среднем в часах";
+    
+    #endregion
+    
+    #endregion
+
+    #region UriQuery
+
+    private const string _Q_Start = "Start";
+    [SupplyParameterFromQuery(Name = _Q_Start)]
+    public string? Start { get; set; }
+
+    private const string _Q_End = "End";
+    [SupplyParameterFromQuery(Name = _Q_End)]
+    public string? End { get; set; }
+
+    private const string _Q_PeriodType = "Period";
+    [SupplyParameterFromQuery(Name = _Q_PeriodType)]
+    public string? PeriodType { get; set; }
+
+    private const string _Q_DepartmentType = "Department";
+    [SupplyParameterFromQuery(Name = _Q_DepartmentType)]
+    public string? DepartmentType { get; set; }
+
+    private const string _Q_PositionType = "Position";
+    [SupplyParameterFromQuery(Name = _Q_PositionType)]
+    public string? PositionType { get; set; }
+
+    private const string _Q_OnlyActiveOnes = "OnlyActive";
+    [SupplyParameterFromQuery(Name = _Q_OnlyActiveOnes)]
+    public string? OnlyActiveOnes { get; set; }
+
+    private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        [CascadingParameter]
-        public MessageSnackbar GlobalMsgHandler { get; set; }
+        [_Q_Start] = _Period.Start.ToString(Helper.UriDateTimeFormat),
+        [_Q_End] = _Period.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_PeriodType] = _Period.Type.ToString(),
+        [_Q_DepartmentType] = _Department.ToString(),
+        [_Q_PositionType] = _Position.ToString(),
+        [_Q_OnlyActiveOnes] = _OnlyActiveOnes.ToString(),
+    };
+    #endregion
 
-        #region Private Members
-        private Period _period = new(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1), Enums.PeriodType.Month);
-        private Department _department = Department.Any;
-        private Position _position = Position.Any;
-        private bool _only_active_ones = true;
-        private readonly PeriodicTimer _periodic_timer = new(TimeSpan.FromMinutes(10));
-        private Overview? _overview;
-        #region Descriptions
-        private string GetTitleInWork() => $"В работе (есть действия за {_period.GetLocalizedPeriodName(Localization)})";
-        private readonly string title_assign = "Назначено";
-        private readonly string title_won = "Выиграно";
-        private readonly string title_loss = "Проиграно";
-        private readonly string title_conversion = "Конверсия";
-        private readonly string title_abandoned = "Заброшено (нет действий за последние 30 дней)";
-        private readonly string title_avg_time_to_win = "Среднее время жизни проекта до выигрыша в днях";
-        private readonly string title_avg_time_to_reaction = "Среднее время реакции пресейла в минутах";
-        private readonly string title_avg_rank = "Средний ранг проектов";
-        private readonly string title_time_spend = "Потрачено времени на проекты, суммарно в часах";
-        private readonly string title_avt_time_spend = "Потрачено времени на проекты, в среднем в часах";
-        #endregion
-        #endregion
-
-        #region UriQuery
-        private const string q_start = "Start";
-        [SupplyParameterFromQuery(Name = q_start)] public string? Start { get; set; }
-
-        private const string q_end = "End";
-        [SupplyParameterFromQuery(Name = q_end)] public string? End { get; set; }
-
-        private const string q_period_type = "Period";
-        [SupplyParameterFromQuery(Name = q_period_type)] public string? PeriodType { get; set; }
-
-        private const string q_department = "Department";
-        [SupplyParameterFromQuery(Name = q_department)] public string? DepartmentType { get; set; }
-
-        private const string q_position = "Position";
-        [SupplyParameterFromQuery(Name = q_position)] public string? PositionType { get; set; }
-
-        private const string q_only_active_ones = "OnlyActive";
-        [SupplyParameterFromQuery(Name = q_only_active_ones)] public string? OnlyActiveOnes { get; set; }
-
-        private Dictionary<string, object?> GetQueryKeyValues() => new()
-        {
-            [q_start] = _period.Start.ToString(Helper.UriDateTimeFormat),
-            [q_end] = _period.End.ToString(Helper.UriDateTimeFormat),
-            [q_period_type] = _period.Type.ToString(),
-            [q_department] = _department.ToString(),
-            [q_position] = _position.ToString(),
-            [q_only_active_ones] = _only_active_ones.ToString(),
-        };
-        #endregion
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            _periodic_timer?.Dispose();
-        }
-
-        protected override async Task OnInitializedAsync()
-        {
-            Helper.SetFromQueryOrStorage(value: Start, query: q_start, uri: Navigation.Uri, storage: Storage, param: ref _period.Start);
-            Helper.SetFromQueryOrStorage(value: End, query: q_end, uri: Navigation.Uri, storage: Storage, param: ref _period.End);
-            Helper.SetFromQueryOrStorage(value: PeriodType, query: q_period_type, uri: Navigation.Uri, storage: Storage, param: ref _period.Type);
-            Helper.SetFromQueryOrStorage(value: DepartmentType, query: q_department, uri: Navigation.Uri, storage: Storage, param: ref _department);
-            Helper.SetFromQueryOrStorage(value: PositionType, query: q_position, uri: Navigation.Uri, storage: Storage, param: ref _position);
-            Helper.SetFromQueryOrStorage(value: OnlyActiveOnes, query: q_only_active_ones, uri: Navigation.Uri, storage: Storage, param: ref _only_active_ones);
-
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-            RunTimer();
-            await UpdateData();
-        }
-
-        #region Private Methods
-        private async Task OnPeriodChanged(Period period)
-        {
-            _period = period;
-
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_start}", _period.Start);
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_end}", _period.End);
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_period_type}", _period.Type);
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-
-            await UpdateData();
-        }
-
-        private async Task OnDepartmentChange(Department department)
-        {
-            _department = department;
-
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_department}", _department);
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-
-            await UpdateData();
-        }
-
-        private async Task OnPositionChange(Position position)
-        {
-            _position = position;
-
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_position}", _position);
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-
-            await UpdateData();
-        }
-
-        private static string _Format(Project project) =>
-            $"{(string.IsNullOrEmpty(project.Presale?.Name.GetFirstAndLastName()) ? "" : $"{project.Presale?.Name.GetFirstAndLastName()}, ")}" +
-            $"{project.Number}, {project.Name}, " +
-            $"{Helper.ToOneDateString(project.ApprovalByTechDirectorAt, project.ApprovalBySalesDirectorAt)}" +
-            $"{Helper.ToDateString(project.PresaleStartAt, " - ")}";
-
-        private async void RunTimer()
-        {
-            while (await _periodic_timer.WaitForNextTickAsync())
-                await UpdateData();
-        }
-
-        private async Task UpdateData()
-        {
-            try
-            {
-                _overview = await AppApi.GetOverviewAsync(new OverviewRequest
-                {
-                    OnlyActive = _only_active_ones,
-                    Department = _department,
-                    Position = _position,
-                    Period = _period.Translate()
-                });
-                StateHasChanged();
-            }
-            catch (Exception e)
-            {
-                GlobalMsgHandler.Show(e.Message);
-            }
-        }
-
-        private async void OnStatusChange(ChangeEventArgs e)
-        {
-            _only_active_ones = e?.Value == null ? _only_active_ones : (bool)e.Value;
-
-            Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{q_only_active_ones}", _only_active_ones);
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(GetQueryKeyValues()));
-
-            await UpdateData();
-        }
-        #endregion
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _PeriodicTimer?.Dispose();
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Helper.SetFromQueryOrStorage(value: Start, query: _Q_Start,
+            uri: Navigation.Uri, storage: Storage, param: ref _Period.Start);
+        Helper.SetFromQueryOrStorage(value: End, query: _Q_End,
+            uri: Navigation.Uri, storage: Storage, param: ref _Period.End);
+        Helper.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
+            uri: Navigation.Uri, storage: Storage, param: ref _Period.Type);
+
+        Helper.SetFromQueryOrStorage(value: DepartmentType, query: _Q_DepartmentType,
+            uri: Navigation.Uri, storage: Storage, param: ref _Department);
+        Helper.SetFromQueryOrStorage(value: PositionType, query: _Q_PositionType,
+            uri: Navigation.Uri, storage: Storage, param: ref _Position);
+        Helper.SetFromQueryOrStorage(value: OnlyActiveOnes, query: _Q_OnlyActiveOnes,
+            uri: Navigation.Uri, storage: Storage, param: ref _OnlyActiveOnes);
+
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+        _RunTimer();
+        await _UpdateData();
+    }
+
+    #region Private Methods
+
+    private async Task _OnPeriodChanged(Helpers.Period period)
+    {
+        _Period = period;
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_Start}", _Period.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_End}", _Period.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PeriodType}", _Period.Type);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    private async Task _OnDepartmentChange(Department department)
+    {
+        _Department = department;
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_DepartmentType}", _Department);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    private async Task _OnPositionChange(Position position)
+    {
+        _Position = position;
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PositionType}", _Position);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    private static string _Format(Project project)
+        => $"{(string.IsNullOrEmpty(project.Presale?.Name.GetFirstAndLastName())
+            ? ""
+            : $"{project.Presale?.Name.GetFirstAndLastName()}, ")}" +
+              $"{project.Number}, {project.Name}, " +
+              $"{Helper.ToOneDateString(project.ApprovalByTechDirectorAt,
+                  project.ApprovalBySalesDirectorAt)}" +
+              $"{Helper.ToDateString(project.PresaleStartAt, " - ")}";
+
+    private async void _RunTimer()
+    {
+        while (await _PeriodicTimer.WaitForNextTickAsync())
+            await _UpdateData();
+    }
+
+    private async Task _UpdateData()
+    {
+        try
+        {
+            _OverviewResponse = await PresalesAppApi.GetOverviewAsync(new()
+            {
+                OnlyActive = _OnlyActiveOnes,
+                Department = _Department,
+                Position = _Position,
+                Period = _Period.Translate()
+            });
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            GlobalMsgHandler.Show(e.Message);
+        }
+    }
+
+    private async void _OnStatusChange(ChangeEventArgs e)
+    {
+        _OnlyActiveOnes = e?.Value == null ? _OnlyActiveOnes : (bool)e.Value;
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}" +
+            $".{_Q_OnlyActiveOnes}",_OnlyActiveOnes);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    #endregion
 }

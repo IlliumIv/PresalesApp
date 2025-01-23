@@ -1,10 +1,14 @@
-﻿namespace PresalesApp.Web.Client.Views
+﻿namespace PresalesApp.Web.Client.Views;
+
+partial class NavMenu
 {
-    partial class NavMenu
-    {
-        private bool collapseNavMenu = false;
-        private string? GetNavMenuCssClass() => collapseNavMenu ? "collapse" : null;
-        private string? GetCollapseIconCssClass() => collapseNavMenu ? "oi-chevron-right" : "oi-chevron-left";
-        private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
-    }
+    private bool _CollapseNavMenu { get; set; } = false;
+
+    private string? _GetNavMenuCssClass() => _CollapseNavMenu ? "collapse" : null;
+
+    private string? _GetCollapseIconCssClass() => _CollapseNavMenu
+        ? "oi-chevron-right"
+        : "oi-chevron-left";
+
+    private void _ToggleNavMenu() => _CollapseNavMenu = !_CollapseNavMenu;
 }

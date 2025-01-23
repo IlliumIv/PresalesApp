@@ -1,75 +1,84 @@
 ﻿using Blazorise;
 using Microsoft.AspNetCore.Components;
 using PresalesApp.Web.Client.Services.Authorization;
-using PresalesApp.Web.Shared;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
-namespace PresalesApp.Web.Client.Views
+namespace PresalesApp.Web.Client.Views;
+
+partial class Profile
 {
-    partial class Profile
+    [CascadingParameter]
+    public MessageSnackbar GlobalMsgHandler { get; set; }
+
+    [Inject]
+    protected IdentityAuthenticationStateProvider AuthStateProvider { get; set; }
+
+    private string _UserName => (AuthStateProvider.GetAuthenticationStateAsync().Result
+        .User?.Identity as ClaimsIdentity)?
+        .FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
+
+    private string _DesireUserName { get; set; } = string.Empty;
+
+    private Modal _LoginModal;
+    private Modal _RegisterModal;
+
+    private bool _LoginDisabled = false;
+    private bool _RegisterDisabled = false;
+
+    private string _Login;
+    private string _Password;
+
+    private async Task _TryRegister()
     {
-        [CascadingParameter]
-        public MessageSnackbar GlobalMsgHandler { get; set; }
-
-        private static UserProfile GetProfile() => IdentityAuthenticationStateProvider.Profile;
-
-        private Modal _loginModal;
-        private Modal _registerModal;
-
-        private bool _loginDisabled = false;
-        private bool _registerDisabled = false;
-
-        private string _login;
-        private string _password;
-
-        private async Task Register()
+        _RegisterDisabled = true;
+        try
         {
-            _registerDisabled = true;
-            try
+            if (await _autorizeApi.TryRegister(new()
             {
-                if (await _autorizeApi.TryRegister(new RegisterRequest
+                LoginRequest = new()
                 {
-                    LoginRequest = new LoginRequest
-                    {
-                        Login = _login,
-                        Password = _password
-                    },
-                    Profile = GetProfile()
-                }))
+                    Login = _Login,
+                    Password = _Password
+                },
+                User = new()
                 {
-                    await _registerModal.Hide();
+                    Name = _DesireUserName
                 }
-            }
-            catch (Exception e)
+            }))
             {
-                GlobalMsgHandler.Show(e.Message);
+                await _RegisterModal.Hide();
             }
-            _registerDisabled = false;
+        }
+        catch (Exception e)
+        {
+            GlobalMsgHandler.Show(e.Message);
         }
 
-        private async Task Login()
-        {
-            _loginDisabled = true;
-            try
-            {
-                if (await _autorizeApi.TryLogin(new LoginRequest
-                {
-                    Login = _login,
-                    Password = _password
-                }))
-                {
-                    await _loginModal.Hide();
-                }
-            }
-            catch (Exception e)
-            {
-                GlobalMsgHandler.Show(e.Message);
-            }
-            _loginDisabled = false;
-        }
-
-        private async Task Logout()
-        {
-            await _autorizeApi.Logout();
-        }
+        _RegisterDisabled = false;
     }
+
+    private async Task _TryLogin()
+    {
+        _LoginDisabled = true;
+        try
+        {
+            if (await _autorizeApi.TryLogin(new()
+            {
+                Login = _Login,
+                Password = _Password
+            }))
+            {
+                await _LoginModal.Hide();
+            }
+        }
+        catch (Exception e)
+        {
+            GlobalMsgHandler.Show(e.Message);
+        }
+
+        _LoginDisabled = false;
+    }
+
+    private async Task _Logout() => await _autorizeApi.Logout();
 }

@@ -1,23 +1,22 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Position = PresalesApp.Web.Shared.Position;
+using PresalesApp.Shared;
 
-namespace PresalesApp.Web.Client.Views.Pickers
+namespace PresalesApp.Web.Client.Views.Pickers;
+
+partial class PositionPicker
 {
-    partial class PositionPicker
+    [Parameter]
+    public EventCallback<Position> OnSelectCallback { get; set; }
+
+    [Parameter]
+    public Position Position { get; set; } = Position.Any;
+
+    private void _OnPositionChanged(ChangeEventArgs e)
     {
-        [Parameter]
-        public EventCallback<Position> OnSelectCallback { get; set; }
-
-        [Parameter]
-        public Position Position { get; set; } = Position.Any;
-
-        private void OnPositionChanged(ChangeEventArgs e)
+        if (Enum.TryParse<Position>(e?.Value?.ToString(), out var _p))
         {
-            if (Enum.TryParse<Position>(e?.Value?.ToString(), out var _p))
-            {
-                Position = _p;
-                OnSelectCallback.InvokeAsync(Position);
-            }
+            Position = _p;
+            OnSelectCallback.InvokeAsync(Position);
         }
     }
 }

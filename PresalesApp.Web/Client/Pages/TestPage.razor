@@ -3,14 +3,22 @@
 @layout Test
 
 <div class="d-flex">
-    <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click="(async() => await _HandleSayHello())">Say Hello</RadzenButton>
+    <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark
+                  Click="(async() => await _HandleSayHello())">Say Hello</RadzenButton>
+    <RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark
+                  Click="(async() => await _GetModules())">Say Hello</RadzenButton>
     <input type="number" @bind=_NumberOfPoints />
-    <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark" Clicked="_HandleRedraw">Redraw Chart</Button>
+    <Button Type="Blazorise.ButtonType.Button" Color="Color.Dark"
+            Clicked="_HandleRedraw">
+        Redraw Chart
+    </Button>
 </div>
 <p>@_Reply?.Message</p>
+<p>@_Modules</p>
 <p>@Period.Start - @Period.End, @Period.Type --- @_Counter</p>
 <PeriodPicker Period="@Period" PeriodChanged="_OnPeriodChanged" />
-<RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark Click=_CleanStorage>Clean Storage</RadzenButton>
+<RadzenButton ButtonType=Radzen.ButtonType.Button ButtonStyle=ButtonStyle.Dark
+              Click=_CleanStorage>Clean Storage</RadzenButton>
 <div style="width: 500px;height: 500px">
     <ChartComponent ChartJsConfig="_LineChartConfig" />
     <ChartComponent ChartJsConfig="_PieChartConfig" />

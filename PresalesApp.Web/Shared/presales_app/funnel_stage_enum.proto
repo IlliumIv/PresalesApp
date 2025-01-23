@@ -1,0 +1,17 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+enum FunnelStage {
+	FUNNELSTAGE_NONE = 0;
+	FUNNELSTAGE_FIRST = 1;
+	FUNNELSTAGE_SECOND = 2;
+	FUNNELSTAGE_THIRD = 3;
+	FUNNELSTAGE_FOURTH = 4;
+	FUNNELSTAGE_FIFTH = 5;
+	FUNNELSTAGE_SIXTH = 6;
+	FUNNELSTAGE_SEVENTH = 7;
+	FUNNELSTAGE_EIGTH = 8;
+	FUNNELSTAGE_REFUSED = 9;
+	FUNNELSTAGE_ANY = 10;
+}

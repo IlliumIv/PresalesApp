@@ -32,23 +32,26 @@ public static class DbController
                     query?.Start();
                     query?.Wait();
                 }
-                else _WhileQueueEmpty.WaitOne();
+                else
+                {
+                    _WhileQueueEmpty.WaitOne();
+                }
             }
         }).Start();
 
         Log.Information($"{typeof(DbController).FullName} started.");
     }
 
-    private static void _Queries_OnReachedEmpty(object? sender, EventArgs e) =>
-        _WhileQueueEmpty.Reset();
+    private static void _Queries_OnReachedEmpty(object? sender, EventArgs e)
+        => _WhileQueueEmpty.Reset();
 
-    private static void _Queries_OnEnqueued(object? sender, EventArgs e) =>
-        _WhileQueueEmpty.Set();
+    private static void _Queries_OnEnqueued(object? sender, EventArgs e)
+        => _WhileQueueEmpty.Set();
 
     internal class ControllerContext : ReadOnlyContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-            optionsBuilder.UseNpgsql($"host={DbSettings!.DbHost};" +
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.UseNpgsql($"host={DbSettings!.DbHost};" +
                 $"port={DbSettings.DbPort};" +
                 $"database={DbSettings.DbName};" +
                 $"username={DbSettings.DbUsername};" +
@@ -58,14 +61,14 @@ public static class DbController
 
         public new int SaveChanges(bool acceptAll) => BaseSaveChanges(acceptAll);
 
-        public new Task<int> SaveChangesAsync(CancellationToken token = default) =>
-            BaseSaveChangesAsync(token);
+        public new Task<int> SaveChangesAsync(CancellationToken token = default)
+            => BaseSaveChangesAsync(token);
 
-        public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
-            BaseSaveChangesAsync(acceptAll, token);
+        public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default)
+            => BaseSaveChangesAsync(acceptAll, token);
     }
 
-    public class ReadOnlyContext : UsersContext
+    public class ReadOnlyContext : AuthDbContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -85,6 +88,8 @@ public static class DbController
             }
         }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
+                               // Consider adding the 'required' modifier or declaring as nullable.
         public DbSet<Presale> Presales { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
@@ -94,39 +99,41 @@ public static class DbController
         public DbSet<ProjectsUpdate> ProjectsUpdates { get; set; }
         public DbSet<CacheLogsUpdate> CacheLogsUpdates { get; set; }
         public DbSet<Update> Updates { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
+                               // Consider adding the 'required' modifier or declaring as nullable.
 
         // https://stackoverflow.com/a/10438977
         [Obsolete("This context is read-only", true)]
-        public new int SaveChanges() =>
-            throw new InvalidOperationException("This context is read-only.");
+        public new int SaveChanges()
+            => throw new InvalidOperationException("This context is read-only.");
 
         [Obsolete("This context is read-only", true)]
-        public new int SaveChanges(bool acceptAll) =>
-            throw new InvalidOperationException("This context is read-only.");
+        public new int SaveChanges(bool acceptAll)
+            => throw new InvalidOperationException("This context is read-only.");
 
         [Obsolete("This context is read-only", true)]
-        public new Task<int> SaveChangesAsync(CancellationToken token = default) =>
-            throw new InvalidOperationException("This context is read-only.");
+        public new Task<int> SaveChangesAsync(CancellationToken token = default)
+            => throw new InvalidOperationException("This context is read-only.");
 
         [Obsolete("This context is read-only", true)]
-        public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
-            throw new InvalidOperationException("This context is read-only.");
+        public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default)
+            => throw new InvalidOperationException("This context is read-only.");
 
         internal int BaseSaveChanges() => base.SaveChanges();
 
         internal int BaseSaveChanges(bool acceptAll) => base.SaveChanges(acceptAll);
 
-        internal Task<int> BaseSaveChangesAsync(CancellationToken token = default) =>
-            base.SaveChangesAsync(token);
+        internal Task<int> BaseSaveChangesAsync(CancellationToken token = default)
+            => base.SaveChangesAsync(token);
 
-        internal Task<int> BaseSaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
-            base.SaveChangesAsync(acceptAll, token);
+        internal Task<int> BaseSaveChangesAsync(bool acceptAll, CancellationToken token = default)
+            => base.SaveChangesAsync(acceptAll, token);
     }
 
-    public class UsersContext : IdentityDbContext<User>
+    public class AuthDbContext : IdentityDbContext<User>
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-            optionsBuilder.UseNpgsql($"host={DbSettings!.DbHost};" +
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.UseNpgsql($"host={DbSettings!.DbHost};" +
                 $"port={DbSettings.DbPort};" +
                 $"database={DbSettings.DbName};" +
                 $"username={DbSettings.DbUsername};" +

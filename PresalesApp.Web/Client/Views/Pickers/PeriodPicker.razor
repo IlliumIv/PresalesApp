@@ -1,9 +1,10 @@
 ﻿@using System.Globalization
-@using PresalesApp.Web.Client.Enums
+@using PresalesApp.CustomTypes
 @using PresalesApp.Web.Client.Views.Pickers.DropDown
 
-<RadzenDropDown Data=@(System.Enum.GetValues(typeof(PeriodType)).Cast<PeriodType>().Where(p => !ExcludePeriods.Contains(p)))
-                @bind-Value=@(Period.Type) Change="SelectedPeriodChanged">
+<RadzenDropDown Data=@(System.Enum.GetValues(typeof(PeriodType)).Cast<PeriodType>()
+                .Where(p => !ExcludePeriods.Contains(p)))
+                @bind-Value=@(Period.Type) Change="_SelectedPeriodChanged">
     <Template>
         @(((PeriodType)context).GetLocalizedName(Localization))
     </Template>
@@ -12,13 +13,13 @@
     if (Period.Type == PeriodType.Arbitrary)
     {
         <RadzenDatePicker ShowTime=true ShowSeconds=true
-                          @bind-Value=@(Period.Start) Change="OnFromChangedByPicker" />
+                          @bind-Value=@(Period.Start) Change="_OnFromChangedByPicker" />
         <RadzenDatePicker ShowTime=true ShowSeconds=true
-                          @bind-Value=@(Period.End) Change="OnToChangedByPicker" />
+                          @bind-Value=@(Period.Start) Change="_OnToChangedByPicker" />
     }
     else
     {
-        <CustomRadzenDropDown @ref="select" Data=@items_set @bind-Value=@selected_item
+        <CustomRadzenDropDown @ref="_Select" Data=@_ItemsSet @bind-Value=@_SelectedItem
                               TextProperty="Text" Change="@SelectedItemChanged" />
     }
 }

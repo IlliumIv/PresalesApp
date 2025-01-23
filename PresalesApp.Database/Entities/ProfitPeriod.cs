@@ -19,9 +19,9 @@ public class ProfitPeriod : Entity
 
     public override string ToString() => $"{{\"{StartTime}\":\"{Amount}\"}}";
 
-    internal override bool TryUpdateIfExist(DbController.ControllerContext dbContext) =>
-        throw new NotImplementedException();
+    internal override bool TryUpdateIfExist(DbController.ControllerContext dbContext)
+        => throw new NotImplementedException();
 
-    internal override ProfitPeriod GetOrAddIfNotExist(DbController.ControllerContext dbContext) =>
-        throw new NotImplementedException();
+    internal override ProfitPeriod GetOrAddIfNotExist(DbController.ControllerContext dbContext)
+        => throw new NotImplementedException();
 }

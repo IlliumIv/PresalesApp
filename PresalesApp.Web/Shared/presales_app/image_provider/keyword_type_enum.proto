@@ -1,0 +1,8 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.ImageProvider";
+package presales_app.image_provider;
+
+enum KeywordType {
+	KEYWORDTYPE_QUERY = 0;
+	KEYWORDTYPE_COLLECTIONS = 1;
+}

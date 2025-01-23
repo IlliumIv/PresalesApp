@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Identity;
 using PresalesApp.Database.Entities;
-using PresalesApp.Web.Shared;
+using PresalesApp.Shared;
 using ActionType = PresalesApp.Database.Enums.ActionType;
 using Department = PresalesApp.Database.Enums.Department;
 using Enum = System.Enum;
@@ -11,17 +10,16 @@ using Position = PresalesApp.Database.Enums.Position;
 using Presale = PresalesApp.Database.Entities.Presale;
 using Project = PresalesApp.Database.Entities.Project;
 using ProjectStatus = PresalesApp.Database.Enums.ProjectStatus;
-using Shared = PresalesApp.Web.Shared;
 
 namespace PresalesApp.Database.Helpers;
 
 public static class Extensions
 {
-    public static Statistic GetStatistic(this Presale presale, DateTime? from = null, DateTime? to = null)
+    public static Metrics GetMetrics(this Presale presale, DateTime? from = null, DateTime? to = null)
     {
         if (from is null || to is null)
         {
-            return new Statistic();
+            return new();
         }
 
         var _from = (DateTime)from;
@@ -30,7 +28,7 @@ public static class Extensions
         var won = presale.ClosedByStatus(ProjectStatus.Won, _from, _to);
         var assign = presale.CountProjectsAssigned(_from, _to);
 
-        return new Statistic()
+        return new()
         {
             #region Показатели этого периода
             #region В работе
@@ -127,7 +125,7 @@ public static class Extensions
     public static Shared.Presale Translate(this Presale presale) => new()
     {
         Name = presale.Name,
-        Statistics = presale.GetStatistic(),
+        Metrics = presale.GetMetrics(),
         Department = presale.Department.Translate(),
         Position = presale.Position.Translate(),
         IsActive = presale.IsActive
@@ -144,30 +142,31 @@ public static class Extensions
         SalesFunnel = action.SalesFunnel
     };
 
-    public static Shared.Department Translate(this Department value) =>
-        (Shared.Department)Enum.Parse(typeof(Shared.Department), value.ToString());
+    public static Shared.Department Translate(this Department value)
+        => Enum.Parse<Shared.Department>(value.ToString());
 
-    public static Department Translate(this Shared.Department value) =>
-        value == Shared.Department.Any ? Department.None : (Department)Enum.Parse(typeof(Department), value.ToString());
+    public static Department Translate(this Shared.Department value)
+        => value == Shared.Department.Any ? Department.None : Enum.Parse<Department>(value.ToString());
 
-    public static Shared.Position Translate(this Position value) =>
-        (Shared.Position)Enum.Parse(typeof(Shared.Position), value.ToString());
+    public static Shared.Position Translate(this Position value)
+        => Enum.Parse<Shared.Position>(value.ToString());
 
-    public static Position Translate(this Shared.Position value) =>
-        value == Shared.Position.Any ? Position.None : (Position)Enum.Parse(typeof(Position), value.ToString());
+    public static Position Translate(this Shared.Position value)
+        => value == Shared.Position.Any ? Position.None : Enum.Parse<Position>(value.ToString());
 
-    public static Shared.FunnelStage Translate(this FunnelStage value) =>
-        (Shared.FunnelStage)Enum.Parse(typeof(Shared.FunnelStage), value.ToString());
+    public static Shared.FunnelStage Translate(this FunnelStage value)
+        => Enum.Parse<Shared.FunnelStage>(value.ToString());
 
-    public static FunnelStage Translate(this Shared.FunnelStage value) =>
-        value == Shared.FunnelStage.Any ? FunnelStage.None : (FunnelStage)Enum.Parse(typeof(FunnelStage), value.ToString());
+    public static FunnelStage Translate(this Shared.FunnelStage value)
+        => value == Shared.FunnelStage.Any ? FunnelStage.None : Enum.Parse<FunnelStage>(value.ToString());
 
-    public static Shared.ProjectStatus Translate(this ProjectStatus value) =>
-        (Shared.ProjectStatus)Enum.Parse(typeof(Shared.ProjectStatus), value.ToString());
+    public static Shared.ProjectStatus Translate(this ProjectStatus value)
+        => Enum.Parse<Shared.ProjectStatus>(value.ToString());
 
-    public static Shared.ActionType Translate(this ActionType value) =>
-        (Shared.ActionType)Enum.Parse(typeof(Shared.ActionType), value.ToString());
+    public static Shared.ActionType Translate(this ActionType value)
+        => Enum.Parse<Shared.ActionType>(value.ToString());
 
+    /*
     public static Role Translate(this IdentityRole role) => new()
     {
         Id = role.Id,
@@ -175,4 +174,5 @@ public static class Extensions
         NormalizedName = role.NormalizedName,
         ConcurrencyStamp = role.ConcurrencyStamp,
     };
+    */
 }

@@ -1,0 +1,9 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/project+invoice.proto";
+
+message GetProjectsResponse {
+	repeated Project projects = 1;
+}

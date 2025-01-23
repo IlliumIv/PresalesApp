@@ -1,7 +1,11 @@
 ﻿@using Enum = System.Enum
-@using Department = PresalesApp.Web.Shared.Department
+@using PresalesApp.Shared
 
-<select title="Направление" value="@Department" @onchange="OnDepartmentChanged" class="form-select form-select-combobox">
+@code {
+    // TODO: Use RadzenDropDown instead.
+}
+<select title="Направление" value="@Department" @onchange="_OnDepartmentChanged"
+        class="form-select form-select-combobox">
     <option selected="@Department"></option>
     @foreach (Department dep in Enum.GetValues(typeof(Department)))
     {

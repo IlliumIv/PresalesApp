@@ -1,0 +1,24 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "google/protobuf/duration.proto";
+import "presales_app/custom_types/decimal_value.proto";
+
+message Metrics {
+	int32 in_work = 1;
+	int32 assign = 2;
+	int32 won = 3;
+	int32 loss = 4;
+	int32 abnd = 5;
+	double conversion = 6;
+	google.protobuf.Duration avg_time_to_win = 7;
+	google.protobuf.Duration avg_time_to_reaction = 8;
+	double avg_rank = 9;
+	google.protobuf.Duration avg_spend = 10;
+	google.protobuf.Duration sum_spend = 11;
+	presales_app.custom_types.DecimalValue profit = 12;
+	presales_app.custom_types.DecimalValue potential = 13;
+	int32 invoices = 14;
+	int32 invoices_shipped = 15;
+}

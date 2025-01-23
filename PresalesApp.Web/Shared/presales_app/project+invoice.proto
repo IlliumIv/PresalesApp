@@ -1,0 +1,43 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "google/protobuf/timestamp.proto";
+import "presales_app/presale.proto";
+import "presales_app/project_status_enum.proto";
+import "presales_app/action.proto";
+import "presales_app/custom_types/decimal_value.proto";
+import "presales_app/funnel_stage_enum.proto";
+
+message Project {
+	string number = 1;
+	string name = 2;
+	google.protobuf.Timestamp approval_by_tech_director_at = 3;
+	google.protobuf.Timestamp approval_by_sales_director_at = 4;
+	google.protobuf.Timestamp presale_start_at = 5;
+	Presale presale = 6;
+	ProjectStatus status = 7;
+	google.protobuf.Timestamp closed_at = 8;
+	repeated Invoice invoices = 9;
+	repeated Action actions = 10;
+	presales_app.custom_types.DecimalValue potential = 11;
+	FunnelStage funnel_stage = 12;
+}
+
+message Invoice {
+	string counterpart = 1;
+	string number = 2;
+	google.protobuf.Timestamp date = 3;
+	presales_app.custom_types.DecimalValue amount = 4;
+	presales_app.custom_types.DecimalValue cost = 5;
+	presales_app.custom_types.DecimalValue sales_amount = 6;
+	double percent = 7;
+	presales_app.custom_types.DecimalValue profit = 8;
+	repeated Project projects_found = 9;
+	repeated Project projects_ignored = 10;
+	repeated Action actions_tallied = 11;
+	repeated Action actions_ignored = 12;
+	google.protobuf.Timestamp last_pay_at = 13;
+	google.protobuf.Timestamp last_shipment_at = 14;
+	int32 rank = 15;
+}

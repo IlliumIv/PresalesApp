@@ -1,6 +1,5 @@
-using PresalesApp.Web.Server.Extensions;
+﻿using PresalesApp.Web.Server.Extensions;
 using PresalesApp.Web.Server.Services;
-using PresalesApp.Web.Services;
 
 namespace PresalesApp.Web.Server.Startup;
 
@@ -13,11 +12,13 @@ public static class ApplicationConfiguration
         {
             app.UseDeveloperExceptionPage();
             app.UseWebAssemblyDebugging();
+            app.UseEndpointDebug(); // send "/$endpoint" for route debug
         }
         else
         {
             app.UseExceptionHandler("/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            // The default HSTS value is 30 days. You may want to change this for production scenarios,
+            // see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
@@ -32,7 +33,9 @@ public static class ApplicationConfiguration
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapGrpcService<ApiService>().EnableGrpcWeb(); //.RequireCors("cors_policy");
+        app.MapGrpcService<AuthorizationService>().EnableGrpcWeb(); //.RequireCors("cors_policy");
+        app.MapGrpcService<ImageProviderService>().EnableGrpcWeb();
+        app.MapGrpcService<PresalesAppService>().EnableGrpcWeb();
 
         app.MapRazorPages();
         app.MapControllers();

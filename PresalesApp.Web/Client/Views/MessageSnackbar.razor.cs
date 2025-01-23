@@ -1,12 +1,14 @@
 ﻿using Blazorise.Snackbar;
 
-namespace PresalesApp.Web.Client.Views
-{
-    partial class MessageSnackbar
-    {
-        private SnackbarStack _snackbarStack;
+namespace PresalesApp.Web.Client.Views;
 
-        public async void Show(string message, SnackbarColor color = SnackbarColor.Danger, double interval = 5000) =>
-            await _snackbarStack.PushAsync(message, color, options => { options.IntervalBeforeClose = interval; });
-    }
+// TODO: Use Radzen Dialog instead or smt similar.
+partial class MessageSnackbar
+{
+    private SnackbarStack _SnackbarStack;
+
+    public async void Show(string message, SnackbarColor color = SnackbarColor.Danger,
+                           double interval = 5000)
+        => await _SnackbarStack.PushAsync(message, color,
+            options => options.IntervalBeforeClose = interval);
 }

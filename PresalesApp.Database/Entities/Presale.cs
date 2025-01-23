@@ -164,11 +164,11 @@ public class Presale(string name) : Entity
 
     public decimal SumProfit(DateTime from, DateTime to) => SumProfit(from, to, out _);
 
-    public decimal SumProfit(out HashSet<Invoice>? invoices) =>
-        SumProfit(DateTime.MinValue, DateTime.MaxValue, out invoices);
+    public decimal SumProfit(out HashSet<Invoice>? invoices)
+        => SumProfit(DateTime.MinValue, DateTime.MaxValue, out invoices);
 
-    public decimal SumProfit(DateTime from, out HashSet<Invoice>? invoices) =>
-        SumProfit(from, DateTime.MaxValue, out invoices);
+    public decimal SumProfit(DateTime from, out HashSet<Invoice>? invoices)
+        => SumProfit(from, DateTime.MaxValue, out invoices);
 
     public decimal SumProfit(DateTime from, DateTime to, out HashSet<Invoice>? invoices)
     {
@@ -184,8 +184,8 @@ public class Presale(string name) : Entity
 
     public TimeSpan AverageTimeToWin(DateTime from) => _AverageTimeToWin(Projects?.Where(p => p.ClosedAt >= from));
 
-    public TimeSpan AverageTimeToReaction() =>
-        _AverageTimeToReaction(Projects?.Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue));
+    public TimeSpan AverageTimeToReaction() => _AverageTimeToReaction(Projects?
+        .Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue));
 
     public TimeSpan AverageTimeToReaction(DateTime from) => _AverageTimeToReaction(Projects?
         .Where(p => p.ApprovalByTechDirectorAt != DateTime.MinValue && p.PresaleStartAt >= from));
@@ -229,16 +229,22 @@ public class Presale(string name) : Entity
         return minutes == null ? TimeSpan.Zero : TimeSpan.FromMinutes((double)minutes);
     }
 
-    private static DateTime _SelectTiming(DateTime? actionDate, DateTime presaleStartAt) =>
-        actionDate != null && actionDate != DateTime.MinValue && actionDate < presaleStartAt ? (DateTime)actionDate : presaleStartAt;
+    private static DateTime _SelectTiming(DateTime? actionDate, DateTime presaleStartAt)
+        => actionDate != null
+            && actionDate != DateTime.MinValue
+            && actionDate < presaleStartAt
+                ? (DateTime)actionDate
+                : presaleStartAt;
+
+    private static int _GetTimeSpend(PresaleAction a) => a.TimeSpend;
 
     private static TimeSpan _SumTimeSpend(IEnumerable<Project>? projects, DateTime from, DateTime to)
     {
         var minutes = projects?
             .Sum(p => p.PresaleActions?
-                .Where(a => a.Date >= from)?
-                .Where(a => a.Date <= to)?
-                .Sum(a => a.TimeSpend));
+                       .Where(a => a.Date >= from)?
+                       .Where(a => a.Date <= to)?
+                       .Sum(_GetTimeSpend));
 
         return minutes == null ? TimeSpan.Zero : TimeSpan.FromMinutes((int)minutes);
     }
@@ -251,9 +257,9 @@ public class Presale(string name) : Entity
                 && p.PresaleActions.Any(a => a.Date <= to))?
             .DefaultIfEmpty()
             .Average(p => p?.PresaleActions?
-                .Where(a => a.Date >= from)?
-                .Where(a => a.Date <= to)?
-                .Sum(a => a.TimeSpend) ?? 0);
+                            .Where(a => a.Date >= from)?
+                            .Where(a => a.Date <= to)?
+                            .Sum(_GetTimeSpend) ?? 0);
 
         return minutes == null ? TimeSpan.Zero : TimeSpan.FromMinutes((int)minutes);
     }

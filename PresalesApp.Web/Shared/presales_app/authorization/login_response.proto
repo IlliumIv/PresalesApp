@@ -1,0 +1,13 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Authorization";
+package presales_app.authorization;
+
+import "presales_app/custom_types/error.proto";
+import "presales_app/authorization/user.proto";
+
+message LoginResponse {
+	oneof kind {
+		custom_types.Error error = 1;
+		User user = 2;
+	}
+}

@@ -1,0 +1,10 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.ImageProvider";
+package presales_app.image_provider;
+
+import "presales_app/image_provider/get_image_request.proto";
+import "presales_app/image_provider/get_image_response.proto";
+
+service ImageProviderService {
+	rpc GetImage(GetImageRequest) returns (GetImageResponse);
+}

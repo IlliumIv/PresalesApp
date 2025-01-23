@@ -1,0 +1,12 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/custom_types/period.proto";
+
+message GetUnpaidProjectsRequest{
+	option deprecated = true;
+	string presale_name = 1;
+	presales_app.custom_types.Period period = 2;
+	bool is_main_project_include = 3;
+}

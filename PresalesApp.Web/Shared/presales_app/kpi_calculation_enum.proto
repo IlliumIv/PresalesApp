@@ -1,0 +1,9 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+enum KpiCalculation {
+	KPICALCULATION_DEFAULT = 0;
+	KPICALCULATION_PRE_ORDER_26 = 1;
+	KPICALCULATION_POST_ORDER_26 = 2;
+}

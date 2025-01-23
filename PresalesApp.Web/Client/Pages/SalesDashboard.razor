@@ -8,50 +8,59 @@
 <PageTitle>@Localization["SalesDashboardPage"]</PageTitle>
 
 <div class="overview">
-        <div class="legend">
-            <fieldset class="previousActualProfit">
-                <legend>Факт @(Previous.GetLocalizedPeriodName(Localization, false))</legend>
-                <p>
-                    @if (overview != null)
+    <div class="legend">
+        <fieldset class="previousActualProfit">
+            <legend>Факт @(_Previous.GetLocalizedPeriodName(Localization, false))</legend>
+            <p>
+                @if (_OverviewResponse != null)
                 {
-                    @Helper.ToCurrencyString(overview.PreviousActualProfit)
+                    @Helper.ToCurrencyString(_OverviewResponse.PreviousActualProfit)
                 }
             </p>
         </fieldset>
         <fieldset class="salesTarget">
-            <legend>План @(Current.GetLocalizedPeriodName(Localization, false))</legend>
-            <p>@if (overview != null)
+            <legend>План @(_Current.GetLocalizedPeriodName(Localization, false))</legend>
+            <p>
+                @if (_OverviewResponse != null)
                 {
-                    @Helper.ToCurrencyString(overview.CurrentSalesTarget)
-                }</p>
+                    @Helper.ToCurrencyString(_OverviewResponse.CurrentSalesTarget)
+                }
+            </p>
         </fieldset>
         <fieldset class="actualProfit">
-            <legend>Факт @(Current.GetLocalizedPeriodName(Localization, false))</legend>
-            <p>@if (overview != null)
+            <legend>Факт @(_Current.GetLocalizedPeriodName(Localization, false))</legend>
+            <p>
+                @if (_OverviewResponse != null)
                 {
-                    @Helper.ToCurrencyString(overview.CurrentActualProfit)
-                }</p>
+                    @Helper.ToCurrencyString(_OverviewResponse.CurrentActualProfit)
+                }
+            </p>
         </fieldset>
         <fieldset class="increase">
             <legend>Динамика</legend>
-            <p>@if (overview != null)
+            <p>
+                @if (_OverviewResponse != null)
                 {
-                    @Helper.ToCurrencyString(overview.CurrentActualProfit - overview.PreviousActualProfit, allowNegatives: true)
-                }</p>
+                    @(Helper.ToCurrencyString(_OverviewResponse.CurrentActualProfit
+                        - _OverviewResponse.PreviousActualProfit, allowNegatives: true))
+                }
+            </p>
         </fieldset>
     </div>
-    @if (overview == null)
+    @if (_OverviewResponse == null)
     {
         <Loader />
     }
     <div class="chart">
         <div class="charts">
-            <PieChart @ref="profitChart" TItem="decimal" OptionsJsonString="@GetPieChartOptions()" />
+            <PieChart @ref="_ProfitChart" TItem="decimal" OptionsJsonString="@_GetPieChartOptions()" />
             <div class="percent">
                 <p>
-                    @if (overview != null)
+                    @if (_OverviewResponse != null)
                     {
-                        @Helper.ToPercentString(overview.CurrentSalesTarget != 0 ? decimal.ToDouble(overview.CurrentActualProfit / overview.CurrentSalesTarget) : 0)
+                        @(Helper.ToPercentString(_OverviewResponse.CurrentSalesTarget != 0
+                            ? decimal.ToDouble(_OverviewResponse.CurrentActualProfit / _OverviewResponse.CurrentSalesTarget)
+                            : 0))
                     }
                 </p>
             </div>
@@ -60,13 +69,14 @@
             <fieldset class="leaderboard">
                 <legend>Лидеры продаж</legend>
                 <table>
-                    @if (overview != null)
+                    @if (_OverviewResponse != null)
                     {
-                        @foreach (var item in overview.CurrentTopSalesManagers.Select((manager, index) => new { index, manager }))
+                        @foreach (var item in _OverviewResponse.CurrentTopSalesManagers
+                            .Select((manager, index) => new { index, manager }))
                         {
                             var manager = item.manager;
                             <tr>
-                                <td><div style="background:@dataset_colors[item.index]">&nbsp;</div></td>
+                                <td><div style="background:@_DatasetColors[item.index]">&nbsp;</div></td>
                                 <td>@(item.index + 1). </td>
                                 <td>@manager.Name</td>
                                 <td>@Helper.ToCurrencyString(manager.Profit)</td>
@@ -79,17 +89,19 @@
     </div>
 </div>
 <div class="params d-flex">
-    <div class="@class_hide">
+    <div class="@_ClassHide">
         <label>Предыдущий период:</label>
-        <PeriodPicker Period="@Previous" PeriodChanged="(async (period) => { Previous = period; await OnPeriodChanged(); })" />
+        <PeriodPicker Period="@_Previous"
+                      PeriodChanged="(async (period) => { _Previous = period; await _OnPeriodChanged(); })" />
         <p />
         <label>Текущий период:</label>
-        <PeriodPicker Period="@Current" PeriodChanged="(async (period) => { Current = period; await OnPeriodChanged(); })" />
+        <PeriodPicker Period="@_Current"
+                      PeriodChanged="(async (period) => { _Current = period; await _OnPeriodChanged(); })" />
         <p />
-        <button class="btn btn-primary" title="@title_pin" @onclick="PinParams">
-            <span class="oi oi-pin @class_rotatePin" />
+        <button class="btn btn-primary" title="@_TitlePin" @onclick="_PinParams">
+            <span class="oi oi-pin @_ClassRotatePin" />
         </button>
-        <button class="btn btn-primary" title="Обновить данные" @onclick="HandleRedrawChart">
+        <button class="btn btn-primary" title="Обновить данные" @onclick="_HandleRedrawChart">
             <span class="oi oi-reload" />
         </button>
     </div>
