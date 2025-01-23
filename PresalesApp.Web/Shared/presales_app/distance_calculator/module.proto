@@ -1,0 +1,14 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.DistanceCalculator";
+package presales_app.distance_calculator;
+
+message Module {
+	int64 id = 1;
+	string name = 2;
+	double width_min_percentage = 3;
+	double height_min_percentage = 4;
+	int32 pixels_min = 5;
+	double width_min_in_meters = 6;
+	double height_min_in_meters = 7;
+	string description = 8;
+}

@@ -1,0 +1,10 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.DistanceCalculator";
+package presales_app.distance_calculator;
+
+import "presales_app/distance_calculator/get_modules_request.proto";
+import "presales_app/distance_calculator/get_modules_response.proto";
+
+service DistanceCalculatorService {
+	rpc GetModules(GetModulesRequest) returns (GetModulesResponse);
+}

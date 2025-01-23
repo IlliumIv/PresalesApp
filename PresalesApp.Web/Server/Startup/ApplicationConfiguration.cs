@@ -34,6 +34,7 @@ public static class ApplicationConfiguration
         app.UseAuthorization();
 
         app.MapGrpcService<AuthorizationService>().EnableGrpcWeb(); //.RequireCors("cors_policy");
+        app.MapGrpcService<DistanceCalculatorService>().EnableGrpcWeb();
         app.MapGrpcService<ImageProviderService>().EnableGrpcWeb();
         app.MapGrpcService<PresalesAppService>().EnableGrpcWeb();
 
