@@ -1,17 +1,18 @@
 ﻿using Blazored.LocalStorage;
-using PresalesApp.Web.Shared;
-using ApiClient = PresalesApp.Web.Shared.Api.ApiClient;
+using PresalesApp.Authorization;
+using AuthorizationClient = PresalesApp.Authorization
+    .AuthorizationService.AuthorizationServiceClient;
 
 namespace PresalesApp.Web.Client.Services.Authorization;
 
-public class AuthorizationService(
-    IdentityAuthenticationStateProvider provider,
-    ILocalStorageService storage,
-    ApiClient client)
+public class AuthorizationService(IdentityAuthenticationStateProvider provider,
+    ILocalStorageService storage, AuthorizationClient client)
 {
-    private readonly ILocalStorageService _LocalStorage = storage;
-    private readonly ApiClient _ApiClient = client;
     private readonly IdentityAuthenticationStateProvider _StateProvider = provider;
+
+    private readonly ILocalStorageService _LocalStorage = storage;
+
+    private readonly AuthorizationClient _ApiClient = client;
 
     public async Task<bool> TryRegister(RegisterRequest registerRequest)
     {
@@ -21,7 +22,9 @@ public class AuthorizationService(
 
     public async Task<bool> TryLogin(LoginRequest loginRequest)
     {
-        var responce = await _ApiClient.LoginAsync(loginRequest);
+        var some = _ApiClient.LoginAsync(loginRequest);
+
+        var responce = await some;
         return await _ProceedLoginResponceAsync(responce);
     }
 
@@ -33,12 +36,15 @@ public class AuthorizationService(
 
     private async Task<bool> _ProceedLoginResponceAsync(LoginResponse loginResponse)
     {
-        if(loginResponse.ResultCase == LoginResponse.ResultOneofCase.UserInfo)
+        if(loginResponse.KindCase == LoginResponse.KindOneofCase.User)
         {
-            await _LocalStorage.SetItemAsStringAsync("token", loginResponse.UserInfo.Token);
-            _StateProvider.MarkUserAsAuthenticated(loginResponse.UserInfo);
+            await _LocalStorage.SetItemAsStringAsync("token", loginResponse.User.Token);
+            _StateProvider.MarkUserAsAuthenticated(loginResponse.User);
             return true;
         }
-        return loginResponse.ResultCase == LoginResponse.ResultOneofCase.Error ? throw new Exception(loginResponse.Error.Message) : false;
+
+        return loginResponse.KindCase == LoginResponse.KindOneofCase.Error
+            ? throw new Exception(loginResponse.Error.Message)
+            : false;
     }
 }

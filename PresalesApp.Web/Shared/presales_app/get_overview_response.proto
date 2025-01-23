@@ -1,0 +1,18 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "google/protobuf/duration.proto";
+import "presales_app/presale.proto";
+import "presales_app/metrics.proto";
+import "presales_app/project+invoice.proto";
+
+message GetOverviewResponse {
+	repeated Presale presales = 1;
+	Metrics metrics = 2;
+	google.protobuf.Duration avg_director_time_to_reaction = 3;
+	repeated Project escalations = 4;
+	repeated Project forgotten = 5;
+	repeated Project new = 6;
+	repeated Project waiting = 7;
+}

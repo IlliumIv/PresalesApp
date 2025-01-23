@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using KpiCalculation = PresalesApp.Web.Shared.KpiCalculation;
+using PresalesApp.Shared;
 
 namespace PresalesApp.Web.Client.Views.Pickers;
 

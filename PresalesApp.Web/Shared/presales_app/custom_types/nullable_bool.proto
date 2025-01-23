@@ -1,0 +1,12 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.CustomTypes";
+package presales_app.custom_types;
+
+import "google/protobuf/struct.proto";
+
+message NullableBool {
+	oneof kind {
+		google.protobuf.NullValue null = 1;
+		bool value = 2;
+	}
+}

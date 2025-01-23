@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using pax.BlazorChartJs;
 using PresalesApp.Web.Client.Services.Authorization;
 using Radzen;
-using AppApi = PresalesApp.Web.Shared.Api;
-using BridgeApi = PresalesApp.Service.Api;
 
 namespace PresalesApp.Web.Client.Startup;
 
@@ -29,15 +27,17 @@ public static class ServicesConfiguration
         builder.Services.AddScoped<TooltipService>();
         builder.Services.AddScoped<ContextMenuService>();
 
-        builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
-        builder.Services.AddSingleton(services =>
+        builder.Services.AddTransient(provider =>
         {
-            var httpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler()));
             var channel = GrpcChannel.ForAddress(
-                $"http{(settings.UseSSL ? "s" : "")}://{settings.ServiceHost}:{settings.ServicePort}",
-                new GrpcChannelOptions { HttpClient = httpClient });
-            return new BridgeApi.ApiClient(channel);
+                $"http{(settings.UseSSL ? "s" : "")}:" +
+                $"//{settings.ServiceHost}:{settings.ServicePort}",
+                new()
+                {
+                    HttpClient = new(new GrpcWebHandler(GrpcWebMode.GrpcWeb,
+                    new HttpClientHandler()))
+                });
+            return new Service.Api.ApiClient(channel);
         });
 
         builder.Services.AddBlazorise();
@@ -53,10 +53,17 @@ public static class ServicesConfiguration
             options.ChartJsPluginDatalabelsLocation = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2";
         });
 
-        builder.Services.AddAuthGrpcClientTransient<AppApi.ApiClient>();
+        builder.Services.AddAuthGrpcClientTransient<PresalesApp.Shared.
+            PresalesAppService.PresalesAppServiceClient>();
+        builder.Services.AddAuthGrpcClientTransient<Authorization
+            .AuthorizationService.AuthorizationServiceClient>();
+        builder.Services.AddAuthGrpcClientTransient<ImageProvider.
+            ImageProviderService.ImageProviderServiceClient>();
+
         builder.Services.AddScoped<AuthorizationService>();
         builder.Services.AddScoped<IdentityAuthenticationStateProvider>();
-        builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<IdentityAuthenticationStateProvider>());
+        builder.Services.AddScoped<AuthenticationStateProvider>(provider
+            => provider.GetRequiredService<IdentityAuthenticationStateProvider>());
 
         builder.Services.AddAuthorizationCore();
 

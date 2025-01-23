@@ -1,36 +1,28 @@
-﻿using PresalesApp.Service.Bridges;
-using PresalesApp.Database;
-using Serilog;
+﻿using Serilog;
 
-namespace PresalesApp.Service.Startup
+namespace PresalesApp.Service.Startup;
+
+public static class ServicesConfiguration
 {
-    public static class ServicesConfiguration
+    public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
     {
-        public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
-        {
-            var appSettings = new AppSettings(builder.Configuration);
-            builder.Services.AddScoped(s => appSettings);
+        var appSettings = new AppSettings(builder.Configuration);
+        builder.Services.AddScoped(s => appSettings);
 
-            builder.Services.AddGrpc();
+        builder.Services.AddGrpc();
 
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy(
-                    name: "cors_policy",
-                    policy =>
-                    {
-                        policy
-                        .WithOrigins(appSettings.AllowedOrigins)
-                        // .AllowAnyMethod()
-                        // .AllowAnyOrigin()
-                        .AllowAnyHeader() // (Причина: заголовок «access-control-allow-origin» не разрешён согласно заголовку «Access-Control-Allow-Headers» из ответа CORS preflight).
-                        ;
-                    });
-            });
+        builder.Services.AddCors(options => options.AddPolicy(
+                name: "cors_policy",
+                policy => policy
+                    .WithOrigins(appSettings.AllowedOrigins)
+                    // .AllowAnyMethod()
+                    // .AllowAnyOrigin()
+                    .AllowAnyHeader() // (Причина: заголовок «access-control-allow-origin» не разрешён согласно
+                                      // заголовку «Access-Control-Allow-Headers» из ответа CORS preflight).
+));
 
-            builder.Host.UseSerilog();
+        builder.Host.UseSerilog();
 
-            return builder;
-        }
+        return builder;
     }
 }

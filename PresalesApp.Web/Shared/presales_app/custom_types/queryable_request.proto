@@ -1,0 +1,13 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.CustomTypes";
+package presales_app.custom_types;
+
+import "google/protobuf/empty.proto";
+import "presales_app/custom_types/query.proto";
+
+message QueryableRequest {
+	oneof result {
+		google.protobuf.Empty empty = 1;
+		Query query = 2;
+	}
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/custom_types/error.proto";
+import "presales_app/kpi.proto";
+
+message GetKpiResponse {
+	oneof kind {
+		presales_app.custom_types.Error error = 1;
+		Kpi kpi = 2;
+	}
+}

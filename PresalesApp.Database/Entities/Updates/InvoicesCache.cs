@@ -59,11 +59,11 @@ public class InvoicesCache : Update
         return cache_log_in_db;
     }
 
-    public override string ToString() =>
-        $"{{\"НачалоПериода\":\"{PeriodBegin.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
-        $"\"КонецПериода\":\"{PeriodEnd.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
-        $"\"ДатаРасчета\":\"{Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
-        $"\"СинхронизированоПо\":\"{SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
+    public override string ToString()
+        => $"{{\"НачалоПериода\":\"{PeriodBegin.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
+           $"\"КонецПериода\":\"{PeriodEnd.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
+           $"\"ДатаРасчета\":\"{Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
+           $"\"СинхронизированоПо\":\"{SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
 
     public override InvoicesCache GetPrevious()
     {

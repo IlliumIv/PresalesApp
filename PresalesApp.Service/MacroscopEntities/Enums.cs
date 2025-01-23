@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace PresalesApp.Service.MacroscopEntities;
+﻿namespace PresalesApp.Service.MacroscopEntities;
 
 public class Enums
 {

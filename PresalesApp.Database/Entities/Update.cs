@@ -22,7 +22,7 @@ public abstract class Update : Entity
 
     public abstract Update GetPrevious();
 
-    public override string ToString() =>
-        $"{{\"ДатаРасчета\":\"{Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
-        $"\"СинхронизированоПо\":\"{SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
+    public override string ToString()
+        => $"{{\"ДатаРасчета\":\"{Timestamp.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"," +
+           $"\"СинхронизированоПо\":\"{SynchronizedTo.ToLocalTime():dd.MM.yyyy HH:mm:ss.fff zzz}\"}}";
 }

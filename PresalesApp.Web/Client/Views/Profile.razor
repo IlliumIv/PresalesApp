@@ -3,60 +3,81 @@
 <AuthorizeView>
     <Authorized>
         <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined>
-            @GetProfile().Name
-            </RadzenButton>
-        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined Click=@Logout>
+            @_UserName
+        </RadzenButton>
+        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
+                      Click=@_Logout>
             @Localization["LogoutButtonText"]
-            </RadzenButton>
+        </RadzenButton>
     </Authorized>
     <NotAuthorized>
-        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined Click=@(() => _registerModal.Show())>
+        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
+                      Click=@(() => _RegisterModal.Show())>
             @Localization["RegisterModalButtonText"]
-            </RadzenButton>
-        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined Click=@(() => _loginModal.Show())>
+        </RadzenButton>
+        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
+                      Click=@(() => _LoginModal.Show())>
             @Localization["LoginButtonModalText"]
-            </RadzenButton>
+        </RadzenButton>
     </NotAuthorized>
 </AuthorizeView>
 
-<Modal @ref="_loginModal">
+@code {
+    // TODO: Use DialogService instead.
+}
+<Modal @ref="_LoginModal">
     <ModalContent Centered>
         <ModalBody>
             <Field>
                 <FieldLabel>@Localization["LoginText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]" Role="TextRole.Text" @bind-Text="_login" />
+                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]"
+                          Role="TextRole.Text" @bind-Text="_Login" />
             </Field>
             <Field>
                 <FieldLabel>@Localization["PasswordText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]" Role="TextRole.Password" @bind-Text="_password" />
+                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]"
+                          Role="TextRole.Password" @bind-Text="_Password" />
             </Field>
         </ModalBody>
         <ModalFooter>
-            <Button Color="Color.Light" Clicked="@(() => _loginModal.Hide())">@Localization["CloseButtonText"]</Button>
-            <Button Color="Color.Dark" Clicked="@Login" Disabled="@_loginDisabled">@Localization["LoginButtonModalText"]</Button>
+            <Button Color="Color.Light" Clicked="@(() => _LoginModal.Hide())">
+                @Localization["CloseButtonText"]
+            </Button>
+            <Button Color="Color.Dark" Clicked="@_TryLogin"
+                    Disabled="@_LoginDisabled">
+                @Localization["LoginButtonModalText"]
+            </Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
 
-<Modal @ref="_registerModal">
+<Modal @ref="_RegisterModal">
     <ModalContent Centered>
         <ModalBody>
             <Field>
                 <FieldLabel>@Localization["UsernameText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["UsernameTextPlaceholder"]" Role="TextRole.Text" @bind-Text="@GetProfile().Name" />
+                <TextEdit Placeholder="@Localization["UsernameTextPlaceholder"]"
+                          Role="TextRole.Text" @bind-Text="@_DesireUserName" />
             </Field>
             <Field>
                 <FieldLabel>@Localization["LoginText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]" Role="TextRole.Text" @bind-Text="_login" />
+                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]"
+                          Role="TextRole.Text" @bind-Text="_Login" />
             </Field>
             <Field>
                 <FieldLabel>@Localization["PasswordText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]" Role="TextRole.Password" @bind-Text="_password" />
+                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]"
+                          Role="TextRole.Password" @bind-Text="_Password" />
             </Field>
         </ModalBody>
         <ModalFooter>
-            <Button Color="Color.Light" Clicked="@(() => _registerModal.Hide())">@Localization["CloseButtonText"]</Button>
-            <Button Color="Color.Dark" Clicked="@Register" Disabled="@_registerDisabled">@Localization["RegisterModalButtonText"]</Button>
+            <Button Color="Color.Light" Clicked="@(() => _RegisterModal.Hide())">
+                @Localization["CloseButtonText"]
+            </Button>
+            <Button Color="Color.Dark" Clicked="@_TryRegister"
+                    Disabled="@_RegisterDisabled">
+                @Localization["RegisterModalButtonText"]
+            </Button>
         </ModalFooter>
     </ModalContent>
 </Modal>

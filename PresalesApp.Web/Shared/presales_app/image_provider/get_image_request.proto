@@ -1,0 +1,12 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.ImageProvider";
+package presales_app.image_provider;
+
+import "presales_app/image_provider/orientation_enum.proto";
+import "presales_app/image_provider/keyword_type_enum.proto";
+
+message GetImageRequest {
+	string keyword = 1;
+	Orientation orientation = 2;
+	KeywordType keyword_type = 3;
+}

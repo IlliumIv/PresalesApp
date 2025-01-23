@@ -1,6 +1,6 @@
 ﻿using Blazorise.Snackbar;
 using Microsoft.AspNetCore.Components;
-using PresalesApp.Web.Shared;
+using PresalesApp.Shared;
 using Radzen.Blazor;
 
 namespace PresalesApp.Web.Client.Views.Pickers;
@@ -26,7 +26,8 @@ public partial class FunnelStagePicker
 
     private FunnelStage _SelectedStage;
 
-    private readonly IEnumerable<FunnelStage> _Stages = Enum.GetValues(typeof(FunnelStage)).Cast<FunnelStage>().Where(i => i != FunnelStage.Any);
+    private readonly IEnumerable<FunnelStage> _Stages =
+        Enum.GetValues<FunnelStage>().Cast<FunnelStage>().Where(i => i != FunnelStage.Any);
 
     protected override void OnParametersSet() => _SelectedStage = Project.FunnelStage;
 
@@ -38,7 +39,7 @@ public partial class FunnelStagePicker
         }
 
         var isExpanded = DataGrid.IsRowExpanded(Project);
-        if (isExpanded) { await DataGrid.CollapseRows(new Project[] { Project }); }
+        if (isExpanded) { await DataGrid.CollapseRows([Project]); }
 
         _Disabled = true;
         _ImgDisplay = $"display: initial";
@@ -47,15 +48,15 @@ public partial class FunnelStagePicker
 
         try
         {
-            var result = await BridgeApi.SetProjectFunnelStageAsync(new Service.NewProjectFunnelStage
+            var response = await BridgeApi.SetProjectFunnelStageAsync(new()
             {
                 NewStage = (FunnelStage)stage,
                 ProjectNumber = Project.Number
             });
 
-            if(!result.IsSuccess)
+            if(!response.IsSuccess)
             {
-                throw new Exception(result.ErrorMessage);
+                throw new Exception(response.Error.Message);
             }
         }
         catch (Exception e)
@@ -72,7 +73,8 @@ public partial class FunnelStagePicker
 
         GlobalMsgHandler.Show(message, color);
 
-        if (isExpanded) { await DataGrid.ExpandRows(new Project[] { Project }); }
+        if (isExpanded) await DataGrid.ExpandRows([Project]);
+
         await OnChange.InvokeAsync((FunnelStage)stage);
     }
 }

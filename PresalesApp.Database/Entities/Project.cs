@@ -127,8 +127,8 @@ public class Project(string number) : Entity
             (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
     }
 
-    public bool IsForgotten(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180) =>
-        PresaleStartAt == DateTime.MinValue && BusinessTimeCalculator
+    public bool IsForgotten(int majorProjectMinAmount = 2000000, int majorProjectMaxTTR = 120, int maxTTR = 180)
+        => PresaleStartAt == DateTime.MinValue && BusinessTimeCalculator
             .CalculateBusinessMinutesLOCAL(start: ApprovalByTechDirectorAt, end: DateTime.Now)
             > (PotentialAmount > majorProjectMinAmount ? majorProjectMaxTTR : maxTTR);
 
@@ -143,7 +143,8 @@ public class Project(string number) : Entity
     }
 
     public int Rank(ref HashSet<PresaleAction> actionsIgnored, ref HashSet<PresaleAction> actionsTallied,
-        ref HashSet<Project> projectsIgnored, ref HashSet<Project> projectsFound, DateTime ignoreProjectsClosedAfter = new DateTime())
+        ref HashSet<Project> projectsIgnored, ref HashSet<Project> projectsFound,
+        DateTime ignoreProjectsClosedAfter = new DateTime())
     {
         if (projectsFound.Contains(this)) return 0;
         else projectsFound.Add(this);
@@ -192,12 +193,12 @@ public class Project(string number) : Entity
             (int)Math.Ceiling(time_spend / 60d) : (int)Math.Round(time_spend / 60d);
     }
 
-    private int _GetRankByActionType(ActionType actionType, int r) =>
-        (PresaleActions?.Any(a => a.Type == actionType) ?? false) ? r : 0;
+    private int _GetRankByActionType(ActionType actionType, int r)
+        => (PresaleActions?.Any(a => a.Type == actionType) ?? false) ? r : 0;
 
-    private int _GetRankByActionsSum(ActionType actionType, int rank) =>
-        PresaleActions?.Where(a => a.Type == actionType)
-        .Sum(a => actionType is ActionType.Unknown ? a.RegulationsRank : rank) ?? 0;
+    private int _GetRankByActionsSum(ActionType actionType, int rank)
+        => PresaleActions?.Where(a => a.Type == actionType)
+            .Sum(a => actionType is ActionType.Unknown ? a.RegulationsRank : rank) ?? 0;
 
     public static async Task<(bool IsSuccess, string ErrorMessage)> SetFunnelStageAsync(FunnelStage newStage, string projectNumber)
     {

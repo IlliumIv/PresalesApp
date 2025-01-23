@@ -1,0 +1,10 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/custom_types/period.proto";
+
+message GetSalesOverviewRequest {
+	presales_app.custom_types.Period previous = 1;
+	presales_app.custom_types.Period current = 2;
+}

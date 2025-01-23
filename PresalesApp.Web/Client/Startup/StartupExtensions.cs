@@ -2,30 +2,28 @@
 using Grpc.Core;
 using Microsoft.AspNetCore.Components;
 
-namespace PresalesApp.Web.Client.Startup
+namespace PresalesApp.Web.Client.Startup;
+
+public static class StartupExtensions
 {
-    public static class StartupExtensions
-    {
-        public static void AddAuthGrpcClientTransient<T>(this IServiceCollection services) where T : ClientBase
+    public static void AddAuthGrpcClientTransient<T>(this IServiceCollection services)
+        where T : ClientBase => services.AddTransient(provider =>
         {
-            services.AddTransient(provider =>
+            var navigationManager = provider.GetService<NavigationManager>();
+            var storage = provider.GetService<ISyncLocalStorageService>();
+
+            if (navigationManager != null && storage != null)
             {
-                var nav = provider.GetService<NavigationManager>();
-                var storage = provider.GetService<ISyncLocalStorageService>();
+                var token = storage.GetItem<string>("token");
+                var client = (T?)Activator.CreateInstance(typeof(T),
+                    navigationManager.GetAuthChannel(token ?? string.Empty));
 
-                if (nav != null && storage != null)
+                if (client != null)
                 {
-                    string token = storage.GetItem<string>("token");
-                    var client = (T?)Activator.CreateInstance(typeof(T), nav.GetAuthChannel(token));
-
-                    if (client != null)
-                    {
-                        return client;
-                    }
+                    return client;
                 }
+            }
 
-                return Activator.CreateInstance<T>();
-            });
-        }
-    }
+            return Activator.CreateInstance<T>();
+        });
 }

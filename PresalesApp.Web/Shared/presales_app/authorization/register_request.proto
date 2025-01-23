@@ -1,0 +1,11 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Authorization";
+package presales_app.authorization;
+
+import "presales_app/authorization/login_request.proto";
+import "presales_app/authorization/user.proto";
+
+message RegisterRequest {
+	LoginRequest login_request = 1;
+	User user = 2;
+}

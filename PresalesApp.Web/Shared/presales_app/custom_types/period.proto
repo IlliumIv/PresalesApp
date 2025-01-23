@@ -1,0 +1,12 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.CustomTypes";
+package presales_app.custom_types;
+
+import "google/protobuf/timestamp.proto";
+import "presales_app/custom_types/period_type_enum.proto";
+
+message Period {
+	google.protobuf.Timestamp from = 1;
+	google.protobuf.Timestamp to = 2;
+	presales_app.custom_types.PeriodType type = 3;
+}

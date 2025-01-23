@@ -1,0 +1,11 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+enum Position {
+	POSITION_NONE = 0;
+	POSITION_ENGINEER = 1;
+	POSITION_ACCOUNT = 2;
+	POSITION_DIRECTOR = 3;
+	POSITION_ANY = 4;
+}

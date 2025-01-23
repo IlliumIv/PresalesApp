@@ -1,0 +1,11 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.CustomTypes";
+package presales_app.custom_types;
+
+enum PeriodType {
+	PERIODTYPE_DAY = 0;
+	PERIODTYPE_MONTH = 1;
+	PERIODTYPE_QUARTER = 2;
+	PERIODTYPE_YEAR = 3;
+	PERIODTYPE_ARBITRARY = 4;
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/custom_types/decimal_value.proto";
+import "presales_app/manager.proto";
+
+message GetSalesOverviewResponse {
+	presales_app.custom_types.DecimalValue previous_actual_profit = 1;
+	presales_app.custom_types.DecimalValue current_actual_profit = 2;
+	presales_app.custom_types.DecimalValue current_sales_target = 3;
+	repeated Manager current_top_sales_managers = 4;
+}

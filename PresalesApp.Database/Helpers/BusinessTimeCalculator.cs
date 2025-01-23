@@ -61,7 +61,10 @@ public static class BusinessTimeCalculator
         var start_of_period = dt.TimeOfDay;
         var start_of_day = TimeSpan.FromHours(9);
 
-        end_of_day = end_of_day is null || end_of_day > TimeSpan.FromHours(day_type == 2 ? 17 : 18) ? TimeSpan.FromHours(day_type == 2 ? 17 : 18) : end_of_day;
+        end_of_day = end_of_day is null
+                     || end_of_day > TimeSpan.FromHours(day_type == 2 ? 17 : 18)
+                        ? TimeSpan.FromHours(day_type == 2 ? 17 : 18)
+                        : end_of_day;
         start_of_period = start_of_period > start_of_day ? start_of_period : start_of_day;
 
         return start_of_period > end_of_day
@@ -69,7 +72,9 @@ public static class BusinessTimeCalculator
             : day_type switch
         {
             // 1 - выходной день, 2 - рабочий и сокращенный, 3 - рабочий день (суббота/воскресенье)
-            0 => dt.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday ? 0 : ((TimeSpan)end_of_day - start_of_period).TotalMinutes,
+            0 => dt.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+                ? 0
+                : ((TimeSpan)end_of_day - start_of_period).TotalMinutes,
             1 => 0,
             2 => ((TimeSpan)end_of_day - start_of_period).TotalMinutes,
             3 => ((TimeSpan)end_of_day - start_of_period).TotalMinutes,
@@ -106,7 +111,8 @@ public static class BusinessTimeCalculator
 	                    <!--
 		                    days - праздники/короткие дни/рабочие дни (суббота либо воскресенье)
 		                    d (day) - день (формат ММ.ДД)
-		                    t (type) - тип дня: 1 - выходной день, 2 - рабочий и сокращенный (может быть использован для любого дня недели), 3 - рабочий день (суббота/воскресенье)
+		                    t (type) - тип дня: 1 - выходной день, 2 - рабочий и сокращенный
+                                (может быть использован для любого дня недели), 3 - рабочий день (суббота/воскресенье)
 		                    h (holiday) - номер праздника (ссылка на атрибут id тэга holiday)
 		                    f (from) - дата с которой был перенесен выходной день
 		                    суббота и воскресенье считаются выходными, если нет тегов day с атрибутом t=2 и t=3 за этот день

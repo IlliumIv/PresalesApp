@@ -1,0 +1,12 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/custom_types/period.proto";
+import "presales_app/kpi_calculation_enum.proto";
+
+message GetKpiRequest{
+	string presale_name = 1;
+	presales_app.custom_types.Period period = 2;
+	KpiCalculation kpi_calculation = 3;
+}

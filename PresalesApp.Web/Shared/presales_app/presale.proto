@@ -1,0 +1,15 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/metrics.proto";
+import "presales_app/department_enum.proto";
+import "presales_app/position_enum.proto";
+
+message Presale {
+	string name = 1;
+	Metrics metrics = 2;
+	Department Department = 3;
+	Position Position = 4;
+	bool is_active = 5;
+}

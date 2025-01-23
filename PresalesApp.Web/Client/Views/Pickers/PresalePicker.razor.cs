@@ -1,38 +1,36 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Components;
-using PresalesApp.Web.Shared;
+﻿using Microsoft.AspNetCore.Components;
+using PresalesApp.Shared;
 
-namespace PresalesApp.Web.Client.Views.Pickers
+namespace PresalesApp.Web.Client.Views.Pickers;
+
+partial class PresalePicker
 {
-    partial class PresalePicker
+    [CascadingParameter]
+    public MessageSnackbar GlobalMsgHandler { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSelectCallback { get; set; }
+
+    [Parameter]
+    public string SelectedPresale { get; set; } = string.Empty;
+
+    private GetNamesResponse? _PresalesResponse;
+
+    protected override async Task OnInitializedAsync()
     {
-        [CascadingParameter]
-        public MessageSnackbar GlobalMsgHandler { get; set; }
-
-        [Parameter]
-        public EventCallback<string> OnSelectCallback { get; set; }
-
-        [Parameter]
-        public string SelectedPresale { get; set; } = string.Empty;
-
-        private NamesResponse? presales;
-
-        protected override async Task OnInitializedAsync()
+        try
         {
-            try
-            {
-                presales = await AppApi.GetNamesAsync(new Empty());
-            }
-            catch (Exception e)
-            {
-                GlobalMsgHandler.Show(e.Message);
-            }
+            _PresalesResponse = await PresalesAppApi.GetNamesAsync(new());
         }
-
-        private void OnPresaleChanged(ChangeEventArgs e)
+        catch (Exception e)
         {
-            SelectedPresale = e?.Value?.ToString() ?? string.Empty;
-            OnSelectCallback.InvokeAsync(SelectedPresale);
+            GlobalMsgHandler.Show(e.Message);
         }
+    }
+
+    private void _OnPresaleChanged(ChangeEventArgs e)
+    {
+        SelectedPresale = e?.Value?.ToString() ?? string.Empty;
+        OnSelectCallback.InvokeAsync(SelectedPresale);
     }
 }

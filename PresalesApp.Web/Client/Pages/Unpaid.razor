@@ -1,62 +1,72 @@
 ﻿@page "/unpaid"
 @inject IJSRuntime js
+@using PresalesApp.Shared
 
 <PageTitle>@Localization["UnpaidPage"]</PageTitle>
 
 <h1>@Localization["UnpaidPage"]</h1>
 <p>@Localization["UnpaidPageDescription"]</p>
 <div class="d-flex">
-    <PresalePicker SelectedPresale="@_presale_name" OnSelectCallback="OnPresaleChanged" />
-    <PeriodPicker Period="@_period" PeriodChanged="OnPeriodChanged" />
+    <PresalePicker SelectedPresale="@_PresaleName" OnSelectCallback="_OnPresaleChanged" />
+    <PeriodPicker Period="@_Period" PeriodChanged="_OnPeriodChanged" />
     <input title="Учитывать счета в основных проектах" type="checkbox"
-            id="lookAtMains" value="@_is_main_project_include"
-            @onchange="((ChangeEventArgs e) => OnModeChanged(e?.Value))"
-            unchecked class="inline-check inline-check-big" style="cursor: help;" />
-
-    <Button @attributes="_btn_attrs" Color="Color.Dark" Clicked="DownloadFile">@Localization["DownloadReportButtonText"]</Button>
+           id="lookAtMains" value="@_Is_MainProjectInclude"
+           @onchange="((ChangeEventArgs e) => _OnModeChanged(e?.Value))"
+           unchecked class="inline-check inline-check-big" style="cursor: help;" />
+    <RadzenButton Attributes="@_BtnAttrs" ButtonStyle="ButtonStyle.Dark"
+                  Click="@_DownloadFile">
+        @Localization["DownloadReportButtonText"]
+    </RadzenButton>
 </div>
 
-@if (_response == null)
+@if (_Response == null)
 {
     <Loader />
 }
 else
 {
     <DataGrid TItem="Project"
-          Data="@_response?.Projects"
-            Filterable
-          Sortable="false"
-          PageSize="@int.MaxValue"
-            Responsive>
-    <DataGridColumns>
-        <DataGridCommandColumn />
-        <DataGridColumn Field="@nameof(Project.Number)" Caption="@Localization["ProjectNumberText"]"
-                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.DefaultFilter" />
-        <DataGridColumn Field="@nameof(Project.Name)" Caption="@Localization["ProjectNameText"]"
-                        Editable="false" CustomFilter="@DataGridFilters.DefaultFilter" />
-        <DataGridColumn Field="@nameof(Project.Presale)" Caption="@Localization["PresaleNameText"]"
-                        Editable="false" Width="15%" CustomFilter="@DataGridFilters.PresaleFilter" Context="project">
-            <DisplayTemplate>
-                @{
+              Data="@_Response?.Projects"
+              Filterable
+              Sortable="false"
+              PageSize="@int.MaxValue"
+              Responsive>
+        <DataGridColumns>
+            <DataGridCommandColumn />
+            <DataGridColumn Field="@nameof(Project.Number)"
+                            Caption="@Localization["ProjectNumberText"]" Editable="false"
+                            Width="10%" CustomFilter="@DataGridFilters.DefaultFilter" />
+            <DataGridColumn Field="@nameof(Project.Name)"
+                            Caption="@Localization["ProjectNameText"]" Editable="false"
+                            CustomFilter="@DataGridFilters.DefaultFilter" />
+            <DataGridColumn Field="@nameof(Project.Presale)"
+                            Caption="@Localization["PresaleNameText"]" Editable="false" Width="15%"
+                            CustomFilter="@DataGridFilters.PresaleFilter" Context="project">
+                <DisplayTemplate>
+                    @{
                         var name = (project as Project)?.Presale?.Name.GetFirstAndLastName();
                     }
-                    @(!string.IsNullOrEmpty(name) ? name : Localization["PresaleNotAssignedYetMessage"])
+                    @(!string.IsNullOrEmpty(name)
+                    ? name : Localization["PresaleNotAssignedYetMessage"])
                 </DisplayTemplate>
             </DataGridColumn>
-            <DataGridColumn Field="@nameof(Project.Status)" Caption="@Localization["ProjectStatusText"]"
-                        Editable="false" CustomFilter="@DataGridFilters.DefaultFilter" Context="project" Filterable="false">
+            <DataGridColumn Field="@nameof(Project.Status)" Context="project"
+                            Caption="@Localization["ProjectStatusText"]" Editable="false"
+                            CustomFilter="@DataGridFilters.DefaultFilter" Filterable="false">
                 <DisplayTemplate>
                     @((project as Project)?.Status.GetLocalizedName(Localization))
                 </DisplayTemplate>
             </DataGridColumn>
-            <DataGridColumn Field="@nameof(Project.Potential)" Caption="@Localization["ProjectPotentialText"]"
-                        Editable="false" Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter" Context="project">
+            <DataGridColumn Field="@nameof(Project.Potential)" Context="project"
+                            Caption="@Localization["ProjectPotentialText"]" Editable="false"
+                            Width="10%" CustomFilter="@DataGridFilters.DecimalValueFilter">
                 <DisplayTemplate>
                     @($"{Helper.ToCurrencyString((project as Project)?.Potential)}")
                 </DisplayTemplate>
             </DataGridColumn>
-            <DataGridDateColumn Field="@nameof(Project.ClosedAt)" Caption="@Localization["ProjectCloseDateText"]"
-                            Editable="false" Width="15%" CustomFilter="@DataGridFilters.GetDateTimeFilter" Context="project">
+            <DataGridDateColumn Field="@nameof(Project.ClosedAt)" Context="project"
+                                Caption="@Localization["ProjectCloseDateText"]" Editable="false"
+                                Width="15%" CustomFilter="@DataGridFilters.GetDateTimeFilter">
                 <DisplayTemplate>
                     @($"{(project as Project)?.ClosedAt.ToDateTime().ToPresaleTime()}")
                 </DisplayTemplate>

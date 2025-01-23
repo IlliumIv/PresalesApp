@@ -36,21 +36,30 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
         });
     }
 
-    public override async Task<IsActionSuccess> SetProjectFunnelStage(NewProjectFunnelStage request, ServerCallContext context)
+    public override async Task<IsActionSuccess>
+        SetProjectFunnelStage(NewProjectFunnelStage request, ServerCallContext context)
     {
         var newStage = request.NewStage;
         var projectNumber = request.ProjectNumber;
 
         var (IsSuccess, ErrorMessage) = await Project.SetFunnelStageAsync(newStage.Translate(), projectNumber);
 
-        return new IsActionSuccess
-        {
-            IsSuccess = IsSuccess,
-            ErrorMessage = ErrorMessage
-        };
+        return !string.IsNullOrEmpty(ErrorMessage)
+            ? new()
+            {
+                Error = new()
+                {
+                    Message = ErrorMessage,
+                }
+            }
+            : new ()
+            {
+                IsSuccess = IsSuccess
+            };
     }
 
-    public override async Task GetPresalesArrival(Empty request, IServerStreamWriter<Arrival> responseStream, ServerCallContext context)
+    public override async Task
+        GetPresalesArrival(Empty request, IServerStreamWriter<Arrival> responseStream, ServerCallContext context)
     {
         if(string.IsNullOrEmpty(_AppSettings.Macroscop.Host) ||
             string.IsNullOrEmpty(_AppSettings.Macroscop.Username))
@@ -63,7 +72,9 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
         using var client = _GetClient(out var auth);
         var r = $"event?responsetype=json";
         r += $"&filter={_AppSettings.Macroscop.EventId}";
-        r += string.IsNullOrEmpty(_AppSettings.Macroscop.EntranceChannelId) ? "" : $"&channelid={_AppSettings.Macroscop.EntranceChannelId}";
+        r += string.IsNullOrEmpty(_AppSettings.Macroscop.EntranceChannelId)
+            ? ""
+            : $"&channelid={_AppSettings.Macroscop.EntranceChannelId}";
 
         var m = new HttpRequestMessage(HttpMethod.Get, r);
         m.Headers.Add("Authorization", $"Basic {Convert.ToBase64String(Encoding.ASCII.GetBytes(auth))}");
@@ -99,8 +110,8 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
         catch(Exception e) { Log.Information(e.Message); }
     }
 
-    private static void _Send(IServerStreamWriter<Arrival> responseStream, Event @event) =>
-        responseStream.WriteAsync(new Arrival()
+    private static void _Send(IServerStreamWriter<Arrival> responseStream, Event @event)
+        => responseStream.WriteAsync(new Arrival()
         {
             Name = $"{@event.LastName} {@event.FirstName}",
             Timestamp = Timestamp.FromDateTime(@event.Timestamp),
@@ -109,7 +120,9 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
 
     private HttpClient _GetClient(out string auth)
     {
-        auth = $"{_AppSettings.Macroscop.Username}:{(_AppSettings.Macroscop.IsActiveDirectoryUser ? _AppSettings.Macroscop.Password : _AppSettings.Macroscop.Password.CreateMD5())}";
+        auth = $"{_AppSettings.Macroscop.Username}:{(_AppSettings.Macroscop.IsActiveDirectoryUser
+            ? _AppSettings.Macroscop.Password
+            : _AppSettings.Macroscop.Password.CreateMD5())}";
 
         var client = _AppSettings.Macroscop.UseSSL switch
         {
@@ -121,7 +134,8 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
             _ => new HttpClient()
         };
 
-        client.BaseAddress = new Uri($"http{(_AppSettings.Macroscop.UseSSL ? "s" : "")}://{_AppSettings.Macroscop.Host}:{_AppSettings.Macroscop.Port}");
+        client.BaseAddress = new Uri($"http{(_AppSettings.Macroscop.UseSSL ? "s" : "")}:"
+            + $"//{_AppSettings.Macroscop.Host}:{_AppSettings.Macroscop.Port}");
 
         return client;
     }
@@ -134,11 +148,13 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
 
         while(events.Count % 1000 == 0)
         {
-            var r = $"specialarchiveevents?" +
-                $"startTime={startTime.ToUniversalTime():dd.MM.yyyy HH:mm:ss}" +
-                $"&endTime={startTime.AddDays(1).ToUniversalTime():dd.MM.yyyy HH:mm:ss}" +
-                $"&eventId={_AppSettings.Macroscop.EventId}";
-            r += string.IsNullOrEmpty(_AppSettings.Macroscop.EntranceChannelId) ? "" : $"&channelid={_AppSettings.Macroscop.EntranceChannelId}";
+            var r = $"specialarchiveevents?"
+                + $"startTime={startTime.ToUniversalTime():dd.MM.yyyy HH:mm:ss}"
+                + $"&endTime={startTime.AddDays(1).ToUniversalTime():dd.MM.yyyy HH:mm:ss}"
+                + $"&eventId={_AppSettings.Macroscop.EventId}";
+            r += string.IsNullOrEmpty(_AppSettings.Macroscop.EntranceChannelId)
+                ? ""
+                : $"&channelid={_AppSettings.Macroscop.EntranceChannelId}";
             var m = new HttpRequestMessage(HttpMethod.Get, r);
             m.Headers.Add("Authorization", $"Basic {Convert.ToBase64String(Encoding.ASCII.GetBytes(auth))}");
 
@@ -182,8 +198,8 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
         return arrived;
     }
 
-    private bool _IsPresale(Event? @event) =>
-        @event != null && _Presales.Contains((@event.LastName, @event.FirstName));
+    private bool _IsPresale(Event? @event)
+        => @event != null && _Presales.Contains((@event.LastName, @event.FirstName));
 
     private static HashSet<Event> _ParseAnswer(string answer)
     {

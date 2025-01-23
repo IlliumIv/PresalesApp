@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using pax.BlazorChartJs;
+using PresalesApp.CustomTypes;
 using PresalesApp.Service;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
-using Period = PresalesApp.Web.Client.Helpers.Period;
 
 namespace PresalesApp.Web.Client.Pages;
 
@@ -17,39 +17,44 @@ partial class TestPage
     private int _Counter = 0;
 
     #region UriQuery
-    private const string _QueryFrom = "from";
-    [SupplyParameterFromQuery(Name = _QueryFrom)] public string? From { get; set; }
 
-    private const string _QueryTo = "to";
-    [SupplyParameterFromQuery(Name = _QueryTo)] public string? To { get; set; }
+    private const string _Q_Start = "from";
+    [SupplyParameterFromQuery(Name = _Q_Start)]
+    public string? Start { get; set; }
 
-    private const string _QueryPeriod = "period";
-    [SupplyParameterFromQuery(Name = _QueryPeriod)] public string? PeriodType { get; set; }
+    private const string _Q_End = "to";
+    [SupplyParameterFromQuery(Name = _Q_End)]
+    public string? End { get; set; }
+
+    private const string _Q_PeriodType = "period";
+    [SupplyParameterFromQuery(Name = _Q_PeriodType)]
+    public string? PeriodType { get; set; }
 
     private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        [_QueryFrom] = Period.Start.ToString(Helper.UriDateTimeFormat),
-        [_QueryTo] = Period.End.ToString(Helper.UriDateTimeFormat),
-        [_QueryPeriod] = Period.Type.ToString(),
+        [_Q_Start] = Period.Start.ToString(Helper.UriDateTimeFormat),
+        [_Q_End] = Period.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_PeriodType] = Period.Type.ToString(),
     };
+
     #endregion
 
-    public Period Period = new(DateTime.Now, Enums.PeriodType.Arbitrary);
+    public Helpers.Period Period = new(DateTime.Now, CustomTypes.PeriodType.Arbitrary);
 
     private void _CleanStorage()
     {
-        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryFrom}");
-        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryTo}");
-        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryPeriod}");
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_Start}");
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_End}");
+        Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PeriodType}");
     }
 
-    private void _OnPeriodChanged(Period period)
+    private void _OnPeriodChanged(Helpers.Period period)
     {
         Period = period;
 
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryFrom}", Period.Start);
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryTo}", Period.End);
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_QueryPeriod}", Period.Type);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_Start}", Period.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_End}", Period.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PeriodType}", Period.Type);
 
         _Counter++;
 
@@ -58,14 +63,34 @@ partial class TestPage
 
     protected override void OnInitialized()
     {
-        Helper.SetFromQueryOrStorage(value: From, query: _QueryFrom, uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
-        Helper.SetFromQueryOrStorage(value: To, query: _QueryTo, uri: Navigation.Uri, storage: Storage, param: ref Period.End);
-        Helper.SetFromQueryOrStorage(value: PeriodType, query: _QueryPeriod, uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
+        Helper.SetFromQueryOrStorage(value: Start, query: _Q_Start,
+            uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
+        Helper.SetFromQueryOrStorage(value: End, query: _Q_End,
+            uri: Navigation.Uri, storage: Storage, param: ref Period.End);
+        Helper.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
+            uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
 
         _HandleRedraw();
         base.OnInitialized();
+    }
+
+    private string _Modules;
+
+    private async Task _GetModules()
+    {
+        try
+        {
+            var response = await DistanceCalculatorApi.GetModulesAsync(new());
+            _Modules = response.ToString();
+        }
+        catch (Exception e)
+        {
+            GlobalMsgHandler.Show(e.Message);
+        }
+
+        StateHasChanged();
     }
 
     private async Task _HandleSayHello()
@@ -74,7 +99,7 @@ partial class TestPage
         {
             _Reply = await BridgeApi.SayHelloAsync(new HelloRequest() { Name = "Иван" });
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             GlobalMsgHandler.Show(e.Message);
         }
@@ -102,7 +127,7 @@ partial class TestPage
     {
         var res = new string[count];
 
-        for(var i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
             res[i] = ChartHelpers.Colors.ElementAt(i % ChartHelpers.Colors.Count).Key;
 
         return res;

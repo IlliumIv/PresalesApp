@@ -1,0 +1,14 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/presale.proto";
+import "presales_app/custom_types/decimal_value.proto";
+
+message GetProfitOverviewResponse {
+	repeated Presale presales = 1;
+	presales_app.custom_types.DecimalValue plan = 2;
+	presales_app.custom_types.DecimalValue left = 3;
+	map<string, presales_app.custom_types.DecimalValue> profit = 4;
+	presales_app.custom_types.DecimalValue actual = 5;
+}

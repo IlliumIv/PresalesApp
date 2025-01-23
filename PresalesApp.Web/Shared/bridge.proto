@@ -2,9 +2,11 @@ syntax = "proto3";
 option csharp_namespace = "PresalesApp.Service";
 package bridge;
 
-import "enums.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+
+import "presales_app/funnel_stage_enum.proto";
+import "presales_app/custom_types/error.proto";
 
 service Api {
 	rpc SayHello (HelloRequest) returns (HelloReply);
@@ -21,12 +23,14 @@ message Arrival {
 
 message NewProjectFunnelStage {
 	string project_number = 1;
-	enums.FunnelStage new_stage = 2;
+	presales_app.shared.FunnelStage new_stage = 2;
 }
 
 message IsActionSuccess {
-	bool is_success = 1;
-	string error_message = 2;
+	oneof kind {
+		bool is_success = 1;
+		presales_app.custom_types.Error error = 2;
+	}
 }
 
 message HelloRequest {

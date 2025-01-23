@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using PresalesApp.Database;
 using PresalesApp.Database.Entities;
-using PresalesApp.Web.Authorization;
 using PresalesApp.Web.Server.Authorization;
 using Radzen;
 using Serilog;
+using System.Text;
 using static PresalesApp.Database.DbController;
 
 namespace PresalesApp.Web.Server.Startup;
@@ -35,21 +36,20 @@ public static class ServicesConfiguration
             // Get the address that the app is currently running at
             var server = sp.GetRequiredService<IServer>();
             var addressFeature = server.Features.Get<IServerAddressesFeature>();
-            string baseAddress = addressFeature.Addresses.First();
-            return new HttpClient { BaseAddress = new Uri(baseAddress) };
+            var baseAddress = addressFeature?.Addresses.First();
+            return new HttpClient { BaseAddress = new Uri(baseAddress ?? string.Empty) };
         });
-
-
 
         builder.Services.AddGrpc();
 
-        builder.Services.AddDbContext<UsersContext>();
+        builder.Services.AddDbContext<AuthDbContext>();
 
         builder.Services.AddIdentity<User, IdentityRole>()
-            .AddEntityFrameworkStores<UsersContext>()
+            .AddEntityFrameworkStores<AuthDbContext>()
             .AddDefaultTokenProviders();
 
         var tokenParams = new TokenParameters(appSettings);
+
         builder.Services.AddSingleton(tokenParams);
 
         builder.Services.AddAuthentication(options =>
@@ -60,8 +60,19 @@ public static class ServicesConfiguration
         .AddJwtBearer(options =>
         {
             options.RequireHttpsMetadata = true;
-            options.UseSecurityTokenValidators = true;
-            options.SecurityTokenValidators.Add(new JwtTokenValidator(tokenParams));
+            options.TokenValidationParameters = new()
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer = tokenParams.Issuer,
+                ValidAudience = tokenParams.Audience,
+
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(tokenParams.SecretKey))
+            };
         });
 
         builder.Services.Configure<IdentityOptions>(options =>

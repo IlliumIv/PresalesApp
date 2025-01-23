@@ -1,0 +1,19 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.CustomTypes";
+package presales_app.custom_types;
+
+import "presales_app/custom_types/nullable_string.proto";
+import "presales_app/custom_types/nullable_int32.proto";
+import "presales_app/custom_types/nullable_bool.proto";
+
+message Query {
+	NullableString filter = 1;
+	NullableString orderby = 2;
+	NullableString expand = 3;
+	NullableInt32 top = 4;
+	NullableInt32 skip = 5;
+	NullableBool count = 6;
+	NullableString format = 7;
+	NullableString select = 8;
+	NullableString apply = 9;
+}

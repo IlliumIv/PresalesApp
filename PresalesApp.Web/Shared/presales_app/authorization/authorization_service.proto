@@ -1,0 +1,16 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Authorization";
+package presales_app.authorization;
+
+import "presales_app/authorization/login_request.proto";
+import "presales_app/authorization/login_response.proto";
+
+import "presales_app/authorization/register_request.proto";
+
+import "google/protobuf/empty.proto";
+
+service AuthorizationService {
+	rpc Login(LoginRequest) returns (LoginResponse);
+	rpc Register(RegisterRequest) returns (LoginResponse);
+	rpc GetState(google.protobuf.Empty) returns (LoginResponse);
+}

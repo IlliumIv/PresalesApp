@@ -1,0 +1,9 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.ImageProvider";
+package presales_app.image_provider;
+
+enum Orientation {
+	ORIENTATION_LANDSCAPE = 0;
+	ORIENTATION_PORTRAIT = 1;
+	ORIENTATION_SQUARISH = 2;
+}

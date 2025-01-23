@@ -1,0 +1,14 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/custom_types/period.proto";
+import "presales_app/department_enum.proto";
+import "presales_app/position_enum.proto";
+
+message GetProfitOverviewRequest {
+	presales_app.custom_types.Period period = 1;
+	Department Department = 2;
+	Position Position = 3;
+	bool only_active = 4;
+}

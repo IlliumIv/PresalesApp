@@ -1,7 +1,11 @@
 ﻿@using Enum = System.Enum
-@using KpiCalculation = PresalesApp.Web.Shared.KpiCalculation
+@using PresalesApp.Shared
 
-<select title="Тип расчёта" value="@KpiCalculationType" @onchange="_OnPositionChanged" class="form-select form-select-combobox">
+@code {
+    // TODO: Use RadzenDropDown instead.
+}
+<select title="Тип расчёта" value="@KpiCalculationType" @onchange="_OnPositionChanged"
+        class="form-select form-select-combobox">
     <option selected="@KpiCalculationType"></option>
     @foreach (KpiCalculation type in Enum.GetValues(typeof(KpiCalculation)))
     {

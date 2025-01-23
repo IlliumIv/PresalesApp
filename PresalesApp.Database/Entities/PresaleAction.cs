@@ -71,9 +71,9 @@ public class PresaleAction : Entity
         $"\"Описание\":\"{Description}\"," +
         $"\"Проект\":\"{Project?.Number}\"}}";
 
-    internal override bool TryUpdateIfExist(DbController.ControllerContext dbContext) =>
-        throw new NotImplementedException();
+    internal override bool TryUpdateIfExist(DbController.ControllerContext dbContext)
+        => throw new NotImplementedException();
 
-    internal override PresaleAction GetOrAddIfNotExist(DbController.ControllerContext dbContext) =>
-        throw new NotImplementedException();
+    internal override PresaleAction GetOrAddIfNotExist(DbController.ControllerContext dbContext)
+        => throw new NotImplementedException();
 }

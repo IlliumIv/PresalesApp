@@ -24,8 +24,11 @@
 @using PresalesApp.Web.Shared
 @using Radzen
 @using Radzen.Blazor
-@inject PresalesApp.Web.Shared.Api.ApiClient AppApi
+@inject PresalesApp.Shared.PresalesAppService.PresalesAppServiceClient PresalesAppApi
+@inject PresalesApp.Authorization.AuthorizationService.AuthorizationServiceClient AufApi
 @inject PresalesApp.Service.Api.ApiClient BridgeApi
+@inject PresalesApp.DistanceCalculator.DistanceCalculatorService.DistanceCalculatorServiceClient DistanceCalculatorApi
+@inject PresalesApp.ImageProvider.ImageProviderService.ImageProviderServiceClient ImageProviderApi
 @inject IStringLocalizer<App> Localization
 @inject Blazored.LocalStorage.ISyncLocalStorageService Storage
 @inject NavigationManager Navigation

@@ -1,0 +1,10 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.Shared";
+package presales_app.shared;
+
+import "presales_app/custom_types/decimal_value.proto";
+
+message Manager {
+	string name = 1;
+	presales_app.custom_types.DecimalValue profit = 2;
+}

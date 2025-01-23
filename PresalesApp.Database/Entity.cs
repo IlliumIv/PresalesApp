@@ -28,7 +28,7 @@ public abstract class Entity
 
     public abstract override string ToString();
 
-    public virtual void ToLog(bool isNew) =>
-        new Task(() => Log.Debug("{0}: {1}", isNew switch { true => "Add", false => "Update" }, this))
+    public virtual void ToLog(bool isNew)
+        => new Task(() => Log.Debug("{0}: {1}", isNew switch { true => "Add", false => "Update" }, this))
         .Start();
 }

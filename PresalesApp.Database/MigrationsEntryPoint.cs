@@ -11,8 +11,8 @@ public class MigrationsEntryPoint
 
     internal class MigrationsContext : ReadOnlyContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-            optionsBuilder.UseNpgsql($"host=;" +
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.UseNpgsql($"host=;" +
                 $"port=;" +
                 $"database=;" +
                 $"username=;" +
@@ -22,10 +22,10 @@ public class MigrationsEntryPoint
 
         public new int SaveChanges(bool acceptAll) => BaseSaveChanges(acceptAll);
 
-        public new Task<int> SaveChangesAsync(CancellationToken token = default) =>
-            BaseSaveChangesAsync(token);
+        public new Task<int> SaveChangesAsync(CancellationToken token = default)
+            => BaseSaveChangesAsync(token);
 
-        public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default) =>
-            BaseSaveChangesAsync(acceptAll, token);
+        public new Task<int> SaveChangesAsync(bool acceptAll, CancellationToken token = default)
+            => BaseSaveChangesAsync(acceptAll, token);
     }
 }

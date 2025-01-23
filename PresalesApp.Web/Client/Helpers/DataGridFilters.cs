@@ -1,58 +1,32 @@
 ﻿using Google.Protobuf.WellKnownTypes;
-using PresalesApp.Web.Shared;
+using PresalesApp.CustomTypes;
+using PresalesApp.Shared;
 
-namespace PresalesApp.Web.Client.Helpers
+namespace PresalesApp.Web.Client.Helpers;
+
+public static class DataGridFilters
 {
-    public static class DataGridFilters
-    {
-        public static bool PercentFilter(object doubleValue, object searchValue)
-        {
-            var @double = (double)doubleValue * 100;
-            if (double.TryParse(searchValue?.ToString(), out var filter))
-            {
-                return @double >= filter;
-            }
-            return true;
-        }
+    public static bool PercentFilter(object doubleValue, object searchValue)
+        => !double.TryParse(searchValue?.ToString(), out var filter)
+            || (double)doubleValue * 100 >= filter;
 
-        public static bool DecimalValueFilter(object decimalValue, object searchValue)
-        {
-            var @decimal = (decimal)(DecimalValue)decimalValue;
-            if (decimal.TryParse(searchValue?.ToString(), out var filter))
-            {
-                return @decimal >= filter;
-            }
-            return true;
-        }
+    public static bool DecimalValueFilter(object decimalValue, object searchValue)
+        => !decimal.TryParse(searchValue?.ToString(), out var filter)
+            || (decimal)(DecimalValue)decimalValue >= filter;
 
-        public static bool StatisticByProfitFilter(object statistic, object searchValue)
-        {
-            var @decimal = (decimal)((Statistic)statistic).Profit;
-            if (decimal.TryParse(searchValue?.ToString(), out var filter))
-            {
-                return @decimal >= filter;
-            }
-            return true;
-        }
+    public static bool StatisticByProfitFilter(object metrics, object searchValue)
+        => !decimal.TryParse(searchValue?.ToString(), out var filter)
+            || (decimal)((Metrics)metrics).Profit >= filter;
 
-        public static bool PresaleFilter(object itemValue, object searchValue)
-        {
-            var presale = (Presale)itemValue;
-            var search = searchValue?.ToString() ?? string.Empty;
-            return presale?.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? true;
-        }
+    public static bool PresaleFilter(object itemValue, object searchValue)
+        => ((Presale)itemValue)?.Name?.Contains(searchValue?.ToString() ?? string.Empty,
+            StringComparison.OrdinalIgnoreCase) ?? true;
 
-        public static bool GetDateTimeFilter(object itemValue, object searchValue) =>
-            DefaultFilter(((Timestamp)itemValue).ToDateTime().ToPresaleTime(), searchValue);
+    public static bool GetDateTimeFilter(object itemValue, object searchValue)
+        => DefaultFilter(((Timestamp)itemValue).ToDateTime().ToPresaleTime(), searchValue);
 
-        public static bool DefaultFilter(object itemValue, object searchValue)
-        {
-            if (searchValue is string defaultFilter)
-            {
-                return itemValue.ToString()?.Contains(defaultFilter, StringComparison.OrdinalIgnoreCase) ?? true;
-            }
-
-            return true;
-        }
-    }
+    public static bool DefaultFilter(object itemValue, object searchValue)
+        => searchValue is not string defaultFilter
+            || (itemValue.ToString()?.Contains(defaultFilter,
+                StringComparison.OrdinalIgnoreCase) ?? true);
 }
