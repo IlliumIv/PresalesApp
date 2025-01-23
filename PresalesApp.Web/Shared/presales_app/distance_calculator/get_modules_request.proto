@@ -1,0 +1,13 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.DistanceCalculator";
+package presales_app.distance_calculator;
+
+import "google/protobuf/empty.proto";
+import "presales_app/custom_types/query.proto";
+
+message GetModulesRequest {
+	oneof result {
+		google.protobuf.Empty empty = 1;
+		presales_app.custom_types.Query query = 2;
+	}
+}

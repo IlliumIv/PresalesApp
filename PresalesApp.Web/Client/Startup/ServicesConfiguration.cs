@@ -57,6 +57,8 @@ public static class ServicesConfiguration
             PresalesAppService.PresalesAppServiceClient>();
         builder.Services.AddAuthGrpcClientTransient<Authorization
             .AuthorizationService.AuthorizationServiceClient>();
+        builder.Services.AddAuthGrpcClientTransient<DistanceCalculator
+            .DistanceCalculatorService.DistanceCalculatorServiceClient>();
         builder.Services.AddAuthGrpcClientTransient<ImageProvider.
             ImageProviderService.ImageProviderServiceClient>();
 

@@ -1,0 +1,9 @@
+syntax = "proto3";
+// option csharp_namespace = "PresalesApp.DistanceCalculator";
+package presales_app.distance_calculator;
+
+import "presales_app/distance_calculator/module.proto";
+
+message GetModulesResponse {
+	repeated Module modules = 1;
+}
