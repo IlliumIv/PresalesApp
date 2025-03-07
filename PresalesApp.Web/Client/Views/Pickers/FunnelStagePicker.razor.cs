@@ -1,15 +1,20 @@
-﻿using Blazorise.Snackbar;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using PresalesApp.Shared;
+using Radzen;
 using Radzen.Blazor;
 
 namespace PresalesApp.Web.Client.Views.Pickers;
 
 public partial class FunnelStagePicker
 {
+    #region Injections
 
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
+    [Inject]
+    private NotificationService _NotificationService { get; set; }
+
+    #endregion
+
+    #region Parameters
 
     [Parameter, EditorRequired]
     public Project Project { get; set; }
@@ -20,6 +25,12 @@ public partial class FunnelStagePicker
     [Parameter]
     public EventCallback<FunnelStage> OnChange { get; set; }
 
+    #endregion
+
+    #region Private
+
+    #region Members
+
     private bool _Disabled = false;
 
     private string _ImgDisplay = $"display: none";
@@ -29,7 +40,9 @@ public partial class FunnelStagePicker
     private readonly IEnumerable<FunnelStage> _Stages =
         Enum.GetValues<FunnelStage>().Cast<FunnelStage>().Where(i => i != FunnelStage.Any);
 
-    protected override void OnParametersSet() => _SelectedStage = Project.FunnelStage;
+    #endregion
+
+    #region Methods
 
     private async Task _DropDown0Change(object stage)
     {
@@ -39,12 +52,13 @@ public partial class FunnelStagePicker
         }
 
         var isExpanded = DataGrid.IsRowExpanded(Project);
-        if (isExpanded) { await DataGrid.CollapseRows([Project]); }
+        if (isExpanded)
+        { await DataGrid.CollapseRows([Project]); }
 
         _Disabled = true;
         _ImgDisplay = $"display: initial";
         var message = "Stage updated sucessfully";
-        var color = SnackbarColor.Success;
+        var color = NotificationSeverity.Success;
 
         try
         {
@@ -54,7 +68,7 @@ public partial class FunnelStagePicker
                 ProjectNumber = Project.Number
             });
 
-            if(!response.IsSuccess)
+            if (!response.IsSuccess)
             {
                 throw new Exception(response.Error.Message);
             }
@@ -62,7 +76,7 @@ public partial class FunnelStagePicker
         catch (Exception e)
         {
             message = e.Message;
-            color = SnackbarColor.Danger;
+            color = NotificationSeverity.Error;
             stage = Project.FunnelStage;
         }
 
@@ -71,10 +85,17 @@ public partial class FunnelStagePicker
         _SelectedStage = Project.FunnelStage;
         _Disabled = false;
 
-        GlobalMsgHandler.Show(message, color);
+        _NotificationService.Notify(color, message);
 
-        if (isExpanded) await DataGrid.ExpandRows([Project]);
+        if (isExpanded)
+            await DataGrid.ExpandRows([Project]);
 
         await OnChange.InvokeAsync((FunnelStage)stage);
     }
+
+    #endregion
+
+    #endregion
+
+    protected override void OnParametersSet() => _SelectedStage = Project.FunnelStage;
 }

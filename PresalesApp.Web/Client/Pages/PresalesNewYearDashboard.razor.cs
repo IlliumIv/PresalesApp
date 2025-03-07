@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using PresalesApp.Web.Client.Helpers;
-using PresalesApp.Web.Client.Views;
+using PresalesApp.Web.Client.Extensions;
 using PresalesApp.Shared;
 using PresalesApp.CustomTypes;
 using System.Globalization;
@@ -9,13 +8,14 @@ using Google.Protobuf.WellKnownTypes;
 using pax.BlazorChartJs;
 using PresalesApp.ImageProvider;
 using PresalesApp.Extensions;
+using Radzen;
 
 namespace PresalesApp.Web.Client.Pages;
 
 partial class PresalesNewYearDashboard
 {
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
+    [Inject]
+    private NotificationService _NotificationService { get; set; }
 
     #region UriQuery
 
@@ -41,8 +41,8 @@ partial class PresalesNewYearDashboard
 
     private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        [_Q_Start] = _Period.Start.ToString(Helper.UriDateTimeFormat),
-        [_Q_End] = _Period.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_Start] = _Period.Start.ToString(Helpers.UriDateTimeFormat),
+        [_Q_End] = _Period.End.ToString(Helpers.UriDateTimeFormat),
         [_Q_Keyword] = _ImageKeyword,
         [_Q_DepartmentType] = _Department.ToString(),
         [_Q_KeywordType] = _KeywordType.ToString(),
@@ -58,7 +58,7 @@ partial class PresalesNewYearDashboard
 
     private KeywordType _KeywordType = ImageProvider.KeywordType.Query;
 
-    private readonly Helpers.Period _Period = new(new(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc),
+    private readonly Extensions.Period _Period = new(new(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc),
         PeriodType.Quarter);
 
     private GetImageResponse _Img;
@@ -103,15 +103,15 @@ partial class PresalesNewYearDashboard
 
     protected override void OnInitialized()
     {
-        Helper.SetFromQueryOrStorage(value: Start, query: _Q_Start,
+        Helpers.SetFromQueryOrStorage(value: Start, query: _Q_Start,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.Start);
-        Helper.SetFromQueryOrStorage(value: End, query: _Q_End,
+        Helpers.SetFromQueryOrStorage(value: End, query: _Q_End,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.End);
-        Helper.SetFromQueryOrStorage(value: Keyword, query: _Q_Keyword,
+        Helpers.SetFromQueryOrStorage(value: Keyword, query: _Q_Keyword,
             uri: Navigation.Uri, storage: Storage, param: ref _ImageKeyword);
-        Helper.SetFromQueryOrStorage(value: DepartmentType, query: _Q_DepartmentType,
+        Helpers.SetFromQueryOrStorage(value: DepartmentType, query: _Q_DepartmentType,
             uri: Navigation.Uri, storage: Storage, param: ref _Department);
-        Helper.SetFromQueryOrStorage(value: KeywordType, query: _Q_KeywordType,
+        Helpers.SetFromQueryOrStorage(value: KeywordType, query: _Q_KeywordType,
             uri: Navigation.Uri, storage: Storage, param: ref _KeywordType);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
@@ -184,7 +184,8 @@ partial class PresalesNewYearDashboard
         }
         catch
         {
-            GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+            _NotificationService.Notify(NotificationSeverity.Error,
+                Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
             return;
         }
     }
@@ -233,13 +234,14 @@ partial class PresalesNewYearDashboard
             _Img = await ImageProviderApi.GetImageAsync(new()
             {
                 Keyword = _ImageKeyword,
-                Orientation = Orientation.Portrait,
+                Orientation = ImageProvider.Orientation.Portrait,
                 KeywordType = _KeywordType
             });
         }
         catch
         {
-            GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
+            _NotificationService.Notify(NotificationSeverity.Error,
+                Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value);
             return;
         }
     }

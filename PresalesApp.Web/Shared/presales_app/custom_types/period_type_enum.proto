@@ -2,10 +2,21 @@ syntax = "proto3";
 // option csharp_namespace = "PresalesApp.CustomTypes";
 package presales_app.custom_types;
 
+// Consider to use PeriodTypeUpdated instead.
 enum PeriodType {
+	option deprecated = true;
 	PERIODTYPE_DAY = 0;
 	PERIODTYPE_MONTH = 1;
 	PERIODTYPE_QUARTER = 2;
 	PERIODTYPE_YEAR = 3;
 	PERIODTYPE_ARBITRARY = 4;
+}
+
+enum PeriodTypeUpdated {
+	PERIODTYPE_UPDATED_NONE = 0;
+	PERIODTYPE_UPDATED_DAY = 1;
+	PERIODTYPE_UPDATED_MONTH = 2;
+	PERIODTYPE_UPDATED_QUARTER = 3;
+	PERIODTYPE_UPDATED_YEAR = 4;
+	PERIODTYPE_UPDATED_ARBITRARY = 5;
 }

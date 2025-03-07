@@ -6,3 +6,7 @@ function SaveAsFile(filename, bytesBase64) {
     link.click();
     document.body.removeChild(link);
 }
+
+function SetMinWidth(Id, Width) {
+    document.getElementById(Id).style.minWidth = Width;
+}

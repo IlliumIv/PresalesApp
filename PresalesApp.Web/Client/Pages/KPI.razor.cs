@@ -1,28 +1,27 @@
-﻿using Blazorise.DataGrid;
-using Blazorise.Snackbar;
-using Microsoft.AspNetCore.Components;
-using PresalesApp.Web.Client.Helpers;
+﻿using Microsoft.AspNetCore.Components;
+using PresalesApp.Web.Client.Extensions;
 using PresalesApp.Web.Client.Views;
 using PresalesApp.Shared;
 using PresalesApp.CustomTypes;
+using Radzen;
 
 namespace PresalesApp.Web.Client.Pages;
 
 partial class KPI
 {
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
+    [Inject]
+    private NotificationService _NotificationService { get; set; }
 
-    #region Private Members
+    #region Private
 
-    private bool _IsBtnDisabled = true;
+    #region Members
 
-    private Helpers.Period _Period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1),
+    private IEnumerable<Invoice>? _InvoicesQueryable;
+
+    private Extensions.Period _Period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1),
         CustomTypes.PeriodType.Month);
 
     private string _PresaleName = string.Empty;
-
-    private Kpi? _Response;
 
     private KpiCalculation _KpiCalculationType = KpiCalculation.Default;
 
@@ -33,6 +32,79 @@ partial class KPI
         CustomTypes.PeriodType.Year,
         CustomTypes.PeriodType.Arbitrary,
     ];
+
+    #endregion
+
+    #region Methods
+
+    private async Task _OnPresaleChanged(string name)
+    {
+        _PresaleName = name;
+
+        Storage.SetItemAsString($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PresaleName}", _PresaleName);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    private async Task _OnPeriodChanged(Extensions.Period period)
+    {
+        _Period = period;
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_Start}", _Period.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_End}", _Period.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PeriodType}", _Period.Type);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    private async Task _OnCalcMethodChanged(KpiCalculation method)
+    {
+        _KpiCalculationType = method;
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_CalculationMethod}", _KpiCalculationType);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    private async Task _UpdateData()
+    {
+        if (string.IsNullOrEmpty(_PresaleName))
+        {
+            _NotificationService.Notify(NotificationSeverity.Warning,
+                $"{Localization["NeedSelectPresaleMessageText"]}");
+            return;
+        }
+
+        var response = await PresalesAppApi.GetKpiAsync(new()
+        {
+            PresaleName = _PresaleName,
+            Period = _Period.Translate(),
+            KpiCalculation = _KpiCalculationType
+        });
+
+        if (response.KindCase == GetKpiResponse.KindOneofCase.Kpi)
+        {
+            _InvoicesQueryable = response.Kpi.Invoices;
+        }
+
+        (var message, var color) = response.KindCase switch
+        {
+            GetKpiResponse.KindOneofCase.Error => (response.Error.Message, NotificationSeverity.Error),
+            GetKpiResponse.KindOneofCase.Kpi => ($"{Localization["ReportIsDoneMessageText"]}",
+                                                 NotificationSeverity.Success),
+            GetKpiResponse.KindOneofCase.None => ($"{Localization["NoInvoicesForThisPeriodMessageText"]}",
+                                                  NotificationSeverity.Success),
+            _ => ($"{Localization["UnknownServerResponseMessageText"]}", NotificationSeverity.Error)
+        };
+
+        _NotificationService.Notify(color, message);
+        StateHasChanged();
+    }
+
+    #endregion
 
     #endregion
 
@@ -60,8 +132,8 @@ partial class KPI
 
     private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        [_Q_Start] = _Period.Start.ToString(Helper.UriDateTimeFormat),
-        [_Q_End] = _Period.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_Start] = _Period.Start.ToString(Helpers.UriDateTimeFormat),
+        [_Q_End] = _Period.End.ToString(Helpers.UriDateTimeFormat),
         [_Q_PeriodType] = _Period.Type.ToString(),
         [_Q_PresaleName] = _PresaleName,
         [_Q_CalculationMethod] = _KpiCalculationType.ToString(),
@@ -71,97 +143,18 @@ partial class KPI
 
     protected override async Task OnInitializedAsync()
     {
-        Helper.SetFromQueryOrStorage(value: Start, query: _Q_Start,
+        Helpers.SetFromQueryOrStorage(value: Start, query: _Q_Start,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.Start);
-        Helper.SetFromQueryOrStorage(value: End, query: _Q_End,
+        Helpers.SetFromQueryOrStorage(value: End, query: _Q_End,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.End);
-        Helper.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
+        Helpers.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.Type);
-        Helper.SetFromQueryOrStorage(value: PresaleName, query: _Q_PresaleName,
+        Helpers.SetFromQueryOrStorage(value: PresaleName, query: _Q_PresaleName,
             uri: Navigation.Uri, storage: Storage, param: ref _PresaleName);
-        Helper.SetFromQueryOrStorage(value: CalculationMethod, query: _Q_CalculationMethod,
+        Helpers.SetFromQueryOrStorage(value: CalculationMethod, query: _Q_CalculationMethod,
             uri: Navigation.Uri, storage: Storage, param: ref _KpiCalculationType);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
-        await _GenerateReport();
+        await _UpdateData();
     }
-
-    #region Private Methods
-
-    private static void _GetRowStyle(Invoice invoice, DataGridRowStyling styling)
-        => styling.Style = $"color: {Helper.SetColor(invoice)};";
-
-    private async Task _OnPresaleChanged(string name)
-    {
-        _PresaleName = name;
-
-        Storage.SetItemAsString($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PresaleName}", _PresaleName);
-        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
-
-        await _GenerateReport();
-    }
-
-    private async Task _OnPeriodChanged(Helpers.Period period)
-    {
-        _Period = period;
-
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_Start}", _Period.Start);
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_End}", _Period.End);
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PeriodType}", _Period.Type);
-        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
-
-        await _GenerateReport();
-    }
-
-    private async Task _OnCalcMethodChanged(KpiCalculation method)
-    {
-        _KpiCalculationType = method;
-
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_CalculationMethod}", _KpiCalculationType);
-        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
-
-        await _GenerateReport();
-    }
-
-    private async Task _DownloadReport()
-        => await _Response.Download(js,_PresaleName, _Period, Localization);
-
-    private async Task _GenerateReport()
-    {
-        _Response = null;
-        _IsBtnDisabled = true;
-
-        if (string.IsNullOrEmpty(_PresaleName))
-        {
-            GlobalMsgHandler.Show($"{Localization["NeedSelectPresaleMessageText"]}");
-            return;
-        }
-
-        var response = await PresalesAppApi.GetKpiAsync(new()
-        {
-            PresaleName = _PresaleName,
-            Period = _Period.Translate(),
-            KpiCalculation = _KpiCalculationType
-        });
-
-        if (response.KindCase == GetKpiResponse.KindOneofCase.Kpi)
-        {
-            _Response = response.Kpi;
-            _IsBtnDisabled = false;
-        }
-
-        (var message, var color) = response.KindCase switch
-        {
-            GetKpiResponse.KindOneofCase.Error => (response.Error.Message, SnackbarColor.Danger),
-            GetKpiResponse.KindOneofCase.Kpi => ($"{Localization["ReportIsDoneMessageText"]}",
-                                                 SnackbarColor.Success),
-            GetKpiResponse.KindOneofCase.None => ($"{Localization["NoInvoicesForThisPeriodMessageText"]}",
-                                                  SnackbarColor.Success),
-            _ => ($"{Localization["UnknownServerResponseMessageText"]}", SnackbarColor.Danger)
-        };
-
-        GlobalMsgHandler.Show(message, color);
-        StateHasChanged();
-    }
-    #endregion
 }

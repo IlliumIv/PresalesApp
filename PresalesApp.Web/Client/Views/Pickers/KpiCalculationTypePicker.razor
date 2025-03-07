@@ -1,14 +1,11 @@
-﻿@using Enum = System.Enum
-@using PresalesApp.Shared
+﻿@using PresalesApp.Shared
 
-@code {
-    // TODO: Use RadzenDropDown instead.
-}
-<select title="Тип расчёта" value="@KpiCalculationType" @onchange="_OnPositionChanged"
-        class="form-select form-select-combobox">
-    <option selected="@KpiCalculationType"></option>
-    @foreach (KpiCalculation type in Enum.GetValues(typeof(KpiCalculation)))
-    {
-        <option value="@type">@type.GetLocalizedName(Localization)</option>
-    }
-</select>
+<RadzenDropDown Name="KpiCalculationTypeDropDown" TValue="KpiCalculation" Value="@KpiCalculationType"
+                ValueChanged="@(calculationType => _OnCalculationTypeChanged(calculationType))" Data="@_CalculationTypes">
+    <Template>
+        @(Localization[$"{nameof(KpiCalculation)}{(KpiCalculation)context}Text"])
+    </Template>
+    <ValueTemplate>
+        @(Localization[$"{nameof(KpiCalculation)}{(KpiCalculation)context}Text"])
+    </ValueTemplate>
+</RadzenDropDown>

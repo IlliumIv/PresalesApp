@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components;
 using PresalesApp.Shared;
+using Radzen;
 
 namespace PresalesApp.Web.Client.Views.Pickers;
 
 partial class PresalePicker
 {
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
+    [Inject]
+    private NotificationService _NotificationService { get; set; }
 
     [Parameter]
     public EventCallback<string> OnSelectCallback { get; set; }
@@ -14,7 +15,9 @@ partial class PresalePicker
     [Parameter]
     public string SelectedPresale { get; set; } = string.Empty;
 
-    private GetNamesResponse? _PresalesResponse;
+    private GetNamesResponse _PresalesResponse;
+
+    private IEnumerable<string> _Names => _PresalesResponse?.Names ?? [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -24,13 +27,13 @@ partial class PresalePicker
         }
         catch (Exception e)
         {
-            GlobalMsgHandler.Show(e.Message);
+            _NotificationService.Notify(NotificationSeverity.Error, e.Message);
         }
     }
 
-    private void _OnPresaleChanged(ChangeEventArgs e)
+    private void _OnPresaleChanged(string e)
     {
-        SelectedPresale = e?.Value?.ToString() ?? string.Empty;
+        SelectedPresale = e;
         OnSelectCallback.InvokeAsync(SelectedPresale);
     }
 }

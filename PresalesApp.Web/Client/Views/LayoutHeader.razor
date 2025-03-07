@@ -1,14 +1,15 @@
 ﻿@using System.Reflection
 
-@inject IJSRuntime js
-
-<div class="layout-header px-4 d-flex">
-    <div class="version">v. @Assembly.GetEntryAssembly()?.GetName().Version</div>
+<div class="layout-header">
+    <RadzenLabel Text="@($"v. {Assembly.GetEntryAssembly()?.GetName().Version}")"
+                 Style="margin-right: auto;" />
     <Profile />
-    <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
-                  Click=@(async () => await js.InvokeAsync<object>("open", new []
-                  { "https://git.127.0.0.1/polyakov/PresalesApp/issues/new", "_blank" }))>
-        @Localization["SuggestImprovementsButtonText"]
+    <RadzenButton Text="@(Localization["SuggestImprovementsButtonText"])"
+                  Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Icon="prompt_suggestion"
+                  Click=@(async () => await _JsRuntime.InvokeVoidAsync("open",
+                      "https://git.127.0.0.1/polyakov/PresalesApp/issues/new", "_blank"))>
     </RadzenButton>
-    <CulturePicker />
+    <RadzenButton Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Icon="settings"
+                  Click="@(args => _OpenAppSettings())" />
+    <RadzenAppearanceToggle />
 </div>

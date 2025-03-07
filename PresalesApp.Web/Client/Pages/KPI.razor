@@ -1,23 +1,58 @@
 ﻿@page "/kpi"
 @inject IJSRuntime js
+@using Microsoft.AspNetCore.Components.Rendering
 @using PresalesApp.Shared
+@using PresalesApp.Web.Client.Views.QuickGridExtension
 
 <PageTitle>@Localization["KpiPage"]</PageTitle>
 
 <h1>@Localization["KpiPage"]</h1>
-<div class="d-flex">
-    <PresalePicker SelectedPresale="@_PresaleName" OnSelectCallback="_OnPresaleChanged" />
-    <PeriodPicker Period="@_Period" PeriodChanged="_OnPeriodChanged"
-                  ExcludePeriods="@_ExcludedPeriods" />
-    <label>@Localization["KpiCalculationTypeLabel"]</label>
-    <KpiCalculationTypePicker KpiCalculationType="@_KpiCalculationType"
-                              OnSelectCallback="_OnCalcMethodChanged" />
-    <Button Disabled="@_IsBtnDisabled" Color="Color.Dark"
-            Clicked="_DownloadReport">
-        @Localization["DownloadReportButtonText"]
-    </Button>
+
+<div>
+    <GridComponent Items="_InvoicesQueryable" Settings="@_RenderSettings"
+                   Columns="@([nameof(Invoice.Counterpart),
+                               nameof(Invoice.Number),
+                               nameof(Invoice.Date),
+                               nameof(Invoice.Amount),
+                               nameof(Invoice.Cost),
+                               nameof(Invoice.SalesAmount),
+                               nameof(Invoice.Percent),
+                               nameof(Invoice.Rank),
+                               nameof(Invoice.Profit)])" />
 </div>
 
+@code{
+    private void _RenderSettings(RenderTreeBuilder __builder)
+    {
+        <RadzenStack Gap="0.5rem">
+            <RadzenRow AlignItems="AlignItems.Center">
+                <RadzenColumn Size="12" SizeMD="1">
+                    <RadzenLabel Text="@($"{Localization["PresaleText"]}:")" />
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="2">
+                    <PresalePicker SelectedPresale="@_PresaleName"
+                                   OnSelectCallback="@(args => _OnPresaleChanged(args))" />
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="1">
+                    <RadzenLabel Text="@($"{Localization["PeriodTypeLabel"]}:")" />
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="5">
+                    <PeriodPicker Period="@_Period" ExcludePeriods="@_ExcludedPeriods"
+                                  PeriodChanged="@(args => _OnPeriodChanged(args))" />
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="1">
+                    <RadzenLabel Text="@Localization["KpiCalculationTypeLabel"]" />
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="2">
+                    <KpiCalculationTypePicker KpiCalculationType="@_KpiCalculationType" OnSelectCallback="_OnCalcMethodChanged" />
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+    }
+}
+
+@*
+    // TODO: Restore this.
 <Tabs RenderMode="TabsRenderMode.LazyReload" SelectedTab="report">
     <Items>
         <Tab Name="report">@Localization["ReportText"]</Tab>
@@ -215,3 +250,5 @@
         </TabPanel>
     </Content>
 </Tabs>
+
+*@

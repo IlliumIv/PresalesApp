@@ -11,12 +11,11 @@ partial class PositionPicker
     [Parameter]
     public Position Position { get; set; } = Position.Any;
 
-    private void _OnPositionChanged(ChangeEventArgs e)
+    private readonly IEnumerable<Position> _Positions = Enum.GetValues<Position>();
+
+    private void _OnPositionChanged(Position position)
     {
-        if (Enum.TryParse<Position>(e?.Value?.ToString(), out var _p))
-        {
-            Position = _p;
-            OnSelectCallback.InvokeAsync(Position);
-        }
+        Position = position;
+        OnSelectCallback.InvokeAsync(Position);
     }
 }

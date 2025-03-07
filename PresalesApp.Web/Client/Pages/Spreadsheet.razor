@@ -49,83 +49,83 @@ else
                 <tr>
                     <td>@presale.Name.GetFirstAndLastName()</td>
                     <td title="@_GetTitleInWork()">
-                        @Helper.ToEmptyIfZeroString(presale.Metrics.InWork)
+                        @Helpers.ToEmptyIfZeroString(presale.Metrics.InWork)
                     </td>
                     <td title="@_TitleAssign">
-                        @Helper.ToEmptyIfZeroString(presale.Metrics.Assign)
+                        @Helpers.ToEmptyIfZeroString(presale.Metrics.Assign)
                     </td>
                     <td title="@_TitleWon">
-                        @Helper.ToEmptyIfZeroString(presale.Metrics.Won)
+                        @Helpers.ToEmptyIfZeroString(presale.Metrics.Won)
                     </td>
                     <td title="@_TitleConversion">
-                        @Helper.ToPercentString(presale.Metrics.Conversion)
+                        @Helpers.ToPercentString(presale.Metrics.Conversion)
                     </td>
                     <td title="@_TitleLoss">
-                        @Helper.ToEmptyIfZeroString(presale.Metrics.Loss)
+                        @Helpers.ToEmptyIfZeroString(presale.Metrics.Loss)
                     </td>
                     <td>
-                        @Helper.ToCurrencyString(presale.Metrics.Potential)
+                        @Helpers.ToCurrencyString(presale.Metrics.Potential)
                     </td>
                     <td>
-                        @Helper.ToCurrencyString(presale.Metrics.Profit)
+                        @Helpers.ToCurrencyString(presale.Metrics.Profit)
                     </td>
                     <td title="@_TtitleAvgTimeToReaction">
-                        @Helper.ToMinutesString(presale.Metrics.AvgTimeToReaction.ToTimeSpan())
+                        @Helpers.ToMinutesString(presale.Metrics.AvgTimeToReaction.ToTimeSpan())
                     </td>
                     <td title="@_TitleTimeSpend">
-                        @Helper.ToHoursString(presale.Metrics.SumSpend.ToTimeSpan())
+                        @Helpers.ToHoursString(presale.Metrics.SumSpend.ToTimeSpan())
                     </td>
                     <td title="@_TitleAvtTimeSpend">
-                        @Helper.ToHoursString(presale.Metrics.AvgSpend.ToTimeSpan())
+                        @Helpers.ToHoursString(presale.Metrics.AvgSpend.ToTimeSpan())
                     </td>
                     <td title="@_TitleAbandoned">
-                        @Helper.ToEmptyIfZeroString(presale.Metrics.Abnd)
+                        @Helpers.ToEmptyIfZeroString(presale.Metrics.Abnd)
                     </td>
                     <td title="@_TitleAvgTimeToWin">
-                        @Helper.ToDaysString(presale.Metrics.AvgTimeToWin.ToTimeSpan())
+                        @Helpers.ToDaysString(presale.Metrics.AvgTimeToWin.ToTimeSpan())
                     </td>
                     <td title="@_TitleAvgRank">
-                        @Helper.ToEmptyIfZeroString(Math.Round(presale.Metrics.AvgRank, 1))
+                        @Helpers.ToEmptyIfZeroString(Math.Round(presale.Metrics.AvgRank, 1))
                     </td>
                 </tr>
             }
             <tr>
                 <td>Всего</td>
                 <td title="@_GetTitleInWork()">
-                    @Helper.ToEmptyIfZeroString(_OverviewResponse.Metrics.InWork)
+                    @Helpers.ToEmptyIfZeroString(_OverviewResponse.Metrics.InWork)
                 </td>
                 <td title="@_TitleAssign">
-                    @Helper.ToEmptyIfZeroString(_OverviewResponse.Metrics.Assign)
+                    @Helpers.ToEmptyIfZeroString(_OverviewResponse.Metrics.Assign)
                 </td>
                 <td title="@_TitleWon">
-                    @Helper.ToEmptyIfZeroString(_OverviewResponse.Metrics.Won)
+                    @Helpers.ToEmptyIfZeroString(_OverviewResponse.Metrics.Won)
                 </td>
                 <td title="@_TitleConversion">
-                    @Helper.ToPercentString(_OverviewResponse.Metrics.Conversion)
+                    @Helpers.ToPercentString(_OverviewResponse.Metrics.Conversion)
                 </td>
                 <td title="@_TitleLoss">
-                    @Helper.ToEmptyIfZeroString(_OverviewResponse.Metrics.Loss)
+                    @Helpers.ToEmptyIfZeroString(_OverviewResponse.Metrics.Loss)
                 </td>
                 <td>
-                    @Helper.ToCurrencyString(_OverviewResponse.Metrics.Potential)
+                    @Helpers.ToCurrencyString(_OverviewResponse.Metrics.Potential)
                 </td>
                 <td>
-                    @Helper.ToCurrencyString(_OverviewResponse.Metrics.Profit)
+                    @Helpers.ToCurrencyString(_OverviewResponse.Metrics.Profit)
                 </td>
                 <td title="@_TtitleAvgTimeToReaction">
-                    @Helper.ToMinutesString(_OverviewResponse.Metrics.AvgTimeToReaction.ToTimeSpan())
+                    @Helpers.ToMinutesString(_OverviewResponse.Metrics.AvgTimeToReaction.ToTimeSpan())
                 </td>
                 <td title="@_TitleTimeSpend">
-                    @Helper.ToHoursString(_OverviewResponse.Metrics.SumSpend.ToTimeSpan())
+                    @Helpers.ToHoursString(_OverviewResponse.Metrics.SumSpend.ToTimeSpan())
                 </td>
                 <td title="@_TitleAvtTimeSpend">
-                    @Helper.ToHoursString(_OverviewResponse.Metrics.AvgSpend.ToTimeSpan())
+                    @Helpers.ToHoursString(_OverviewResponse.Metrics.AvgSpend.ToTimeSpan())
                 </td>
                 <td title="@_TitleAbandoned">
-                    @Helper.ToEmptyIfZeroString(_OverviewResponse.Metrics.Abnd)
+                    @Helpers.ToEmptyIfZeroString(_OverviewResponse.Metrics.Abnd)
                 </td>
                 <td title="@_TitleAvgTimeToWin">
-                    @Helper.ToDaysString(_OverviewResponse.Metrics.AvgTimeToWin.ToTimeSpan())
+                    @Helpers.ToDaysString(_OverviewResponse.Metrics.AvgTimeToWin.ToTimeSpan())
                 </td>
                 <td title="@_TitleAvgRank">
                     @Math.Round(_OverviewResponse.Metrics.AvgRank, 1)
@@ -138,7 +138,7 @@ else
     {
         <p>
             Среднее время реакции руководителя (среднее время до назначения) в минутах:&nbsp;
-            @Helper.ToMinutesString(_OverviewResponse.AvgDirectorTimeToReaction.ToTimeSpan())
+            @Helpers.ToMinutesString(_OverviewResponse.AvgDirectorTimeToReaction.ToTimeSpan())
         </p>
     }
     @if (_OverviewResponse.Waiting.Count > 0)

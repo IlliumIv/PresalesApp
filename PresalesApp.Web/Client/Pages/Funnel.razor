@@ -37,7 +37,7 @@ else
             </div>
         </HeaderTemplate>
         <Columns>
-            <RadzenDataGridColumn Property=Presale.Name Title="@Localization["PresaleNameText"]" TItem=Project Width="12%">
+            <RadzenDataGridColumn Property=Presale.Name Title="@Localization["PresaleText"]" TItem=Project Width="12%">
                 <Template>
                     <span style="color: var(@_SetCellColor(@context))">
                         @context.Presale?.Name
@@ -51,7 +51,7 @@ else
                     </span>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property=dPotential Title="@Localization["ProjectPotentialText"]" TItem=Project Width="12%"
+            <RadzenDataGridColumn Property=dPotential Title="@Localization["ProjectPotentialTitle"]" TItem=Project Width="12%"
                               TextAlign="TextAlign.Right" FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals">
                 <Template>
                     <span style="color: var(@_SetCellColor(@context))">
@@ -59,7 +59,7 @@ else
                     </span>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property=dtApprovalByTechDirectorAt Title="@Localization["ProjectApprovalByTechDirectorAtText"]"
+            <RadzenDataGridColumn Property=dtApprovalByTechDirectorAt Title="@Localization["ProjectApprovalByTechDirectorAtTitle"]"
                               TItem=Project Width="15%"
                               FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals"
                               FilterValue="@_SelectedApprovalByTechDirectorAt">
@@ -72,7 +72,7 @@ else
                     <RadzenDatePicker @bind-Value=@_SelectedApprovalByTechDirectorAt ShowTime="true" />
                 </FilterTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property=dtLastActionTime Title="@Localization["ProjectLastFunnelActionText"]"
+            <RadzenDataGridColumn Property=dtLastActionTime Title="@Localization["ProjectLastFunnelActionTitle"]"
                               TItem=Project Width="15%"
                               FilterOperator="Radzen.FilterOperator.GreaterThanOrEquals"
                               FilterValue="@_SelectedLastAction" >
@@ -92,7 +92,7 @@ else
                     </span>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property=FunnelStage Title="@Localization["ProjectFunnelStageText"]" TItem=Project
+            <RadzenDataGridColumn Property=FunnelStage Title="@Localization["ProjectFunnelStageTitle"]" TItem=Project
                               Filterable="true"
                               Width="160px"
                               FilterValue=@_SelectedStage>

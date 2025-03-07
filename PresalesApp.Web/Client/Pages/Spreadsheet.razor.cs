@@ -1,19 +1,18 @@
 ﻿using Microsoft.AspNetCore.Components;
-using PresalesApp.CustomTypes;
 using PresalesApp.Shared;
-using PresalesApp.Web.Client.Helpers;
-using PresalesApp.Web.Client.Views;
+using PresalesApp.Web.Client.Extensions;
+using Radzen;
 
 namespace PresalesApp.Web.Client.Pages;
 
 partial class Spreadsheet
 {
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
+    [Inject]
+    private NotificationService _NotificationService { get; set; }
 
     #region Private Members
 
-    private Helpers.Period _Period = new(new DateTime(DateTime.Now.Year,
+    private Period _Period = new(new DateTime(DateTime.Now.Year,
         DateTime.Now.Month, 1).ToUniversalTime(),
         CustomTypes.PeriodType.Month);
 
@@ -84,8 +83,8 @@ partial class Spreadsheet
 
     private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        [_Q_Start] = _Period.Start.ToString(Helper.UriDateTimeFormat),
-        [_Q_End] = _Period.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_Start] = _Period.Start.ToString(Helpers.UriDateTimeFormat),
+        [_Q_End] = _Period.End.ToString(Helpers.UriDateTimeFormat),
         [_Q_PeriodType] = _Period.Type.ToString(),
         [_Q_DepartmentType] = _Department.ToString(),
         [_Q_PositionType] = _Position.ToString(),
@@ -101,18 +100,18 @@ partial class Spreadsheet
 
     protected override async Task OnInitializedAsync()
     {
-        Helper.SetFromQueryOrStorage(value: Start, query: _Q_Start,
+        Helpers.SetFromQueryOrStorage(value: Start, query: _Q_Start,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.Start);
-        Helper.SetFromQueryOrStorage(value: End, query: _Q_End,
+        Helpers.SetFromQueryOrStorage(value: End, query: _Q_End,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.End);
-        Helper.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
+        Helpers.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.Type);
 
-        Helper.SetFromQueryOrStorage(value: DepartmentType, query: _Q_DepartmentType,
+        Helpers.SetFromQueryOrStorage(value: DepartmentType, query: _Q_DepartmentType,
             uri: Navigation.Uri, storage: Storage, param: ref _Department);
-        Helper.SetFromQueryOrStorage(value: PositionType, query: _Q_PositionType,
+        Helpers.SetFromQueryOrStorage(value: PositionType, query: _Q_PositionType,
             uri: Navigation.Uri, storage: Storage, param: ref _Position);
-        Helper.SetFromQueryOrStorage(value: OnlyActiveOnes, query: _Q_OnlyActiveOnes,
+        Helpers.SetFromQueryOrStorage(value: OnlyActiveOnes, query: _Q_OnlyActiveOnes,
             uri: Navigation.Uri, storage: Storage, param: ref _OnlyActiveOnes);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
@@ -122,7 +121,7 @@ partial class Spreadsheet
 
     #region Private Methods
 
-    private async Task _OnPeriodChanged(Helpers.Period period)
+    private async Task _OnPeriodChanged(Period period)
     {
         _Period = period;
 
@@ -159,9 +158,9 @@ partial class Spreadsheet
             ? ""
             : $"{project.Presale?.Name.GetFirstAndLastName()}, ")}" +
               $"{project.Number}, {project.Name}, " +
-              $"{Helper.ToOneDateString(project.ApprovalByTechDirectorAt,
+              $"{Helpers.ToOneDateString(project.ApprovalByTechDirectorAt,
                   project.ApprovalBySalesDirectorAt)}" +
-              $"{Helper.ToDateString(project.PresaleStartAt, " - ")}";
+              $"{Helpers.ToDateString(project.PresaleStartAt, " - ")}";
 
     private async void _RunTimer()
     {
@@ -184,7 +183,8 @@ partial class Spreadsheet
         }
         catch (Exception e)
         {
-            GlobalMsgHandler.Show(e.Message);
+            _NotificationService.Notify(NotificationSeverity.Error,
+                e.Message);
         }
     }
 

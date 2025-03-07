@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using PresalesApp.CustomTypes;
-using PresalesApp.Web.Client.Helpers;
+using PresalesApp.Web.Client.Extensions;
 using PresalesApp.Web.Client.Views.Pickers.DropDown;
 
 namespace PresalesApp.Web.Client.Views.Pickers;
@@ -12,10 +12,10 @@ public partial class PeriodPicker
     private DropDownItem<DateTime>? _SelectedItem;
 
     [Parameter, EditorRequired]
-    public Helpers.Period Period { get; set; }
+    public Extensions.Period Period { get; set; }
 
     [Parameter]
-    public EventCallback<Helpers.Period> PeriodChanged { get; set; }
+    public EventCallback<Extensions.Period> PeriodChanged { get; set; }
 
     [Parameter]
     public HashSet<PeriodType> ExcludePeriods { get; set; } = [];
@@ -25,7 +25,7 @@ public partial class PeriodPicker
     protected async Task SelectedItemChanged(object item)
     {
         if (_ItemsSet.First() == item || _ItemsSet.Last() == item)
-            await _Select.CustomOpenPopup();
+            await _Select.OpenPopupAsync();
 
         _GenerateItemsSet(((DropDownItem<DateTime>)item).Value);
     }
@@ -76,7 +76,7 @@ public partial class PeriodPicker
         result.Add(new(dt.AddDays(7), Localization["NextWeekText"]));
 
         _ItemsSet = [.. result.OrderBy(x => x.Value)];
-        _SelectedItem = new(dt, dt.ToString(Helper.DayFormat).ToUpperFirstLetterString());
+        _SelectedItem = new(dt, dt.ToString(Helpers.DayFormat).ToUpperFirstLetterString());
 
         Period = new(dt, PeriodType.Day);
         if (shoudInvokeCallback) PeriodChanged.InvokeAsync(Period);
@@ -99,7 +99,7 @@ public partial class PeriodPicker
             $"{dt.AddMonths(12):yyyy}...".ToUpperFirstLetterString()));
 
         _ItemsSet = [.. result.OrderBy(x => x.Value)];
-        _SelectedItem = new(dt, dt.ToString(Helper.MonthFormat).ToUpperFirstLetterString());
+        _SelectedItem = new(dt, dt.ToString(Helpers.MonthFormat).ToUpperFirstLetterString());
 
         Period = new(dt, PeriodType.Month);
         if (shoudInvokeCallback) PeriodChanged.InvokeAsync(Period);
@@ -145,7 +145,7 @@ public partial class PeriodPicker
         result.Add(new(dt.AddYears(4), Localization["NextYearsText"]));
 
         _ItemsSet = [.. result.OrderBy(x => x.Value)];
-        _SelectedItem = new(dt, dt.ToString(Helper.YearFormat).ToUpperFirstLetterString());
+        _SelectedItem = new(dt, dt.ToString(Helpers.YearFormat).ToUpperFirstLetterString());
         _Select?.SetSelectedIndex(4);
 
         Period = new(dt, PeriodType.Year);

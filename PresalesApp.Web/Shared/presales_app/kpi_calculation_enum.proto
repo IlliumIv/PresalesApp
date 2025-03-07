@@ -2,8 +2,17 @@ syntax = "proto3";
 // option csharp_namespace = "PresalesApp.Shared";
 package presales_app.shared;
 
+// Consider to use KpiCalculationUpdated instead.
 enum KpiCalculation {
+	option deprecated = true;
 	KPICALCULATION_DEFAULT = 0;
 	KPICALCULATION_PRE_ORDER_26 = 1;
 	KPICALCULATION_POST_ORDER_26 = 2;
+}
+
+enum KpiCalculationUpdated {
+	KPICALCULATION_UPDATED_NONE = 0;
+	KPICALCULATION_UPDATED_DEFAULT = 1;
+	KPICALCULATION_UPDATED_PRE_ORDER_26 = 2;
+	KPICALCULATION_UPDATED_POST_ORDER_26 = 3;
 }

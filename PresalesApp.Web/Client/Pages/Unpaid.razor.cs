@@ -1,28 +1,86 @@
 ﻿using Microsoft.AspNetCore.Components;
-using PresalesApp.Web.Client.Helpers;
-using PresalesApp.Web.Client.Views;
 using PresalesApp.Shared;
-using PresalesApp.CustomTypes;
+using Radzen;
+using PresalesApp.Web.Client.Extensions;
 
 namespace PresalesApp.Web.Client.Pages;
 
 partial class Unpaid
 {
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
+    [Inject]
+    private NotificationService _NotificationService { get; set; }
 
-    #region Private Members
+    #region Private
 
-    private GetProjectsResponse? _Response;
+    #region Members
+
+    private IEnumerable<Project>? _ProjectsQueryable;
 
     private string _PresaleName = string.Empty;
 
     private bool _Is_MainProjectInclude = false;
 
-    private Helpers.Period _Period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1),
+    private Period _Period = new(new(DateTime.Now.Year, DateTime.Now.Month, 1),
         CustomTypes.PeriodType.Month);
 
-    private Dictionary<string, object> _BtnAttrs = new() { { "disabled", "disabled" } };
+    #endregion
+
+    #region Methods
+
+    private async Task _UpdateData()
+    {
+        try
+        {
+            _ProjectsQueryable = (await PresalesAppApi.GetUnpaidProjectsAsync(new()
+            {
+                IsMainProjectInclude = _Is_MainProjectInclude,
+                PresaleName = _PresaleName,
+                Period = _Period.Translate()
+            })).Projects;
+        }
+        catch (Exception e)
+        {
+            _NotificationService.Notify(NotificationSeverity.Error,
+                e.Message);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task _OnPresaleChanged(string name)
+    {
+        _PresaleName = name;
+
+        Storage.SetItemAsString($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PresaleName}", _PresaleName);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    private async Task _OnPeriodChanged(Period period)
+    {
+        _Period = period;
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_Start}", _Period.Start);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_End}", _Period.End);
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PeriodType}", _Period.Type);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    private async Task _OnModeChanged(object? obj)
+    {
+        _Is_MainProjectInclude = obj == null ? _Is_MainProjectInclude : (bool)obj;
+
+        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_IncludeMain}",
+            _Is_MainProjectInclude);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
+
+        await _UpdateData();
+    }
+
+    #endregion
 
     #endregion
 
@@ -50,8 +108,8 @@ partial class Unpaid
 
     private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        [_Q_Start] = _Period.Start.ToString(Helper.UriDateTimeFormat),
-        [_Q_End] = _Period.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_Start] = _Period.Start.ToString(Helpers.UriDateTimeFormat),
+        [_Q_End] = _Period.End.ToString(Helpers.UriDateTimeFormat),
         [_Q_PeriodType] = _Period.Type.ToString(),
         [_Q_PresaleName] = _PresaleName,
         [_Q_IncludeMain] = _Is_MainProjectInclude.ToString(),
@@ -61,81 +119,18 @@ partial class Unpaid
 
     protected override async Task OnInitializedAsync()
     {
-        Helper.SetFromQueryOrStorage(value: Start, query: _Q_Start,
+        Helpers.SetFromQueryOrStorage(value: Start, query: _Q_Start,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.Start);
-        Helper.SetFromQueryOrStorage(value: End, query: _Q_End,
+        Helpers.SetFromQueryOrStorage(value: End, query: _Q_End,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.End);
-        Helper.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
+        Helpers.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
             uri: Navigation.Uri, storage: Storage, param: ref _Period.Type);
-        Helper.SetFromQueryOrStorage(value: PresaleName, query: _Q_PresaleName,
+        Helpers.SetFromQueryOrStorage(value: PresaleName, query: _Q_PresaleName,
             uri: Navigation.Uri, storage: Storage, param: ref _PresaleName);
-        Helper.SetFromQueryOrStorage(value: IncludeMain, query: _Q_IncludeMain,
+        Helpers.SetFromQueryOrStorage(value: IncludeMain, query: _Q_IncludeMain,
             uri: Navigation.Uri, storage: Storage, param: ref _Is_MainProjectInclude);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
         await _UpdateData();
     }
-
-    #region Private Methods
-
-    private async Task _UpdateData()
-    {
-        try
-        {
-            _Response = await PresalesAppApi.GetUnpaidProjectsAsync(new()
-            {
-                IsMainProjectInclude = _Is_MainProjectInclude,
-                PresaleName = _PresaleName,
-                Period = _Period.Translate()
-            });
-
-            _BtnAttrs = [];
-        }
-        catch (Exception e)
-        {
-            _BtnAttrs = new() { { "disabled", "disabled" } };
-            GlobalMsgHandler.Show(e.Message);
-        }
-
-        StateHasChanged();
-    }
-
-    private async void _OnPresaleChanged(string name)
-    {
-        _PresaleName = name;
-
-        Storage.SetItemAsString($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PresaleName}", _PresaleName);
-        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
-
-        await _UpdateData();
-    }
-
-    private async Task _OnPeriodChanged(Helpers.Period period)
-    {
-        _Period = period;
-
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_Start}", _Period.Start);
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_End}", _Period.End);
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PeriodType}", _Period.Type);
-        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
-
-        await _UpdateData();
-    }
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-    private async Task _DownloadFile() => await _Response?.Projects.Download(js, Localization);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-
-    private async Task _OnModeChanged(object? obj)
-    {
-        _Is_MainProjectInclude = obj == null ? _Is_MainProjectInclude : (bool)obj;
-
-        Storage.SetItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_IncludeMain}",
-            _Is_MainProjectInclude);
-        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
-
-        await _UpdateData();
-    }
-
-    #endregion
 }

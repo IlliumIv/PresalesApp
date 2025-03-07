@@ -11,12 +11,11 @@ partial class KpiCalculationTypePicker
     [Parameter]
     public KpiCalculation KpiCalculationType { get; set; } = KpiCalculation.Default;
 
-    private void _OnPositionChanged(ChangeEventArgs e)
+    private readonly IEnumerable<KpiCalculation> _CalculationTypes = Enum.GetValues<KpiCalculation>();
+
+    private void _OnCalculationTypeChanged(KpiCalculation calculationType)
     {
-        if(Enum.TryParse<KpiCalculation>(e?.Value?.ToString(), out var _p))
-        {
-            KpiCalculationType = _p;
-            OnSelectCallback.InvokeAsync(KpiCalculationType);
-        }
+        KpiCalculationType = calculationType;
+        OnSelectCallback.InvokeAsync(KpiCalculationType);
     }
 }

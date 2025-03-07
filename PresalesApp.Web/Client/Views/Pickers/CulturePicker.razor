@@ -1,5 +1,2 @@
-﻿@using System.Globalization
-@using PresalesApp.Web.Client.Views.Pickers.DropDown
-
-<CustomRadzenDropDown Data=@_SupportedCultures @bind-Value=@_Item
-                      TextProperty="Text" Change="@SelectedItemChanged" />
+﻿<RadzenDropDown Name="CultureDropDown" Data=@_SupportedCultures @bind-Value=@_Item
+                TextProperty="Text" Change="@(args => SelectedItemChanged(args))" />

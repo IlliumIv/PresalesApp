@@ -4,11 +4,11 @@ using System.Runtime.Serialization;
 
 namespace PresalesApp.Database.Enums;
 
-[JsonConverter(typeof(SafeStringEnumConverter), Unknown)]
+[JsonConverter(typeof(SafeStringEnumConverter), None)]
 public enum ProjectStatus
 {
     [EnumMember(Value = "Неопределён")]
-    Unknown,
+    None,
 
     [EnumMember(Value = "В работе")]
     WorkInProgress,

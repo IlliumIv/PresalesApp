@@ -1,0 +1,136 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+@using PresalesApp.CustomTypes
+@using PresalesApp.Web.Client.Views.Pickers.DropDown
+@using System.Reflection
+
+@typeparam TGridItem
+
+<div>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+        @if (_FilteredItems != null)
+        {
+            <RadzenButton Text="@Localization["DownloadReportButtonText"]"
+                          Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Icon="download"
+                          Click="@(args => _DownloadFile())" />
+            <RadzenButton Text="@(ShowFilters ? Localization["FiltersToggleClearTitle"] : Localization["FiltersToggleShowTitle"])"
+                          Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Icon="@(ShowFilters ? "filter_alt_off" : "filter_alt")"
+                          Click="@(args => _ShowFiltersToggle())" />
+            <RadzenButton Text="@Localization["SelectColumnsButtonText"]"
+                          Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Icon="checklist"
+                          Click="@(args => _OpenColumnsSelector())" />
+        }
+        <RadzenButton Text="@(ShowSettings ? Localization["SettingsToggleHideTitle"] : Localization["SettingsToggleShowTitle"])"
+                      Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Icon="settings"
+                      Click="@(args => _ShowSettingsToggle())" />
+    </RadzenStack>
+    @if (ShowSettings)
+    {
+        <RadzenFieldset>
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start">
+                    <RadzenIcon Icon="settings" />
+                    <RadzenLabel Text="@Localization["RequestParamsFieldsetText"]" />
+                </RadzenStack>
+            </HeaderTemplate>
+            <ChildContent>
+                @_SettingsFragment
+            </ChildContent>
+        </RadzenFieldset>
+    }
+    <div class="quickgrid-container">
+        <CustomQuickGrid Items="_FilteredItems">
+            @_ColumnsFragment
+        </CustomQuickGrid>
+    </div>
+</div>
+
+@code
+{
+    private void _RenderEmpty(RenderTreeBuilder __builder) { }
+    
+    private RenderFragment<PropertyInfo> _RenderTextFilter => (PropertyInfo property) => __builder =>
+    {
+        <RadzenFormField Text="@($"{Localization[$"ComparsionType{_Filters[property.Name].Comparsion}Text"]}:")"
+                         AllowFloatingLabel="false" class="filter-field">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="@_Filters[property.Name].Value"
+                               @oninput="@(args => _BindedSet(property.Name, args))" />
+            </ChildContent>
+            <End>
+                @if (!string.IsNullOrEmpty(_Filters[property.Name].Value))
+                {
+                    <RadzenButton Icon="filter_alt_off" Size="ButtonSize.Small"
+                                  Variant="Variant.Text" ButtonStyle="ButtonStyle.Base"
+                                  Click="@(args => _Filters[property.Name] = new(string.Empty, _Filters[property.Name].Comparsion))" />
+                }
+            </End>
+        </RadzenFormField>
+    };
+
+    private RenderFragment<PropertyInfo> _RenderDateTimeFilter => (PropertyInfo property) => __builder =>
+    {
+        <RadzenFormField Text="@($"{Localization[$"ComparsionType{_Filters[property.Name].Comparsion}Text"]}:")">
+            <RadzenDatePicker ShowTime=true ShowSeconds=true TValue="@DateTime" AllowClear="true" class="datetime-filter"
+                              Change="@(args => _BindedSet(property.Name, args))" />
+        </RadzenFormField>
+    };
+
+    private RenderFragment<(PropertyInfo, int, int)> _RenderComparsionDropDown => ((PropertyInfo Property, int Skip, int SkipLast) @params) => __builder =>
+    {
+        <CustomRadzenDropDown Data=@(_GetHumanComparsionTypes(skip: @params.Skip, skipLast: @params.SkipLast)) class="comparsion-dropdown"
+                              @bind-Value=@(_Filters[@params.Property.Name].Comparsion)
+                              Change="@(args => _OnComparsionTypeChange(args, @params.Property.Name) )"
+                              PopupId="@(args => _OnDropDownPopupOpen(args))">
+            <Template Context="comparsionType">
+                @(Localization[$"ComparsionType{(Comparsion.ComparsionType)comparsionType}Text"])
+            </Template>
+        </CustomRadzenDropDown>
+    };
+
+    private RenderFragment<PropertyInfo> GetFilterFragment => (PropertyInfo property) => __builder =>
+    {
+        switch (property.PropertyType.Name)
+        {
+            case nameof(DecimalValue):
+                @_RenderComparsionDropDown((property, 1, 1))
+                @_RenderTextFilter(property)
+                break;
+            case nameof(Timestamp):
+                @_RenderComparsionDropDown((property, 1, 1))
+                @_RenderDateTimeFilter(property)
+                break;
+            default:
+                @_RenderTextFilter(property)
+                break;
+        }
+    };
+
+    private void _RenderColumns(RenderTreeBuilder __builder)
+    {
+        foreach (var property in Helpers.GetProperties<TGridItem>())
+        {
+            if (!Columns.Contains(property.Name)) continue;
+
+            <CustomTemplateColumn TGridItem="TGridItem"
+                                  SortBy="GridSort<TGridItem>.ByDescending(proj
+                                      => _GetSort(property.PropertyType, property.GetValue(proj)))">
+                <HeaderTemplate>
+                    <RadzenButton Variant="Variant.Text"
+                                  Click="@(args => { (context as CustomColumnBase<TGridItem>)?.Grid.SortByColumnAsync(context); })">
+                        <nobr class="rz-button-text">@(_GetHeaderTitle(property.Name))</nobr>
+                        <RadzenIcon Icon="@_GetSortIcon(context)" />
+                    </RadzenButton>
+                    @if (ShowFilters)
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="3px" class="filter-stack">
+                            @GetFilterFragment(property)
+                        </RadzenStack>
+                    }
+                </HeaderTemplate>
+                <ChildContent>
+                    @(_GetСontentConverter(property.PropertyType, property.GetValue(context)))
+                </ChildContent>
+            </CustomTemplateColumn>
+        }
+    }
+}

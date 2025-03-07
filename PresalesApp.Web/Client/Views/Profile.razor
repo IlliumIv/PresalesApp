@@ -1,83 +1,19 @@
-﻿@inject AuthorizationService _autorizeApi
+﻿@using PresalesApp.Web.Client.Views.Autorization
 
 <AuthorizeView>
     <Authorized>
-        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined>
-            @_UserName
-        </RadzenButton>
-        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
-                      Click=@_Logout>
-            @Localization["LogoutButtonText"]
-        </RadzenButton>
+        <RadzenButton Text="@_UserName"
+                      Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Icon="person" />
+        <RadzenButton Text="@Localization["LogoutButtonText"]"
+                      Variant="Variant.Text" ButtonStyle="ButtonStyle.Base" Icon="logout"
+                      Click="@(args => _Logout())" />
     </Authorized>
     <NotAuthorized>
-        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
-                      Click=@(() => _RegisterModal.Show())>
-            @Localization["RegisterModalButtonText"]
-        </RadzenButton>
-        <RadzenButton ButtonStyle=ButtonStyle.Dark Variant=Variant.Outlined
-                      Click=@(() => _LoginModal.Show())>
-            @Localization["LoginButtonModalText"]
-        </RadzenButton>
+        <RadzenButton Text="@Localization["RegisterModalButtonText"]"
+                      Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary" Icon="how_to_reg"
+                      Click="@(args => _OpenRegisterForm())" />
+        <RadzenButton Text="@Localization["LoginButtonModalText"]"
+                      Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary" Icon="login"
+                      Click="@(args => _OpenLoginForm())" />
     </NotAuthorized>
 </AuthorizeView>
-
-@code {
-    // TODO: Use DialogService instead.
-}
-<Modal @ref="_LoginModal">
-    <ModalContent Centered>
-        <ModalBody>
-            <Field>
-                <FieldLabel>@Localization["LoginText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]"
-                          Role="TextRole.Text" @bind-Text="_Login" />
-            </Field>
-            <Field>
-                <FieldLabel>@Localization["PasswordText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]"
-                          Role="TextRole.Password" @bind-Text="_Password" />
-            </Field>
-        </ModalBody>
-        <ModalFooter>
-            <Button Color="Color.Light" Clicked="@(() => _LoginModal.Hide())">
-                @Localization["CloseButtonText"]
-            </Button>
-            <Button Color="Color.Dark" Clicked="@_TryLogin"
-                    Disabled="@_LoginDisabled">
-                @Localization["LoginButtonModalText"]
-            </Button>
-        </ModalFooter>
-    </ModalContent>
-</Modal>
-
-<Modal @ref="_RegisterModal">
-    <ModalContent Centered>
-        <ModalBody>
-            <Field>
-                <FieldLabel>@Localization["UsernameText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["UsernameTextPlaceholder"]"
-                          Role="TextRole.Text" @bind-Text="@_DesireUserName" />
-            </Field>
-            <Field>
-                <FieldLabel>@Localization["LoginText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["LoginTextPlaceholder"]"
-                          Role="TextRole.Text" @bind-Text="_Login" />
-            </Field>
-            <Field>
-                <FieldLabel>@Localization["PasswordText"]</FieldLabel>
-                <TextEdit Placeholder="@Localization["PasswordTextPlaceholder"]"
-                          Role="TextRole.Password" @bind-Text="_Password" />
-            </Field>
-        </ModalBody>
-        <ModalFooter>
-            <Button Color="Color.Light" Clicked="@(() => _RegisterModal.Hide())">
-                @Localization["CloseButtonText"]
-            </Button>
-            <Button Color="Color.Dark" Clicked="@_TryRegister"
-                    Disabled="@_RegisterDisabled">
-                @Localization["RegisterModalButtonText"]
-            </Button>
-        </ModalFooter>
-    </ModalContent>
-</Modal>

@@ -1,16 +1,9 @@
-﻿@if (_PresalesResponse == null)
-{
-    <em>Loading...</em>
-}
-else
-{
-    <label>@Localization["PresaleNameText"]:</label>
-    <select value="@SelectedPresale" @onchange="_OnPresaleChanged"
-            class="form-select form-select-combobox">
-        <option selected="@SelectedPresale"></option>
-        @foreach (var name in _PresalesResponse.Names)
-        {
-            <option value="@name">@name.GetFirstAndLastName()</option>
-        }
-    </select>
-}
+﻿<RadzenDropDown Name="PresaleDropDown" TValue="string" Value="@SelectedPresale"
+                ValueChanged="@(args => _OnPresaleChanged(args))" Data="@_Names">
+    <Template>
+        @(Helpers.GetFirstAndLastName(context))
+    </Template>
+    <ValueTemplate>
+        @(Helpers.GetFirstAndLastName(context))
+    </ValueTemplate>
+</RadzenDropDown>

@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using PresalesApp.CustomTypes;
 
-namespace PresalesApp.Web.Client.Helpers;
+namespace PresalesApp.Web.Client.Extensions;
 
 public class Period(DateTime start, DateTime end, PeriodType periodType = PeriodType.Arbitrary)
 {
@@ -50,15 +50,17 @@ public class Period(DateTime start, DateTime end, PeriodType periodType = Period
                 End = Start.AddMonths(1).AddSeconds(-1);
                 break;
             case PeriodType.Quarter:
-                Start = new DateTime(Start.Year, ((Start.Month - 1) / 3 * 3) + 1, 1);
+                Start = new DateTime(Start.Year, (Start.Month - 1) / 3 * 3 + 1, 1);
                 End = Start.AddMonths(3).AddSeconds(-1);
                 break;
             case PeriodType.Year:
                 Start = new DateTime(Start.Year, 1, 1);
                 End = Start.AddYears(1).AddSeconds(-1);
                 break;
-            case PeriodType.Arbitrary: break;
-            default: throw new NotImplementedException();
+            case PeriodType.Arbitrary:
+                break;
+            default:
+                throw new NotImplementedException();
         }
     }
 }

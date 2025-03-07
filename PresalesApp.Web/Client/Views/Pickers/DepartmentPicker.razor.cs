@@ -11,12 +11,11 @@ partial class DepartmentPicker
     [Parameter]
     public Department Department { get; set; } = Department.Any;
 
-    private void _OnDepartmentChanged(ChangeEventArgs e)
+    private readonly IEnumerable<Department> _Departments = Enum.GetValues<Department>();
+
+    private void _OnDepartmentChanged(Department department)
     {
-        if (Enum.TryParse<Department>(e?.Value?.ToString(), out var _d))
-        {
-            Department = _d;
-            OnSelectCallback.InvokeAsync(Department);
-        }
+        Department = department;
+        OnSelectCallback.InvokeAsync(Department);
     }
 }

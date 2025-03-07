@@ -219,7 +219,7 @@
   <data name="PositionAnyText" xml:space="preserve">
     <value>Любая заданная</value>
   </data>
-  <data name="ProjectStatusUnknownText" xml:space="preserve">
+  <data name="ProjectStatusNoneText" xml:space="preserve">
     <value>Неизвестно</value>
   </data>
   <data name="ProjectStatusWorkInProgressText" xml:space="preserve">
@@ -264,16 +264,16 @@
   <data name="KpiReportFileName" xml:space="preserve">
     <value>Отчёт KPI за {0}, {1}</value>
   </data>
-  <data name="ProjectNumberText" xml:space="preserve">
+  <data name="ProjectNumberTitle" xml:space="preserve">
     <value>Номер проекта</value>
   </data>
-  <data name="ProjectNameText" xml:space="preserve">
+  <data name="ProjectNameTitle" xml:space="preserve">
     <value>Название проекта</value>
   </data>
-  <data name="PresaleNameText" xml:space="preserve">
+  <data name="PresaleText" xml:space="preserve">
     <value>Пресейл</value>
   </data>
-  <data name="ProjectStatusText" xml:space="preserve">
+  <data name="ProjectStatusTitle" xml:space="preserve">
     <value>Статус проекта</value>
   </data>
   <data name="ApprovalBySalesDirectorDateText" xml:space="preserve">
@@ -285,7 +285,7 @@
   <data name="PresaleStartDateText" xml:space="preserve">
     <value>Дата взятия пресейлом в работу</value>
   </data>
-  <data name="ProjectCloseDateText" xml:space="preserve">
+  <data name="ProjectClosedAtTitle" xml:space="preserve">
     <value>Дата закрытия проекта</value>
   </data>
   <data name="ProjectInvoicesCountText" xml:space="preserve">
@@ -315,13 +315,13 @@
   <data name="FunnelPage" xml:space="preserve">
     <value>Воронка</value>
   </data>
-  <data name="ProjectPotentialText" xml:space="preserve">
+  <data name="ProjectPotentialTitle" xml:space="preserve">
     <value>Потенциал</value>
   </data>
   <data name="PresaleNotAssignedYetMessage" xml:space="preserve">
     <value>Пресейл не назначен</value>
   </data>
-  <data name="ProjectApprovalByTechDirectorAtText" xml:space="preserve">
+  <data name="ProjectApprovalByTechDirectorAtTitle" xml:space="preserve">
     <value>Дата назначения пресейла</value>
   </data>
   <data name="TotalText" xml:space="preserve">
@@ -333,7 +333,7 @@
   <data name="ItemLegendText" xml:space="preserve">
     <value>Легенда</value>
   </data>
-  <data name="ProjectFunnelStageText" xml:space="preserve">
+  <data name="ProjectFunnelStageTitle" xml:space="preserve">
     <value>Этап воронки</value>
   </data>
   <data name="ActionsPlaceholder" xml:space="preserve">
@@ -345,37 +345,37 @@
   <data name="ExpandAllButtonText" xml:space="preserve">
     <value>Развернуть все</value>
   </data>
-  <data name="FunnelStageNone" xml:space="preserve">
+  <data name="FunnelStageNoneText" xml:space="preserve">
     <value>Нет</value>
   </data>
-  <data name="FunnelStageFirst" xml:space="preserve">
+  <data name="FunnelStageFirstText" xml:space="preserve">
     <value>Первый</value>
   </data>
-  <data name="FunnelStageSecond" xml:space="preserve">
+  <data name="FunnelStageSecondText" xml:space="preserve">
     <value>Второй</value>
   </data>
-  <data name="FunnelStageThird" xml:space="preserve">
+  <data name="FunnelStageThirdText" xml:space="preserve">
     <value>Третий</value>
   </data>
-  <data name="FunnelStageFourth" xml:space="preserve">
+  <data name="FunnelStageFourthText" xml:space="preserve">
     <value>Четвёртый</value>
   </data>
-  <data name="FunnelStageFifth" xml:space="preserve">
+  <data name="FunnelStageFifthText" xml:space="preserve">
     <value>Пятый</value>
   </data>
-  <data name="FunnelStageSixth" xml:space="preserve">
+  <data name="FunnelStageSixthText" xml:space="preserve">
     <value>Шестой</value>
   </data>
-  <data name="FunnelStageSeventh" xml:space="preserve">
+  <data name="FunnelStageSeventhText" xml:space="preserve">
     <value>Седьмой</value>
   </data>
-  <data name="FunnelStageEigth" xml:space="preserve">
+  <data name="FunnelStageEigthText" xml:space="preserve">
     <value>Восьмой</value>
   </data>
-  <data name="FunnelStageRefused" xml:space="preserve">
+  <data name="FunnelStageRefusedText" xml:space="preserve">
     <value>Отказ</value>
   </data>
-  <data name="FunnelStageAny" xml:space="preserve">
+  <data name="FunnelStageAnyText" xml:space="preserve">
     <value>Любой</value>
   </data>
   <data name="ActionNumberText" xml:space="preserve">
@@ -390,7 +390,7 @@
   <data name="SuggestImprovementsButtonText" xml:space="preserve">
     <value>Предложить улучшение</value>
   </data>
-  <data name="ProjectLastFunnelActionText" xml:space="preserve">
+  <data name="ProjectLastFunnelActionTitle" xml:space="preserve">
     <value>Дата последнего действия</value>
   </data>
   <data name="PreviousWeekText" xml:space="preserve">
@@ -429,16 +429,112 @@
   <data name="PresalesNYDashboardPage" xml:space="preserve">
     <value>Инфографика пресейлов</value>
   </data>
-  <data name="KpiCalculationTypeDefaultText" xml:space="preserve">
+  <data name="KpiCalculationDefaultText" xml:space="preserve">
     <value>По умолчанию</value>
   </data>
-  <data name="KpiCalculationTypePreOrder26Text" xml:space="preserve">
+  <data name="KpiCalculationPreOrder26Text" xml:space="preserve">
     <value>До приказа 26</value>
   </data>
-  <data name="KpiCalculationTypePostOrder26Text" xml:space="preserve">
+  <data name="KpiCalculationPostOrder26Text" xml:space="preserve">
     <value>После приказа 26</value>
   </data>
   <data name="KpiCalculationTypeLabel" xml:space="preserve">
     <value>Метод расчёта:</value>
+  </data>
+  <data name="CurrentThemeLabel" xml:space="preserve">
+    <value>Выбранная тема:</value>
+  </data>
+  <data name="CurrentCultureLabel" xml:space="preserve">
+    <value>Выбранная культура:</value>
+  </data>
+  <data name="OpenAppSettingsButtonText" xml:space="preserve">
+    <value>Открыть настройки</value>
+  </data>
+  <data name="SettingsWindowTitle" xml:space="preserve">
+    <value>Настройки приложения</value>
+  </data>
+  <data name="RecursiveInvoicesCountCheckboxName" xml:space="preserve">
+    <value>Рекурсивный подсчет счетов по основным проектам</value>
+  </data>
+  <data name="PeriodTypeLabel" xml:space="preserve">
+    <value>Период</value>
+  </data>
+  <data name="FiltersToggleShowTitle" xml:space="preserve">
+    <value>Показать фильтры</value>
+  </data>
+  <data name="FiltersToggleClearTitle" xml:space="preserve">
+    <value>Очистить фильтры</value>
+  </data>
+  <data name="RequiredValidatorHelperText" xml:space="preserve">
+    <value>- обязательное поле.</value>
+  </data>
+  <data name="FormValidationErrorText" xml:space="preserve">
+    <value>Не все обязательные поля заполнены.</value>
+  </data>
+  <data name="RequestParamsFieldsetText" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="CollapseTitle" xml:space="preserve">
+    <value>Свернуть</value>
+  </data>
+  <data name="ExpandTitle" xml:space="preserve">
+    <value>Развернуть</value>
+  </data>
+  <data name="SettingsToggleShowTitle" xml:space="preserve">
+    <value>Показать настройки</value>
+  </data>
+  <data name="SettingsToggleHideTitle" xml:space="preserve">
+    <value>Скрыть настройки</value>
+  </data>
+  <data name="SelectColumnsButtonText" xml:space="preserve">
+    <value>Выбрать столбцы</value>
+  </data>
+  <data name="SelectAllLabel" xml:space="preserve">
+    <value>Выбрать всё</value>
+  </data>
+  <data name="ProjectPresaleTitle" xml:space="preserve">
+    <value>Пресейл</value>
+  </data>
+  <data name="ProjectLastActionTimeTitle" xml:space="preserve">
+    <value>Дата последнего действия</value>
+  </data>
+  <data name="ProjectApprovalBySalesDirectorAtTitle" xml:space="preserve">
+    <value>Дата согласования РОП</value>
+  </data>
+  <data name="ProjectPresaleStartAtTitle" xml:space="preserve">
+    <value>Дата взятия в работу пресейлом</value>
+  </data>
+  <data name="ProjectActionsTitle" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="ProjectInvoicesTitle" xml:space="preserve">
+    <value>Счета</value>
+  </data>
+  <data name="ProjectsReportFileName" xml:space="preserve">
+    <value>Проекты, {0}</value>
+  </data>
+  <data name="ComparsionTypeNoneText" xml:space="preserve">
+    <value>Не задано</value>
+  </data>
+  <data name="ComparsionTypeGreaterThanText" xml:space="preserve">
+    <value>Больше</value>
+  </data>
+  <data name="ComparsionTypeGreaterThanOrEqualText" xml:space="preserve">
+    <value>Больше или равно</value>
+  </data>
+  <data name="ComparsionTypeLessThanText" xml:space="preserve">
+    <value>Меньше</value>
+  </data>
+  <data name="ComparsionTypeLessThanOrEqualText" xml:space="preserve">
+    <value>Меньше или равно</value>
+  </data>
+  <data name="ComparsionTypeEqualText" xml:space="preserve">
+    <value>Равно</value>
+  </data>
+  <data name="ComparsionTypeNotEqualText" xml:space="preserve">
+    <value>Не равно</value>
+  </data>
+  <data name="ComparsionTypeContainsText" xml:space="preserve">
+    <value>Содержит</value>
   </data>
 </root>

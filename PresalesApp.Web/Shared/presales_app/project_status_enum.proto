@@ -3,7 +3,7 @@ syntax = "proto3";
 package presales_app.shared;
 
 enum ProjectStatus {
-	PROJECT_STATUS_UNKNOWN = 0;
+	PROJECT_STATUS_NONE = 0;
 	PROJECT_STATUS_WORK_IN_PROGRESS = 1;
 	PROJECT_STATUS_WON = 2;
 	PROJECT_STATUS_LOSS = 3;

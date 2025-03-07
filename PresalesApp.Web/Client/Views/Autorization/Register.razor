@@ -1,0 +1,58 @@
+﻿<div>
+    <RadzenTemplateForm TItem="_RegisterModel" Data="@_FormModel"
+                        Submit="@(args => _OnSubmitAsync())"
+                        InvalidSubmit="@(args => _OnInvalidSubmit())">
+        <RadzenStack>
+            <RadzenRow>
+                <RadzenFormField Text="@Localization["UsernameText"]">
+                    <ChildContent>
+                        <RadzenTextBox AutoCompleteType="AutoCompleteType.Username" Disabled="@_Busy"
+                                       Change=@(args => _OnProfileNameChange(args)) @bind-Value="_FormModel.User.Name"
+                                       Name="Name" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Text="@($"{Localization["UsernameText"]} {Localization["RequiredValidatorHelperText"]}")"
+                                                 Component="Name" />
+                    </Helper>
+                </RadzenFormField>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenFormField Text="@Localization["LoginText"]">
+                    <ChildContent>
+                        <RadzenTextBox Disabled="@_Busy"
+                                       Change=@(args => _OnLoginChange(args)) @bind-Value="_FormModel.LoginRequest.Login"
+                                       Name="Login" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Text="@($"{Localization["LoginText"]} {Localization["RequiredValidatorHelperText"]}")"
+                                                 Component="Login" />
+                    </Helper>
+                </RadzenFormField>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenFormField Text="@Localization["PasswordText"]">
+                    <ChildContent>
+                        <RadzenPassword AutoComplete="false" Disabled="@_Busy"
+                                        Change=@(args => _OnPasswordChange(args)) @bind-Value="_FormModel.LoginRequest.Password"
+                                        Name="Password" />
+                    </ChildContent>
+                    <Helper>
+                        <RadzenRequiredValidator Text="@($"{Localization["PasswordText"]} {Localization["RequiredValidatorHelperText"]}")"
+                                                 Component="Password" />
+                    </Helper>
+                    <End>
+                        <RadzenButton Icon="@(_ShowPassword ? "visibility" : "visibility_off")" Click="@(args => _ShowPassword = !_ShowPassword)" Variant="Variant.Text" Size="ButtonSize.Small" />
+                    </End>
+                </RadzenFormField>
+            </RadzenRow>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center"
+                     Gap="1rem" class="rz-mt-8 rz-mb-4">
+            <RadzenButton Text="@Localization["LoginButtonModalText"]" Disabled="@_Busy"
+                          Variant="Variant.Text" Icon="login"
+                          Click="@(args => _OpenLoginFormAsync())" />
+            <RadzenButton Text="@Localization["RegisterModalButtonText"]" IsBusy="@_Busy"
+                          ButtonType="ButtonType.Submit" Icon="how_to_reg" />
+        </RadzenStack>
+    </RadzenTemplateForm>
+</div>
