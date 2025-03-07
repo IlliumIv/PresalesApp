@@ -1,7 +1,5 @@
 ﻿using Blazored.LocalStorage;
-using Blazorise.Extensions;
 using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
 using PresalesApp.Shared;
@@ -10,38 +8,50 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using PresalesApp.CustomTypes;
+using System.Reflection;
 
-namespace PresalesApp.Web.Client.Helpers;
+namespace PresalesApp.Web.Client.Extensions;
 
-public static partial class Helper
+public static partial class Helpers
 {
     public const string DayFormat = "ddd, dd MMMM yyyy";
+
     public const string MonthFormat = "MMMM yyyy";
+
     public const string YearFormat = "yyyy";
+
     public const string UriDateTimeFormat = "yyyyMMddTHHmmss"; // ISO_8601
+
+    public const string DateTimeFormat = "dd.MM.yyyy HH:mm:ss";
+
     public static string GetLocalizedCurrentMonthName() => $"{DateTime.Now:MMMM}";
 
     [GeneratedRegex("\\s+")]
-    private static partial Regex DeleteMultipleSpaces();
+    private static partial Regex _DeleteMultipleSpaces();
 
     public static string GetFirstAndLastName(this string name)
-        => string.Join(" ", DeleteMultipleSpaces().Replace(name, " ").Split().Take(2));
+        => string.Join(" ", _DeleteMultipleSpaces().Replace(name, " ").Split().Take(2));
 
     public static string ToMinMaxFormatString(DateTime? value) => $"{value:yyyy-MM-dd}";
 
     public static string ToCurrencyString(this DecimalValue? value, bool allowNegatives = false,
-        bool shortFormat = false, CultureInfo? cultureInfo = null)
-        => ToCurrencyString((decimal)value, allowNegatives, shortFormat, cultureInfo);
+        bool shortFormat = false, CultureInfo? cultureInfo = null, string? groupSeparator = null)
+        => ToCurrencyString((decimal)value, allowNegatives, shortFormat, cultureInfo, groupSeparator);
 
     public static string ToCurrencyString(this decimal value, bool allowNegatives = false,
-        bool shortFormat = false, CultureInfo? cultureInfo = null)
+        bool shortFormat = false, CultureInfo? cultureInfo = null, string? groupSeparator = null)
     {
         cultureInfo ??= new CultureInfo("ru-RU");
         var numberFormat = cultureInfo.NumberFormat;
+        numberFormat.NumberGroupSeparator = groupSeparator ?? numberFormat.NumberGroupSeparator;
+        numberFormat.CurrencyGroupSeparator = groupSeparator ?? numberFormat.CurrencyGroupSeparator;
+        numberFormat.PercentGroupSeparator = groupSeparator ?? numberFormat.PercentGroupSeparator;
+
+        cultureInfo.NumberFormat = numberFormat;
 
         var result = shortFormat switch
         {
-            false => $"{value:N2}",
+            false => value.ToString("N2", cultureInfo),
             true => value.ToString(value._GetShortener(), cultureInfo)
         };
 
@@ -142,6 +152,9 @@ public static partial class Helper
     private async static Task _SaveAs(IJSRuntime js, string filename, byte[] data)
         => await js.InvokeAsync<object>("SaveAsFile", filename, Convert.ToBase64String(data));
 
+    public async static Task SetElementMinWidthById (IJSRuntime js, string id, string width)
+        => await js.InvokeAsync<object>("SetMinWidth", id, width);
+
     public async static Task Download(this Kpi? kpi, IJSRuntime js,
         string presaleName, Period period, IStringLocalizer<App> localization)
     {
@@ -189,37 +202,16 @@ public static partial class Helper
             .Value}.csv", Encoding.UTF8.GetBytes(text));
     }
 
-    public async static Task Download(this IEnumerable<Project> projects,
-        IJSRuntime js, IStringLocalizer<App> localization)
+    public static PropertyInfo[] GetProperties<T>()
+        => typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+    public async static Task DownloadReport(string text, IJSRuntime js, string fileName)
     {
-        if (projects == null) return;
-
-        var text = $"{localization["ProjectNumberText"]};" +
-            $"{localization["ProjectNameText"]};" +
-            $"{localization["PresaleNameText"]};" +
-            $"{localization["ProjectStatusText"]};" +
-            $"{localization["ApprovalBySalesDirectorDateText"]} ;" +
-            $"{localization["ApprovalByTechDirectorDateText"]} ;" +
-            $"{localization["PresaleStartDateText"]} ;" +
-            $"{localization["ProjectCloseDateText"]} ;" +
-            $"{localization["ProjectInvoicesCountText"]}\n";
-
-        foreach (var project in projects)
-        {
-            text += $"{project.Number};{project.Name};{project.Presale?.Name.GetFirstAndLastName()};" +
-                $"{project.Status.GetLocalizedName(localization)};" +
-                $"{project.ApprovalBySalesDirectorAt.ToDateTime().ToPresaleTime()};" +
-                $"{project.ApprovalByTechDirectorAt.ToDateTime().ToPresaleTime()};" +
-                $"{project.PresaleStartAt.ToDateTime().ToPresaleTime()};" +
-                $"{project.ClosedAt.ToDateTime().ToPresaleTime()};" +
-                $"{project.Invoices.Count}\n";
-        }
-
         var bytes = Encoding.UTF8.GetBytes(text);
         byte[] result = [.. Encoding.UTF8.GetPreamble(), .. bytes];
         UTF8Encoding encoder = new(true);
         text = encoder.GetString(result);
-        await _SaveAs(js, $"{(MarkupString)localization["UnpaidReportFileName", DateTime.Now].Value}.csv", Encoding.UTF8.GetBytes(text));
+        await _SaveAs(js, fileName, Encoding.UTF8.GetBytes(text));
     }
 
     public static string GetLocalizedPeriodName(this Period period,
@@ -293,7 +285,7 @@ public static partial class Helper
     public static string GetLocalizedName(this ProjectStatus status,
         IStringLocalizer<App> localization) => status switch
     {
-        ProjectStatus.Unknown => localization["ProjectStatusUnknownText"],
+        ProjectStatus.None => localization["ProjectStatusNoneText"],
         ProjectStatus.WorkInProgress => localization["ProjectStatusWorkInProgressText"],
         ProjectStatus.Won => localization["ProjectStatusWonText"],
         ProjectStatus.Loss => localization["ProjectStatusLossText"],
@@ -391,7 +383,7 @@ public static partial class Helper
     public static void SetFromQueryOrStorage(string? value, string query,
         string uri, ISyncLocalStorageService storage, ref string param)
     {
-        if (value is not null && !value.IsNullOrEmpty())
+        if (value is not null && !string.IsNullOrEmpty(value))
         {
             param = value;
             storage.SetItemAsString($"{new Uri(uri).LocalPath}.{query}", param);
@@ -406,5 +398,7 @@ public static partial class Helper
         => new(date.Year, date.Month, date.Day, 0, 0, 0, 0);
 
     public static string GetIcon(KeywordType type)
-        => type switch { KeywordType.Collections => "collections", _ => "image" };
+        => type switch { KeywordType.Collections => "photo_library", _ => "photo" };
+
+    public static decimal ParseOrDefault(this string? s) => decimal.TryParse(s, out var result) ? result : 0;
 }

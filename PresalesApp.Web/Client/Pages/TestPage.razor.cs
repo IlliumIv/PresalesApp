@@ -2,8 +2,8 @@
 using pax.BlazorChartJs;
 using PresalesApp.CustomTypes;
 using PresalesApp.Service;
-using PresalesApp.Web.Client.Helpers;
-using PresalesApp.Web.Client.Views;
+using PresalesApp.Web.Client.Extensions;
+using Radzen;
 
 namespace PresalesApp.Web.Client.Pages;
 
@@ -11,8 +11,8 @@ partial class TestPage
 {
     private HelloReply? _Reply;
 
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
+    [Inject]
+    private NotificationService _NotificationService { get; set; }
 
     private int _Counter = 0;
 
@@ -32,14 +32,14 @@ partial class TestPage
 
     private Dictionary<string, object?> _GetQueryKeyValues() => new()
     {
-        [_Q_Start] = Period.Start.ToString(Helper.UriDateTimeFormat),
-        [_Q_End] = Period.End.ToString(Helper.UriDateTimeFormat),
+        [_Q_Start] = Period.Start.ToString(Helpers.UriDateTimeFormat),
+        [_Q_End] = Period.End.ToString(Helpers.UriDateTimeFormat),
         [_Q_PeriodType] = Period.Type.ToString(),
     };
 
     #endregion
 
-    public Helpers.Period Period = new(DateTime.Now, CustomTypes.PeriodType.Arbitrary);
+    public Extensions.Period Period = new(DateTime.Now, CustomTypes.PeriodType.Arbitrary);
 
     private void _CleanStorage()
     {
@@ -48,7 +48,7 @@ partial class TestPage
         Storage.RemoveItem($"{new Uri(Navigation.Uri).LocalPath}.{_Q_PeriodType}");
     }
 
-    private void _OnPeriodChanged(Helpers.Period period)
+    private void _OnPeriodChanged(Extensions.Period period)
     {
         Period = period;
 
@@ -63,11 +63,11 @@ partial class TestPage
 
     protected override void OnInitialized()
     {
-        Helper.SetFromQueryOrStorage(value: Start, query: _Q_Start,
+        Helpers.SetFromQueryOrStorage(value: Start, query: _Q_Start,
             uri: Navigation.Uri, storage: Storage, param: ref Period.Start);
-        Helper.SetFromQueryOrStorage(value: End, query: _Q_End,
+        Helpers.SetFromQueryOrStorage(value: End, query: _Q_End,
             uri: Navigation.Uri, storage: Storage, param: ref Period.End);
-        Helper.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
+        Helpers.SetFromQueryOrStorage(value: PeriodType, query: _Q_PeriodType,
             uri: Navigation.Uri, storage: Storage, param: ref Period.Type);
 
         Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(_GetQueryKeyValues()));
@@ -87,7 +87,7 @@ partial class TestPage
         }
         catch (Exception e)
         {
-            GlobalMsgHandler.Show(e.Message);
+            _NotificationService.Notify(NotificationSeverity.Error, e.Message);
         }
 
         StateHasChanged();
@@ -101,7 +101,7 @@ partial class TestPage
         }
         catch (Exception e)
         {
-            GlobalMsgHandler.Show(e.Message);
+            _NotificationService.Notify(NotificationSeverity.Error, e.Message);
         }
 
         StateHasChanged();

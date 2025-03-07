@@ -1,7 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using Blazorise;
-using Blazorise.Bootstrap5;
-using Blazorise.Icons.FontAwesome;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -22,10 +19,16 @@ public static class ServicesConfiguration
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
-        builder.Services.AddScoped<DialogService>();
-        builder.Services.AddScoped<NotificationService>();
-        builder.Services.AddScoped<TooltipService>();
-        builder.Services.AddScoped<ContextMenuService>();
+        builder.Services.AddScoped<Radzen.DialogService>();
+        builder.Services.AddScoped<Radzen.NotificationService>();
+        builder.Services.AddScoped<Radzen.TooltipService>();
+        builder.Services.AddScoped<Radzen.ContextMenuService>();
+        builder.Services.AddScoped<Radzen.ThemeService>();
+        builder.Services.AddRadzenCookieThemeService(options =>
+        {
+            options.Name = "PresalesAppTheme";
+            options.Duration = TimeSpan.FromDays(365);
+        });
 
         builder.Services.AddTransient(provider =>
         {
@@ -39,10 +42,6 @@ public static class ServicesConfiguration
                 });
             return new Service.Api.ApiClient(channel);
         });
-
-        builder.Services.AddBlazorise();
-        builder.Services.AddBootstrap5Providers();
-        builder.Services.AddFontAwesomeIcons();
 
         builder.Services.AddBlazoredLocalStorage();
         builder.Services.AddLocalization(options => options.ResourcesPath = "Localization");

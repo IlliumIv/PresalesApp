@@ -1,0 +1,22 @@
+﻿<div>
+    <RadzenFieldset Text="@Localization["SettingsWindowTitle"]">
+        <RadzenStack Gap="1rem">
+            <RadzenRow AlignItems="AlignItems.Center">
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenLabel Text="@Localization["CurrentThemeLabel"]" />
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="8">
+                    <ThemePicker />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow AlignItems="AlignItems.Center">
+                <RadzenColumn Size="12" SizeMD="4">
+                    <RadzenLabel Text="@Localization["CurrentCultureLabel"]" />
+                </RadzenColumn>
+                <RadzenColumn Size="12" SizeMD="8">
+                    <CulturePicker />
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+    </RadzenFieldset>
+</div>

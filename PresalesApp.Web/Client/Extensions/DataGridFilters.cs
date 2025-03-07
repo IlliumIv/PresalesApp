@@ -2,7 +2,7 @@
 using PresalesApp.CustomTypes;
 using PresalesApp.Shared;
 
-namespace PresalesApp.Web.Client.Helpers;
+namespace PresalesApp.Web.Client.Extensions;
 
 public static class DataGridFilters
 {

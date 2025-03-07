@@ -1,7 +1,7 @@
 ﻿using pax.BlazorChartJs;
 using System.Globalization;
 
-namespace PresalesApp.Web.Client.Helpers;
+namespace PresalesApp.Web.Client.Extensions;
 
 public static class ChartHelpers
 {
@@ -12,45 +12,45 @@ public static class ChartHelpers
         ChartType chartType, IList<string>? labels = null,
         ChartJsOptions? options = null, params ChartJsDataset[] datasets)
             => new()
-        {
-            Type = chartType,
-            Options = options ?? new() { Plugins = new() { Legend = new() { Display = false } } },
-            Data = new()
             {
-                Labels = labels ?? _GenerateEmptyStringList(1),
-                Datasets = [.. datasets],
-            }
-        };
+                Type = chartType,
+                Options = options ?? new() { Plugins = new() { Legend = new() { Display = false } } },
+                Data = new()
+                {
+                    Labels = labels ?? _GenerateEmptyStringList(1),
+                    Datasets = [.. datasets],
+                }
+            };
 
     public static LineDataset GetLineDataset
         (IList<object> data, string label, string? color = null,
         float? backgroundAlfa = null, float? borderAlfa = null,
         bool fill = true, double pointRadius = 1)
             => new()
-        {
-            Label = label,
-            Data = data,
-            BackgroundColor = color is null
+            {
+                Label = label,
+                Data = data,
+                BackgroundColor = color is null
                               ? null
                               : GetColor(color, backgroundAlfa ?? _BackgroundAlfa),
-            BorderColor = color is null
+                BorderColor = color is null
                           ? null
                           : GetColor(color, borderAlfa ?? _BorderAlfa),
-            Fill = fill,
-            PointRadius = pointRadius
-        };
+                Fill = fill,
+                PointRadius = pointRadius
+            };
 
-    public static PieDataset GetPieDataset
-        (IList<object> data, (byte R, byte G, byte B)? lastColor = null,
-        float? backgroundAlfa = null,float? borderAlfa = null, StringOrDoubleValue? cutout = null)
+    public static PieDataset GetPieDataset<T>
+        (IList<T> data, (byte R, byte G, byte B)? lastColor = null,
+        float? backgroundAlfa = null, float? borderAlfa = null, StringOrDoubleValue? cutout = null)
             => new()
-        {
-            Data = data,
-            BackgroundColor = GetColors((ushort)data.Count, backgroundAlfa ?? _BackgroundAlfa,
+            {
+                Data = (List<object>)Convert.ChangeType(data, typeof(object)),
+                BackgroundColor = GetColors((ushort)data.Count, backgroundAlfa ?? _BackgroundAlfa,
                                         lastColor),
-            BorderColor = GetColors((ushort)data.Count, borderAlfa ?? _BorderAlfa, lastColor),
-            Cutout = cutout
-        };
+                BorderColor = GetColors((ushort)data.Count, borderAlfa ?? _BorderAlfa, lastColor),
+                Cutout = cutout
+            };
 
     public readonly static Dictionary<string, (byte R, byte G, byte B)> Colors = new()
     {
@@ -77,13 +77,13 @@ public static class ChartHelpers
     {
         var res = new List<string>();
 
-        for(var i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             var (R, G, B) = Colors.ElementAt(i % Colors.Count).Value;
             res.Add($"rgba({R}, {G}, {B}, {alfa.ToStringInvariant()})");
         }
 
-        if(res.Count != 0 && last is not null)
+        if (res.Count != 0 && last is not null)
         {
             res.Remove(res.Last());
             res.Add($"rgba({last.Value.R}, {last.Value.G}, {last.Value.B}, " +
@@ -95,11 +95,11 @@ public static class ChartHelpers
 
     public static string GetColor(string color, float alfa)
         => Colors.ContainsKey(color) switch
-    {
-        true => $"rgba({Colors[color].R}, {Colors[color].G}, {Colors[color].B}, " +
-                $"{alfa.ToStringInvariant()})",
-        false => color
-    };
+        {
+            true => $"rgba({Colors[color].R}, {Colors[color].G}, {Colors[color].B}, " +
+                    $"{alfa.ToStringInvariant()})",
+            false => color
+        };
 
     public static string GetColor((byte R, byte G, byte B) color, float alfa)
         => $"rgba({color.R}, {color.G}, {color.B}, {alfa.ToStringInvariant()})";
@@ -111,7 +111,7 @@ public static class ChartHelpers
     }
 
     public static string ToStringInvariant<T>(this T obj, string format = null)
-        => (format == null)
+        => format == null
             ? FormattableString.Invariant($"{obj}")
             : string.Format(CultureInfo.InvariantCulture.NumberFormat, $"{{0:{format}}}", obj);
 
@@ -119,7 +119,7 @@ public static class ChartHelpers
     {
         var res = new T[count];
 
-        for(var i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
             res[i] = value;
 
         return res.Select(d => (object)d).ToList();
@@ -138,7 +138,7 @@ public static class ChartHelpers
     {
         var res = new List<string>();
 
-        for(var i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
             res.Add(string.Empty);
 
         return res;
@@ -149,7 +149,7 @@ public static class ChartHelpers
         var rand = new Random();
         var res = new List<object>();
 
-        for(var i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
             res.Add((decimal)(rand.Next(3, 50) * rand.NextDouble()));
 
         return res;

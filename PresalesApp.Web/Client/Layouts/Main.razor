@@ -1,30 +1,50 @@
 ﻿@inherits LayoutComponentBase
+@inject CookieThemeService CookieThemeService
+
+<HeadContent>
+    <RadzenTheme Theme="standard" />
+</HeadContent>
 
 <RadzenDialog />
 <RadzenNotification />
 <RadzenTooltip />
 <RadzenContextMenu />
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-    <main>
-        <CascadingValue Value="@_GlobalMsgHandler">
-            <MessageSnackbar @ref=_GlobalMsgHandler />
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenSidebarToggle Click="@_SidebarToggleClick" />
             <PresalesApp.Web.Client.Views.LayoutHeader />
-            <AuthorizeView>
-                <Authorized>
-                    <article class="content px-4">
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenBody Expanded="@_SidebarExpanded">
+        <RadzenRow class="rz-mx-auto rz-px-4 rz-pt-2 rz-pt-md-4 rz-pt-lg-6 rz-pt-xl-12 rz-pb-2 rz-pb-lg-12" Style="max-width: 1440px;">
+            <RadzenColumn Size="12">
+                <AuthorizeView>
+                    <Authorized>
                         @Body
-                    </article>
-                </Authorized>
-                <NotAuthorized>
-                    <article class="content px-4">
-                        <PresalesApp.Web.Client.Pages.Index />
-                    </article>
-                </NotAuthorized>
+                    </Authorized>
+                    <NotAuthorized>
+                        <article class="content px-4">
+                            <PresalesApp.Web.Client.Pages.Index />
+                        </article>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenBody>
+    <RadzenSidebar @bind-Expanded="@_SidebarExpanded" style="z-index: 2">
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="@Localization["HomePage"]" Path="" Icon="home " />
+            <AuthorizeView>
+                <RadzenPanelMenuItem Text="@Localization["SpreadsheetPage"]" Path="spreadsheet" Icon="team_dashboard" />
+                <RadzenPanelMenuItem Text="@Localization["KpiPage"]" Path="kpi" Icon="description" />
+                <RadzenPanelMenuItem Text="@Localization["UnpaidPage"]" Path="unpaid" Icon="money_off" />
+                @*<RadzenPanelMenuItem Text="@Localization["FunnelPage"]" Path="funnel" Icon="filter_alt" />*@
+                @*<RadzenPanelMenuItem Text="@Localization["PresalesDashboardPage"]" Path="presales-dashboard" Icon="pie_chart" />*@
+                <RadzenPanelMenuItem Text="@Localization["PresalesNYDashboardPage"]" Path="presales-ny-dashboard" Icon="local_fire_department" />
+                <RadzenPanelMenuItem Text="@Localization["SalesDashboardPage"]" Path="sales-dashboard" Icon="bar_chart" />
             </AuthorizeView>
-        </CascadingValue>
-    </main>
-</div>
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+</RadzenLayout>

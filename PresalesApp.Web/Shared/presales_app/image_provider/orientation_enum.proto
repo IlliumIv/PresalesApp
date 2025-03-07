@@ -2,8 +2,17 @@ syntax = "proto3";
 // option csharp_namespace = "PresalesApp.ImageProvider";
 package presales_app.image_provider;
 
+// Consider to use OrientationUpdated instead.
 enum Orientation {
+	option deprecated = true;
 	ORIENTATION_LANDSCAPE = 0;
 	ORIENTATION_PORTRAIT = 1;
 	ORIENTATION_SQUARISH = 2;
+}
+
+enum OrientationUpdated {
+	ORIENTATION_UPDATED_NONE = 0;
+	ORIENTATION_UPDATED_LANDSCAPE = 1;
+	ORIENTATION_UPDATED_PORTRAIT = 2;
+	ORIENTATION_UPDATED_SQUARISH = 3;
 }

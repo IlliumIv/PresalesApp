@@ -93,7 +93,7 @@ public static class Extensions
             Presale = project.Presale?.Translate(),
             Status = project.Status.Translate(),
             FunnelStage = project.FunnelStage.Translate(),
-            Potential = project.PotentialAmount
+            Potential = project.PotentialAmount,
         };
 
         if (project.Invoices != null && project.Invoices.Count != 0)

@@ -1,0 +1,61 @@
+﻿.grid-component-container {
+    overflow: auto;
+}
+
+::deep .rz-fieldset-content .rz-dropdown,
+::deep .rz-fieldset-content .rz-datepicker {
+    width: 100%;
+}
+
+
+::deep table .col-header-content {
+    display: grid;
+}
+
+
+::deep .quickgrid .rz-button {
+    min-width: min-content;
+    /*width: 100%;*/
+}
+
+::deep .datetime-filter .rz-dropdown-clear-icon:before {
+    content: "filter_alt_off";
+}
+
+::deep tr {
+    border-bottom: var(--rz-grid-border);
+}
+
+::deep table {
+    border-collapse: collapse;
+}
+
+::deep .col-header-content .rz-form-field-content {
+    margin-top: unset;
+}
+
+::deep .comparsion-dropdown {
+    width: 36px;
+    min-width: 36px;
+    margin: auto;
+}
+
+::deep .comparsion-dropdown > .rz-dropdown-trigger .rzi-chevron-down:before {
+    content: "compare_arrows";
+}
+
+::deep .comparsion-dropdown > .rz-dropdown-label {
+    display: none;
+}
+
+::deep .filter-field {
+    width: 100%;
+}
+
+::deep .filter-stack {
+    margin-block: var(--rz-form-field-margin-block);
+}
+
+::deep .filter-stack .rz-form-field-content > input {
+    height: 34px;
+}

@@ -1,0 +1,15 @@
+﻿@typeparam TValue
+
+<div>
+    <RadzenCheckBoxList @bind-Value="@Values" TValue="string" Change="@(args => _OnChangeAsync(args))"
+                        AllowSelectAll="true" SelectAllText="@Localization["SelectAllLabel"]"
+                        Orientation="Orientation.Vertical">
+        <Items>
+            @foreach (var property in ColumnsSelector<TValue>._GetProperties())
+            {
+                <RadzenCheckBoxListItem Text="@Localization[$"Project{property.Name}Title"]"
+                                        Value="@property.Name" />
+            }
+        </Items>
+    </RadzenCheckBoxList>
+</div>

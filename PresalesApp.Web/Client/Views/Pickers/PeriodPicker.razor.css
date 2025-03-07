@@ -1,0 +1,15 @@
+﻿::deep .rz-helper-hidden-accessible input {
+    width: initial;
+    /*
+    height: initial;
+    border: revert-layer;
+    padding: revert-layer;
+    */
+}
+
+.picker-container {
+    display: inline-flex;
+    --rz-gap: 0.5rem;
+    gap: var(--rz-gap);
+    width: 100%;
+}

@@ -27,10 +27,18 @@ public static class ServicesConfiguration
 
         builder.Services.AddControllersWithViews();
         builder.Services.AddRazorPages();
-        builder.Services.AddScoped<DialogService>();
-        builder.Services.AddScoped<NotificationService>();
-        builder.Services.AddScoped<TooltipService>();
-        builder.Services.AddScoped<ContextMenuService>();
+
+        builder.Services.AddScoped<Radzen.DialogService>();
+        builder.Services.AddScoped<Radzen.NotificationService>();
+        builder.Services.AddScoped<Radzen.TooltipService>();
+        builder.Services.AddScoped<Radzen.ContextMenuService>();
+        builder.Services.AddScoped<Radzen.ThemeService>();
+        builder.Services.AddRadzenCookieThemeService(options =>
+        {
+            options.Name = "PresalesAppTheme";
+            options.Duration = TimeSpan.FromDays(365);
+        });
+
         builder.Services.AddSingleton(sp =>
         {
             // Get the address that the app is currently running at

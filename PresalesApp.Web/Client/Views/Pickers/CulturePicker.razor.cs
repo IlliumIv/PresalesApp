@@ -1,4 +1,4 @@
-﻿using PresalesApp.Web.Client.Helpers;
+﻿using PresalesApp.Web.Client.Extensions;
 using PresalesApp.Web.Client.Views.Pickers.DropDown;
 using System.Globalization;
 
@@ -7,6 +7,7 @@ namespace PresalesApp.Web.Client.Views.Pickers;
 partial class CulturePicker
 {
     static readonly CultureInfo _Russian = new("ru-RU");
+
     static readonly CultureInfo _English = new("en-US");
 
     private readonly List<DropDownItem<CultureInfo>> _SupportedCultures =

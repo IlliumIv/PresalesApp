@@ -2,7 +2,15 @@ syntax = "proto3";
 // option csharp_namespace = "PresalesApp.ImageProvider";
 package presales_app.image_provider;
 
+// Consider to use KeywordTypeUpdated instead.
 enum KeywordType {
+	option deprecated = true;
 	KEYWORDTYPE_QUERY = 0;
 	KEYWORDTYPE_COLLECTIONS = 1;
+}
+
+enum KeywordTypeUpdated {
+	KEYWORDTYPE_UPDATED_NONE = 0;
+	KEYWORDTYPE_UPDATED_QUERY = 1;
+	KEYWORDTYPE_UPDATED_COLLECTIONS = 2;
 }

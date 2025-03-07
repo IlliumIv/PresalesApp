@@ -1,14 +1,11 @@
-﻿@using Enum = System.Enum
-@using PresalesApp.Shared
+﻿@using PresalesApp.Shared
 
-@code {
-    // TODO: Use RadzenDropDown instead.
-}
-<select title="Направление" value="@Department" @onchange="_OnDepartmentChanged"
-        class="form-select form-select-combobox">
-    <option selected="@Department"></option>
-    @foreach (Department dep in Enum.GetValues(typeof(Department)))
-    {
-        <option value="@dep">@dep.GetLocalizedName(Localization)</option>
-    }
-</select>
+<RadzenDropDown Name="DepartmentDropDown" TValue="Department" Value="@Department"
+                ValueChanged="@(department => _OnDepartmentChanged(department))" Data="@_Departments">
+    <Template>
+        @(Localization[$"{nameof(PresalesApp.Shared.Department)}{(Department)context}Text"])
+    </Template>
+    <ValueTemplate>
+        @(Localization[$"{nameof(PresalesApp.Shared.Department)}{(Department)context}Text"])
+    </ValueTemplate>
+</RadzenDropDown>

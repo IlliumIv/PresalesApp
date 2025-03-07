@@ -1,9 +1,9 @@
 ﻿@using PresalesApp.Shared
 
 <RadzenDropDown Disabled=@_Disabled Data=@_Stages @bind-Value=@_SelectedStage
-Change="@_DropDown0Change" Style="width: 120px" ClearSearchAfterSelection="true">
+                Change="@_DropDown0Change" Style="width: 120px" ClearSearchAfterSelection="true">
     <Template>
-        <img src="icons/icons8-waiting.gif" width="20px" style="@_ImgDisplay" >
+        <img src="icons/icons8-waiting.gif" width="20px" style="@_ImgDisplay">
         @(((FunnelStage)context).GetLocalizedName(Localization))
     </Template>
 </RadzenDropDown>

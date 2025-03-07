@@ -24,7 +24,7 @@
                 <div class="fs-desc">
                     <p>
                         @(_IsAmbitiousPlanDone() ? "План перевыполнен на: " : "До выполнения плана: ")&nbsp;
-                        @(Helper.ToCurrencyString(Math.Abs((_Overview?.Profit.Values.Sum(amount => amount) ?? 0)
+                        @(Helpers.ToCurrencyString(Math.Abs((_Overview?.Profit.Values.Sum(amount => amount) ?? 0)
                                                             - (_IsRealisticPlanDone()
                                                                 ? _Overview?.Plan
                                                                 : _Overview?.Actual ?? 1)),
@@ -37,11 +37,11 @@
         <fieldset style="background-color: @(ChartHelpers.GetColor("DeepYellow", 0.1f))">
             <legend>Прирост за день</legend>
             <div class="fs-content-layout">
-                <p class="fs-content">@Helper.ToCurrencyString(_DayProfit, shortFormat: true)</p>
+                <p class="fs-content">@Helpers.ToCurrencyString(_DayProfit, shortFormat: true)</p>
                 <div class="fs-desc">
                     <p>
                         Получено суммарно:&nbsp;
-                        @Helper.ToCurrencyString(_Overview?.Profit.Values.Sum(amount => amount) ?? 0,
+                        @Helpers.ToCurrencyString(_Overview?.Profit.Values.Sum(amount => amount) ?? 0,
                                                  shortFormat: true)
                     </p>
                 </div>
@@ -58,10 +58,10 @@
                             Style="border: none !important;"
                             Data="@_SortedPresales">
                 <Columns>
-                    <RadzenDataGridColumn Property="Name" Title="@Localization["PresaleNameText"]"
+                    <RadzenDataGridColumn Property="Name" Title="@Localization["PresaleText"]"
                                           TItem=Presale FooterCssClass="pnyd-footer" Width="20%">
                         <Template>
-                            @Helper.GetFirstAndLastName(context.Name)
+                            @Helpers.GetFirstAndLastName(context.Name)
                         </Template>
                         <FooterTemplate>
                             @Localization["TotalText"]
@@ -79,12 +79,12 @@
                                     &nbsp;
                                 </div>
                                 <span class="profit">
-                                    @Helper.ToCurrencyString(context.Metrics.Profit)
+                                    @Helpers.ToCurrencyString(context.Metrics.Profit)
                                 </span>
                             </div>
                         </Template>
                         <FooterTemplate>
-                            @Helper.ToCurrencyString(_Overview?.Presales.Sum(i => i.Metrics.Profit) ?? 0)
+                            @Helpers.ToCurrencyString(_Overview?.Presales.Sum(i => i.Metrics.Profit) ?? 0)
                         </FooterTemplate>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn Property="Proportion" Title="Доля" TItem=Presale FooterCssClass="pnyd-footer" Width="10%"
@@ -132,7 +132,7 @@
                         Style="border: none!important;"
                         Data="@_Arrivals">
             <Columns>
-                <RadzenDataGridColumn Property="Name" Title="@Localization["PresaleNameText"]" TItem="_Arrival" />
+                <RadzenDataGridColumn Property="Name" Title="@Localization["PresaleText"]" TItem="_Arrival" />
                 <RadzenDataGridColumn Property="Timestamp" Title="Время" TItem="_Arrival">
                     <Template>
                         @(context.Timestamp.TimeOfDay)
@@ -167,8 +167,8 @@
         </p>
     </div>
     <div class="img-keyword content">
-        <RadzenIcon Icon="@Helper.GetIcon(_KeywordType)" @onclick="@(() => _OnImageKeywordTypeChange())"
-                    title="@Helper.GetIcon(_KeywordType)" Style="cursor: default;" />
+        <RadzenIcon Icon="@Helpers.GetIcon(_KeywordType)" @onclick="@(() => _OnImageKeywordTypeChange())"
+                    title="@Helpers.GetIcon(_KeywordType)" Style="cursor: default;" />
         <input @bind="@_ImageKeyword" @bind:event="oninput" @onkeydown="@_OnManuallyImageUpdate" />
     </div>
 </div>

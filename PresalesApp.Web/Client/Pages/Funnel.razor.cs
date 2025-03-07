@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using PresalesApp.Shared;
-using PresalesApp.Web.Client.Views;
+using Radzen;
 using Radzen.Blazor;
 
 namespace PresalesApp.Web.Client.Pages;
@@ -12,8 +12,8 @@ public partial class Funnel
             ? "--rz-danger"
             : "--rz-text-color";
 
-    [CascadingParameter]
-    public MessageSnackbar GlobalMsgHandler { get; set; }
+    [Inject]
+    private NotificationService _NotificationService { get; set; }
 
     protected override async Task OnParametersSetAsync() => await _UpdateData();
 
@@ -61,7 +61,8 @@ public partial class Funnel
         }
         catch (Exception e)
         {
-            GlobalMsgHandler.Show(e.Message);
+            _NotificationService.Notify(NotificationSeverity.Error,
+                e.Message);
         }
 
         StateHasChanged();

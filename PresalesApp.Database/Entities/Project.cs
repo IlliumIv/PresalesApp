@@ -18,7 +18,7 @@ public class Project(string number) : Entity
     public decimal PotentialAmount { get; set; } = decimal.Zero;
 
     [JsonProperty("Статус")]
-    public ProjectStatus Status { get; set; } = ProjectStatus.Unknown;
+    public ProjectStatus Status { get; set; } = ProjectStatus.None;
 
     [JsonProperty("ПричинаПроигрыша")]
     public string LossReason { get; set; } = string.Empty;

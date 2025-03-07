@@ -207,19 +207,19 @@
   <data name="KpiReportFileName" xml:space="preserve">
     <value>Kpi report for {0} {1}, {2}</value>
   </data>
-  <data name="ProjectNumberText" xml:space="preserve">
+  <data name="ProjectNumberTitle" xml:space="preserve">
     <value>Project Number</value>
   </data>
-  <data name="ProjectNameText" xml:space="preserve">
+  <data name="ProjectNameTitle" xml:space="preserve">
     <value>Project Name</value>
   </data>
-  <data name="PresaleNameText" xml:space="preserve">
+  <data name="PresaleText" xml:space="preserve">
     <value>Presale</value>
   </data>
-  <data name="ProjectStatusText" xml:space="preserve">
+  <data name="ProjectStatusTitle" xml:space="preserve">
     <value>Project Status</value>
   </data>
-  <data name="ProjectCloseDateText" xml:space="preserve">
+  <data name="ProjectClosedAtTitle" xml:space="preserve">
     <value>Project Close Date</value>
   </data>
   <data name="UnpaidReportFileName" xml:space="preserve">
@@ -237,7 +237,7 @@
   <data name="FunnelPage" xml:space="preserve">
     <value>Funnel</value>
   </data>
-  <data name="ProjectPotentialText" xml:space="preserve">
+  <data name="ProjectPotentialTitle" xml:space="preserve">
     <value>Potential Amount</value>
   </data>
   <data name="PresaleNotAssignedYetMessage" xml:space="preserve">
@@ -252,7 +252,7 @@
   <data name="ItemLegendText" xml:space="preserve">
     <value>Legend</value>
   </data>
-  <data name="ProjectFunnelStageText" xml:space="preserve">
+  <data name="ProjectFunnelStageTitle" xml:space="preserve">
     <value>Funnel Stage</value>
   </data>
   <data name="ActionsPlaceholder" xml:space="preserve">
@@ -264,37 +264,37 @@
   <data name="ExpandAllButtonText" xml:space="preserve">
     <value>Expand all</value>
   </data>
-  <data name="FunnelStageNone" xml:space="preserve">
+  <data name="FunnelStageNoneText" xml:space="preserve">
     <value>None</value>
   </data>
-  <data name="FunnelStageFirst" xml:space="preserve">
+  <data name="FunnelStageFirstText" xml:space="preserve">
     <value>First</value>
   </data>
-  <data name="FunnelStageSecond" xml:space="preserve">
+  <data name="FunnelStageSecondText" xml:space="preserve">
     <value>Second</value>
   </data>
-  <data name="FunnelStageThird" xml:space="preserve">
+  <data name="FunnelStageThirdText" xml:space="preserve">
     <value>Third</value>
   </data>
-  <data name="FunnelStageFourth" xml:space="preserve">
+  <data name="FunnelStageFourthText" xml:space="preserve">
     <value>Fourth</value>
   </data>
-  <data name="FunnelStageFifth" xml:space="preserve">
+  <data name="FunnelStageFifthText" xml:space="preserve">
     <value>Fifth</value>
   </data>
-  <data name="FunnelStageSixth" xml:space="preserve">
+  <data name="FunnelStageSixthText" xml:space="preserve">
     <value>Sixth</value>
   </data>
-  <data name="FunnelStageSeventh" xml:space="preserve">
+  <data name="FunnelStageSeventhText" xml:space="preserve">
     <value>Seventh</value>
   </data>
-  <data name="FunnelStageEigth" xml:space="preserve">
+  <data name="FunnelStageEigthText" xml:space="preserve">
     <value>Eigth</value>
   </data>
-  <data name="FunnelStageRefused" xml:space="preserve">
+  <data name="FunnelStageRefusedText" xml:space="preserve">
     <value>Refused</value>
   </data>
-  <data name="FunnelStageAny" xml:space="preserve">
+  <data name="FunnelStageAnyText" xml:space="preserve">
     <value>Any</value>
   </data>
   <data name="ActionNumberText" xml:space="preserve">
@@ -309,8 +309,8 @@
   <data name="SuggestImprovementsButtonText" xml:space="preserve">
     <value>Suggest improvements</value>
   </data>
-  <data name="ProjectLastFunnelActionText" xml:space="preserve">
-    <value>Last action date</value>
+  <data name="ProjectLastFunnelActionTitle" xml:space="preserve">
+    <value>Last Action Date</value>
   </data>
   <data name="PreviousWeekText" xml:space="preserve">
     <value>Previous week</value>
@@ -348,16 +348,115 @@
   <data name="PresalesNYDashboardPage" xml:space="preserve">
     <value>Presales dashboard</value>
   </data>
-  <data name="KpiCalculationTypeDefaultText" xml:space="preserve">
+  <data name="KpiCalculationDefaultText" xml:space="preserve">
     <value>Default</value>
   </data>
-  <data name="KpiCalculationTypePreOrder26Text" xml:space="preserve">
+  <data name="KpiCalculationPreOrder26Text" xml:space="preserve">
     <value>Pre Order 26</value>
   </data>
-  <data name="KpiCalculationTypePostOrder26Text" xml:space="preserve">
+  <data name="KpiCalculationPostOrder26Text" xml:space="preserve">
     <value>Post Order 26</value>
   </data>
   <data name="KpiCalculationTypeLabel" xml:space="preserve">
     <value>Calculation method:</value>
+  </data>
+  <data name="CurrentThemeLabel" xml:space="preserve">
+    <value>Current theme:</value>
+  </data>
+  <data name="CurrentCultureLabel" xml:space="preserve">
+    <value>Current culture:</value>
+  </data>
+  <data name="OpenAppSettingsButtonText" xml:space="preserve">
+    <value>Open app settings</value>
+  </data>
+  <data name="SettingsWindowTitle" xml:space="preserve">
+    <value>App settings</value>
+  </data>
+  <data name="RecursiveInvoicesCountCheckboxName" xml:space="preserve">
+    <value>Count invoices recursively across main projects</value>
+  </data>
+  <data name="PeriodTypeLabel" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="FiltersToggleShowTitle" xml:space="preserve">
+    <value>Show filters</value>
+  </data>
+  <data name="FiltersToggleClearTitle" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="RequiredValidatorHelperText" xml:space="preserve">
+    <value>is required.</value>
+  </data>
+  <data name="FormValidationErrorText" xml:space="preserve">
+    <value>Not all required fields are filled.</value>
+  </data>
+  <data name="RequestParamsFieldsetText" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="CollapseTitle" xml:space="preserve">
+    <value>Collapse</value>
+  </data>
+  <data name="ExpandTitle" xml:space="preserve">
+    <value>Expand</value>
+  </data>
+  <data name="SettingsToggleShowTitle" xml:space="preserve">
+    <value>Show settings</value>
+  </data>
+  <data name="SettingsToggleHideTitle" xml:space="preserve">
+    <value>Hide settings</value>
+  </data>
+  <data name="SelectColumnsButtonText" xml:space="preserve">
+    <value>Select columns</value>
+  </data>
+  <data name="SelectAllLabel" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="ProjectPresaleTitle" xml:space="preserve">
+    <value>Presale</value>
+  </data>
+  <data name="ProjectLastActionTimeTitle" xml:space="preserve">
+    <value>Last Action Time</value>
+  </data>
+  <data name="ProjectApprovalBySalesDirectorAtTitle" xml:space="preserve">
+    <value>Sales Director Approval Date</value>
+  </data>
+  <data name="ProjectPresaleStartAtTitle" xml:space="preserve">
+    <value>Presale Work Start Date</value>
+  </data>
+  <data name="ProjectActionsTitle" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="ProjectInvoicesTitle" xml:space="preserve">
+    <value>Invoices</value>
+  </data>
+  <data name="ProjectStatusWonText" xml:space="preserve">
+    <value>Won</value>
+  </data>
+  <data name="ProjectsReportFileName" xml:space="preserve">
+    <value>Projects, {0}</value>
+  </data>
+  <data name="ComparsionTypeNoneText" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="ComparsionTypeGreaterThanText" xml:space="preserve">
+    <value>Greater Than</value>
+  </data>
+  <data name="ComparsionTypeGreaterThanOrEqualText" xml:space="preserve">
+    <value>Greater Than Or Equal</value>
+  </data>
+  <data name="ComparsionTypeLessThanText" xml:space="preserve">
+    <value>Less Than</value>
+  </data>
+  <data name="ComparsionTypeLessThanOrEqualText" xml:space="preserve">
+    <value>Less Than Or Equal</value>
+  </data>
+  <data name="ComparsionTypeEqualText" xml:space="preserve">
+    <value>Equal</value>
+  </data>
+  <data name="ComparsionTypeNotEqualText" xml:space="preserve">
+    <value>Not Equal</value>
+  </data>
+  <data name="ComparsionTypeContainsText" xml:space="preserve">
+    <value>Contains</value>
   </data>
 </root>

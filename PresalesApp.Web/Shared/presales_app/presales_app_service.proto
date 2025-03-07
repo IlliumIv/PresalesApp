@@ -32,10 +32,10 @@ service PresalesAppService {
 	rpc GetPresales(presales_app.custom_types.QueryableRequest) returns (GetPresalesResponse);
 	rpc GetProjects(presales_app.custom_types.QueryableRequest) returns (GetProjectsResponse);
 
-	// Use GetPresales with filters instead.
+	// Consider to use GetPresales with filters instead.
 	rpc GetNames(google.protobuf.Empty) returns (GetNamesResponse) { option deprecated = true; }
-	// Use GetProjects with filters instead.
+	// Consider to use GetProjects with filters instead.
 	rpc GetUnpaidProjects(GetUnpaidProjectsRequest) returns (GetProjectsResponse) { option deprecated = true; }
-	// Use GetProjects with filters instead.
+	// Consider to use GetProjects with filters instead.
 	rpc GetFunnelProjects(google.protobuf.Empty) returns (GetProjectsResponse) { option deprecated = true; }
 }
