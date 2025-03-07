@@ -352,3 +352,4 @@ MigrationBackup/
 *.7z
 
 **appsettings.Production.json
+**appsettings.Development.json
