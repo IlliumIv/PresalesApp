@@ -22,6 +22,7 @@
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.1-dev-00077" />
     <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.0.2" />
     <PackageReference Include="System.Private.Uri" Version="4.3.2" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
     <PackageReference Include="System.Threading.Tasks" Version="4.3.0" />
