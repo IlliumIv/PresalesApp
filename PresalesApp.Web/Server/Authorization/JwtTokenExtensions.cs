@@ -44,8 +44,8 @@ namespace PresalesApp.Web.Authorization
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                ***REMOVED***: tokenParameters.Issuer,
-                ***REMOVED***: tokenParameters.Audience,
+                issuer: tokenParameters.Issuer,
+                audience: tokenParameters.Audience,
                 claims: claims,
                 expires: tokenParameters.Expiry,
                 signingCredentials: creds
