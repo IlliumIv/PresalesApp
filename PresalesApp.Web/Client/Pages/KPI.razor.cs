@@ -120,7 +120,7 @@ namespace PresalesApp.Web.Client.Pages
             var response = await AppApi.GetKpiAsync(new KpiRequest
             {
                 PresaleName = _presale_name,
-                Period = _period.Translate(),
+                Period = _period.TranslateAsSharedPeriod(),
                 KpiCalculationType = _KpiCalculationType
             });
 

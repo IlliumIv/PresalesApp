@@ -104,7 +104,7 @@ namespace PresalesApp.Web.Client.Pages
             {
                 overview = await AppApi.GetProfitOverviewAsync(new OverviewRequest
                 {
-                    Period = period.Translate(),
+                    Period = period.TranslateAsSharedPeriod(),
                     Department = Department.Any,
                     Position = Position.Any
                 });

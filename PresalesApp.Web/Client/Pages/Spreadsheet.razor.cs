@@ -139,7 +139,7 @@ namespace PresalesApp.Web.Client.Pages
                     OnlyActive = _only_active_ones,
                     Department = _department,
                     Position = _position,
-                    Period = _period.Translate()
+                    Period = _period.TranslateAsSharedPeriod()
                 });
                 StateHasChanged();
             }

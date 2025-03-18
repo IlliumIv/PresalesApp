@@ -137,7 +137,7 @@ partial class PresalesNewYearDashboard
         {
             _Overview = await AppApi.GetProfitOverviewAsync(new OverviewRequest
             {
-                Period = _Period.Translate(),
+                Period = _Period.TranslateAsSharedPeriod(),
                 Department = _Department,
                 Position = Position.Any
             });

@@ -21,7 +21,13 @@ namespace PresalesApp.Web.Client.Helpers
             }, periodType)
         { }
 
-        public Shared.Period Translate() => new()
+        public Shared.Period TranslateAsSharedPeriod() => new()
+        {
+            From = Timestamp.FromDateTime(Start.ToUniversalTime()),
+            To = Timestamp.FromDateTime(End.ToUniversalTime())
+        };
+
+        public Service.Period TranslateAsServicePeriod() => new()
         {
             From = Timestamp.FromDateTime(Start.ToUniversalTime()),
             To = Timestamp.FromDateTime(End.ToUniversalTime())

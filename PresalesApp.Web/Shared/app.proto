@@ -24,7 +24,6 @@ service Api {
 	rpc GetKpi(KpiRequest) returns (KpiResponse);
 	rpc GetImage(ImageRequest) returns (ImageResponse);
 	rpc GetProfitOverview(OverviewRequest) returns (ProfitOverview);
-	rpc GetSalesOverview(SalesOverviewRequest) returns (SalesOverview);
 	rpc GetUnpaidProjects(UnpaidRequest) returns (UnpaidProjects);
 	rpc GetFunnelProjects(google.protobuf.Empty) returns (FunnelProjects);
 }
@@ -74,23 +73,6 @@ message UnpaidRequest{
 
 message UnpaidProjects {
 	repeated Project projects = 1;
-}
-
-message SalesOverviewRequest {
-	Period previous = 1;
-	Period current = 2;
-}
-
-message SalesOverview {
-	types.DecimalValue previous_actual_profit = 1;
-	types.DecimalValue current_actual_profit = 2;
-	types.DecimalValue current_sales_target = 3;
-	repeated Manager current_top_sales_managers = 4;
-}
-
-message Manager {
-	string name = 1;
-	types.DecimalValue profit = 2;
 }
 
 message ProfitOverview {

@@ -69,8 +69,6 @@ public class ApiController(
             _ => throw new NotImplementedException()
         };
 
-    private static string _CachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [ { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 }, { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
-
     private static ImageResponse _CashedImageGirl = new()
     {
         Raw = "https://images.unsplash.com/photo-1666932999928-f6029c081d77?ixid=MnwzODQ4NjV8MHwxfHJhbmRvbXx8fHx8fHx8fDE2Njk3MjU4NTk&ixlib=rb-4.0.3",
@@ -611,49 +609,6 @@ public class ApiController(
         foreach((var date, decimal amount) in profit)
         {
             reply.Profit.Add(date.ToString(CultureInfo.InvariantCulture), amount);
-        }
-
-        return reply;
-    }
-
-    public override async Task<SalesOverview> GetSalesOverview(SalesOverviewRequest request, ServerCallContext context)
-    {
-        var prevStartTime = request?.Previous?.From?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
-        var prevEndTime = request?.Previous?.To?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
-        var startTime = request?.Current?.From?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
-        var endTime = request?.Current?.To?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
-
-        var httpClient = new HttpClient() { BaseAddress = new Uri("http://127.0.0.1") };
-        var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"trade/hs/API/GetTradeData?" +
-            $"begin={prevStartTime:yyyy-MM-ddTHH:mm:ss}" +
-            $"&end={prevEndTime:yyyy-MM-ddTHH:mm:ss}" +
-            $"&begin2={startTime:yyyy-MM-ddTHH:mm:ss}" +
-            $"&end2={endTime:yyyy-MM-ddTHH:mm:ss}");
-        httpRequest.Headers.Add("Authorization", "Basic 0J/QvtC70Y/QutC+0LLQmDpraDk5OFh0Rg==");
-        var httpResponse = await httpClient.SendAsync(httpRequest);
-        string result = await httpResponse.Content.ReadAsStringAsync();
-        if(!httpResponse.IsSuccessStatusCode)
-        {
-            result = _CachedOverview;
-        }
-
-        _CachedOverview = result;
-
-        var response = JsonConvert.DeserializeObject<dynamic>(_CachedOverview);
-        var reply = new SalesOverview();
-
-        if(response != null)
-        {
-#pragma warning disable IDE0008 // Use explicit type
-            foreach(var manager in response.Топ)
-            {
-                reply.CurrentTopSalesManagers.Add(new Manager { Name = string.Join(" ", ((string)manager.Имя).Split().Take(2)), Profit = (decimal)manager.Сумма });
-            }
-#pragma warning restore IDE0008 // Use explicit type
-
-            reply.PreviousActualProfit = response.Факт1 is null ? 0 : (decimal)response.Факт1;
-            reply.CurrentActualProfit = response.Факт2 is null ? 0 : (decimal)response.Факт2;
-            reply.CurrentSalesTarget = response.План2 is null ? 0 : (decimal)response.План2;
         }
 
         return reply;

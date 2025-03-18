@@ -66,7 +66,7 @@ namespace PresalesApp.Web.Client.Pages
                 {
                     IsMainProjectInclude = _is_main_project_include,
                     PresaleName = _presale_name,
-                    Period = _period.Translate()
+                    Period = _period.TranslateAsSharedPeriod()
                 });
                 _btn_attrs = [];
             }

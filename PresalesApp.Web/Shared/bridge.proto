@@ -2,6 +2,7 @@ syntax = "proto3";
 option csharp_namespace = "PresalesApp.Service";
 package bridge;
 
+import "types.proto";
 import "enums.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
@@ -11,6 +12,7 @@ service Api {
 	rpc SetProjectFunnelStage(NewProjectFunnelStage) returns (IsActionSuccess);
 	
 	rpc GetPresalesArrival(google.protobuf.Empty) returns (stream Arrival);
+	rpc GetSalesOverview(SalesOverviewRequest) returns (SalesOverview);
 }
 
 message Arrival {
@@ -35,4 +37,26 @@ message HelloRequest {
 
 message HelloReply {
 	string message = 1;
+}
+
+message SalesOverviewRequest {
+	Period previous = 1;
+	Period current = 2;
+}
+
+message Period {
+	google.protobuf.Timestamp from = 1;
+	google.protobuf.Timestamp to = 2;
+}
+
+message SalesOverview {
+	types.DecimalValue previous_actual_profit = 1;
+	types.DecimalValue current_actual_profit = 2;
+	types.DecimalValue current_sales_target = 3;
+	repeated Manager current_top_sales_managers = 4;
+}
+
+message Manager {
+	string name = 1;
+	types.DecimalValue profit = 2;
 }

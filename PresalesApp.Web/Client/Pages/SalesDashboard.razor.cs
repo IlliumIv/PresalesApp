@@ -1,8 +1,8 @@
 ﻿using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
+using PresalesApp.Service;
 using PresalesApp.Web.Client.Helpers;
 using PresalesApp.Web.Client.Views;
-using PresalesApp.Web.Shared;
 using Period = PresalesApp.Web.Client.Helpers.Period;
 
 namespace PresalesApp.Web.Client.Pages
@@ -92,10 +92,10 @@ namespace PresalesApp.Web.Client.Pages
         {
             try
             {
-                overview = await AppApi.GetSalesOverviewAsync(new SalesOverviewRequest
+                overview = await BridgeApi.GetSalesOverviewAsync(new SalesOverviewRequest
                 {
-                    Previous = Previous.Translate(),
-                    Current = Current.Translate()
+                    Previous = Previous.TranslateAsServicePeriod(),
+                    Current = Current.TranslateAsServicePeriod()
                 });
             }
             catch {  GlobalMsgHandler.Show(Localization["ConnectErrorTryLater", Localization["PWAServerName"]].Value); }

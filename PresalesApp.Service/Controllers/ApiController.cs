@@ -1,5 +1,6 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Newtonsoft.Json;
 using PresalesApp.Database.Entities;
 using PresalesApp.Database.Helpers;
 using PresalesApp.Service.Extensions;
@@ -13,6 +14,16 @@ namespace PresalesApp.Service.Controllers;
 public class ApiController(AppSettings appSettings) : Api.ApiBase
 {
     private readonly AppSettings _AppSettings = appSettings;
+
+    private static string _CachedOverview = @"{ ""Всего"": 0.0, ""Топ"": [
+        { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 },
+        { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 },
+        { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 },
+        { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 },
+        { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 },
+        { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 },
+        { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 },
+        { ""Имя"": ""Doe John Jr"", ""Сумма"": 0.0 } ] }";
 
     private readonly HashSet<(string LastName, string FirstName)> _Presales =
     [
@@ -97,6 +108,53 @@ public class ApiController(AppSettings appSettings) : Api.ApiBase
             }
         }
         catch(Exception e) { Log.Information(e.Message); }
+    }
+
+    public override async Task<SalesOverview> GetSalesOverview(SalesOverviewRequest request, ServerCallContext context)
+    {
+        var prevStartTime = request?.Previous?.From?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
+        var prevEndTime = request?.Previous?.To?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
+        var startTime = request?.Current?.From?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
+        var endTime = request?.Current?.To?.ToDateTime().AddHours(5) ?? DateTime.MinValue;
+
+        var httpClient = new HttpClient() { BaseAddress = new Uri($"http://{_AppSettings._1C.Host}") };
+        var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"trade/hs/API/GetTradeData?" +
+            $"begin={prevStartTime:yyyy-MM-ddTHH:mm:ss}" +
+            $"&end={prevEndTime:yyyy-MM-ddTHH:mm:ss}" +
+            $"&begin2={startTime:yyyy-MM-ddTHH:mm:ss}" +
+            $"&end2={endTime:yyyy-MM-ddTHH:mm:ss}");
+        var auth = Convert.ToBase64String(Encoding.UTF8.GetBytes(
+            $"{_AppSettings._1C.Username}:{_AppSettings._1C.Password}"));
+
+        httpRequest.Headers.Add("Authorization", $"Basic {auth}");
+
+        var httpResponse = await httpClient.SendAsync(httpRequest);
+        var result = await httpResponse.Content.ReadAsStringAsync();
+        if(!httpResponse.IsSuccessStatusCode)
+        {
+            result = _CachedOverview;
+        }
+
+        _CachedOverview = result;
+
+        var response = JsonConvert.DeserializeObject<dynamic>(_CachedOverview);
+        var reply = new SalesOverview();
+
+        if(response != null)
+        {
+#pragma warning disable IDE0008 // Use explicit type
+            foreach(var manager in response.Топ)
+            {
+                reply.CurrentTopSalesManagers.Add(new Manager { Name = string.Join(" ", ((string)manager.Имя).Split().Take(2)), Profit = (decimal)manager.Сумма });
+            }
+#pragma warning restore IDE0008 // Use explicit type
+
+            reply.PreviousActualProfit = response.Факт1 is null ? 0 : (decimal)response.Факт1;
+            reply.CurrentActualProfit = response.Факт2 is null ? 0 : (decimal)response.Факт2;
+            reply.CurrentSalesTarget = response.План2 is null ? 0 : (decimal)response.План2;
+        }
+
+        return reply;
     }
 
     private static void _Send(IServerStreamWriter<Arrival> responseStream, Event @event) =>
